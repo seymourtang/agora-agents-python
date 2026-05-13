@@ -1,6 +1,7 @@
 from agora_agent.agentkit.agent import Agent
 import asyncio
 from agora_agent.agentkit.agent_session import AgentSession, AsyncAgentSession
+from agora_agent.agent_management.types.agent_think_response import AgentThinkResponse
 from typing import Any, Dict, List, Tuple
 
 
@@ -10,7 +11,7 @@ class _AgentManagementStub:
 
     def agent_think(self, appid, agent_id, **kwargs):  # noqa: ANN001
         self.calls.append((appid, agent_id, kwargs))
-        return {"agent_id": agent_id, "channel": "room", "start_ts": 1}
+        return AgentThinkResponse(agent_id=agent_id, channel="room", start_ts=1)
 
 
 class _ClientStub:
@@ -27,7 +28,7 @@ class _AsyncAgentManagementStub:
 
     async def agent_think(self, appid, agent_id, **kwargs):  # noqa: ANN001
         self.calls.append((appid, agent_id, kwargs))
-        return {"agent_id": agent_id, "channel": "room", "start_ts": 1}
+        return AgentThinkResponse(agent_id=agent_id, channel="room", start_ts=1)
 
 
 class _AsyncClientStub:
