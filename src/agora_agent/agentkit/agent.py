@@ -197,9 +197,12 @@ class Agent:
         if isinstance(new_agent._mllm, dict):
             new_agent._mllm.setdefault("enable", True)
         if new_agent._advanced_features is None:
-            new_agent._advanced_features = {"enable_mllm": True}
+            new_agent._advanced_features = StartAgentsRequestPropertiesAdvancedFeatures(enable_mllm=True)
         elif isinstance(new_agent._advanced_features, dict):
-            new_agent._advanced_features = {**new_agent._advanced_features, "enable_mllm": True}
+            new_agent._advanced_features = typing.cast(
+                AdvancedFeatures,
+                {**new_agent._advanced_features, "enable_mllm": True},
+            )
         else:
             new_agent._advanced_features = new_agent._advanced_features.model_copy(update={"enable_mllm": True})
         return new_agent
