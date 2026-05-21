@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [Unreleased]
+
+### Added
+
+- **Alias parity** — `AsrConfig` (= `SttConfig`), `is_avatar_token_managed`, think type aliases (`ThinkOnListeningAction`, etc.), think value constants, and cross-SDK discovery table in `docs/reference/agent.md`.
+
+### Changed
+
+- **Avatar token gating** — Session enrichment uses `is_avatar_token_managed` (vendor-only); UID checks remain in session logic.
+
+### Deprecated (legacy naming — use replacements)
+
+- **`HeyGenAvatar`** — Use `LiveAvatarAvatar`. Emits `DeprecationWarning`.
+- **`is_rtc_avatar`** — Use `is_avatar_token_managed` for vendor gating. Emits `DeprecationWarning`.
+- **`AgentThinkRequestOn*`** / **`AgentThinkResponse`** — Use `ThinkOn*` / `ThinkResponse`.
+
 ## [v1.5.0] — 2026-05-20
 
 ### Added
@@ -17,7 +33,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Changed
 
-- **`XaiGrok` is the primary xAI MLLM class** — Matches the product name ([xAI Grok](https://docs.agora.io/en/conversational-ai/models/mllm/xai)) and the TypeScript/Go SDKs. `XaiRealtime` remains as a deprecated backward-compatible alias.
+- **`XaiGrok` is the primary xAI MLLM class** — Matches the product name ([xAI Grok](https://docs.agora.io/en/conversational-ai/models/mllm/xai)) and the TypeScript/Go SDKs.
 - **Package version** — Bumped to `v1.5.0` to match the Fern-generated SDK headers.
 - **RTM data channel default** — When `advanced_features.enable_rtm=True`, AgentKit now defaults `parameters.data_channel` to `"rtm"` unless the caller explicitly sets a data channel.
 - **Agent-level LLM overrides** — In the standard ASR + LLM + TTS pipeline, agent-level `greeting`, `failure_message`, and `max_history` now override vendor defaults, matching the TypeScript SDK. In MLLM mode, agent-level `greeting` and `failure_message` fill only missing fields.
@@ -29,7 +45,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Migration notes
 
-- **`XaiRealtime` → `XaiGrok`** — Import and use `XaiGrok` for xAI MLLM (`mllm.vendor`: `"xai"`). `XaiRealtime` still works but emits `DeprecationWarning`. Future xAI cascading vendors will use `XaiSTT` and `XaiTTS`, not `XaiRealtime`.
 - **`think()` default** — The server default for `on_listening_action` changed from `inject` to `interrupt` in API v2.7. Pass `on_listening_action="inject"` explicitly to preserve the old behavior.
 - **Turn analytics pagination** — Sessions with more than 50 turns must request additional pages via `get_turns(page_index=..., page_size=...)` or use `get_all_turns()`.
 - **Error reasons** — API v2.7 adds status codes `401`, `429`, and `500`; `InvalidRequest` is split into `InvalidRequestBody`, `MissingRequiredField`, and `InvalidFieldValue`, with new reasons such as `ServiceNotEnabled`, `AccountSuspended`, and `ResourceAllocationFailed`.
@@ -112,7 +127,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 ### Added
 
 - `MurfTTS` vendor
-
 
 ### Fixed
 
