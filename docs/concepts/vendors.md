@@ -97,6 +97,9 @@ Used with `agent.with_mllm()` for the [MLLM flow](../guides/mllm-flow.md). These
 | `OpenAIRealtime` | OpenAI Realtime | `api_key`; optional `turn_detection` |
 | `GeminiLive` | Google Gemini Live API | `api_key`, `model`; optional `turn_detection` |
 | `VertexAI` | Vertex AI (Gemini Live) | `model`, `project_id`, `location`, `adc_credentials_string`; optional `turn_detection` |
+| `XaiGrok` | xAI Grok (`mllm.vendor`: `xai`) | `api_key`; optional `voice`, `language`, `sample_rate`, `turn_detection` |
+
+`XaiRealtime` is deprecated (use `XaiGrok`). Future xAI STT/TTS wrappers will be `XaiSTT` / `XaiTTS`, not `XaiRealtime`.
 
 <!-- snippet: executable -->
 ```python
@@ -107,12 +110,15 @@ mllm = OpenAIRealtime(api_key='your-openai-key', model='gpt-4o-realtime-preview'
 
 ## Avatar Vendors
 
-Used with `agent.with_avatar()`. Avatars require specific TTS sample rates — see [Avatar Integration](../guides/avatars.md).
+Used with `agent.with_avatar()` in the cascading ASR + LLM + TTS pipeline. Some avatars require specific TTS sample rates — see [Avatar Integration](../guides/avatars.md).
 
 | Class | Provider | Required Parameters | Required TTS Sample Rate |
 |---|---|---|---|
-| `HeyGenAvatar` | HeyGen | `api_key`, `quality`, `agora_uid` | 24000 Hz |
-| `AkoolAvatar` | Akool | `api_key`, `agora_uid` | 16000 Hz |
+| `HeyGenAvatar` | HeyGen (deprecated alias) | `api_key`, `quality`, `agora_uid` | 24000 Hz |
+| `LiveAvatarAvatar` | LiveAvatar | `api_key`, `quality`, `agora_uid` | 24000 Hz |
+| `AkoolAvatar` | Akool | `api_key` | 16000 Hz |
+| `AnamAvatar` | Anam | `api_key` | None |
+| `GenericAvatar` | Generic Avatar | `api_key`, `api_base_url`, `avatar_id`, `agora_uid` | None |
 
 <!-- snippet: executable -->
 ```python

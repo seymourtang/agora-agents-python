@@ -53,8 +53,10 @@ from agora_agent.agentkit import (
     Agent,
     DataChannel,
     DeepgramSTT,
+    GenericAvatar,
     MiniMaxTTS,
     OpenAI,
+    XaiGrok,
     expires_in_hours,
 )
 
@@ -190,7 +192,7 @@ If you want to bring your own vendor credentials instead of using Agora-managed 
 
 ## MLLM (Realtime / Multimodal)
 
-Use `with_mllm()` for OpenAI Realtime or Gemini Live. No STT, LLM, or TTS vendor is needed when MLLM mode is enabled.
+Use `with_mllm()` for OpenAI Realtime, Gemini Live, Vertex AI, or xAI Grok. No STT, LLM, or TTS vendor is needed when MLLM mode is enabled.
 
 ```python
 from agora_agent.agentkit import Agent, OpenAIRealtime
@@ -216,18 +218,14 @@ A full reference for this library is available [here](https://github.com/AgoraIO
 
 ## MLLM Flow (Multimodal)
 
-For real-time audio processing using OpenAI's Realtime API or Google Gemini Live, use the MLLM (Multimodal Large Language Model) flow instead of the cascading ASR -> LLM -> TTS flow. See the [MLLM Overview](https://docs.agora.io/en/conversational-ai/models/mllm/overview) for more details.
+For real-time audio processing using OpenAI Realtime, Gemini Live, Vertex AI, or xAI Grok, use the MLLM (Multimodal Large Language Model) flow instead of the cascading ASR -> LLM -> TTS flow. MLLM mode does not require separate TTS, STT, or LLM vendors. See the [MLLM Overview](https://docs.agora.io/en/conversational-ai/models/mllm/overview) for more details.
 
 ```python
-from agora-agent-server-sdk import Agora
-from agora-agent-server-sdk.agents import (
+from agora_agent import Agora
+from agora_agent.agents import (
     StartAgentsRequestProperties,
-    StartAgentsRequestPropertiesAdvancedFeatures,
     StartAgentsRequestPropertiesMllm,
     StartAgentsRequestPropertiesMllmVendor,
-    StartAgentsRequestPropertiesTts,
-    StartAgentsRequestPropertiesTtsVendor,
-    StartAgentsRequestPropertiesLlm,
     StartAgentsRequestPropertiesTurnDetection,
     StartAgentsRequestPropertiesTurnDetectionType,
 )
@@ -246,10 +244,8 @@ client.agents.start(
         agent_rtc_uid="1001",
         remote_rtc_uids=["1002"],
         idle_timeout=120,
-        advanced_features=StartAgentsRequestPropertiesAdvancedFeatures(
-            enable_mllm=True,
-        ),
         mllm=StartAgentsRequestPropertiesMllm(
+            enable=True,
             url="wss://api.openai.com/v1/realtime",
             api_key="<your_openai_api_key>",
             vendor=StartAgentsRequestPropertiesMllmVendor.OPENAI,
@@ -265,14 +261,6 @@ client.agents.start(
             type=StartAgentsRequestPropertiesTurnDetectionType.SERVER_VAD,
             threshold=0.5,
             silence_duration_ms=500,
-        ),
-        # TTS and LLM are still required but not used when MLLM is enabled
-        tts=StartAgentsRequestPropertiesTts(
-            vendor=StartAgentsRequestPropertiesTtsVendor.MICROSOFT,
-            params={},
-        ),
-        llm=StartAgentsRequestPropertiesLlm(
-            url="https://api.openai.com/v1/chat/completions",
         ),
     ),
 )
@@ -281,18 +269,14 @@ client.agents.start(
 
 ## MLLM Flow (Multimodal)
 
-For real-time audio processing using OpenAI's Realtime API or Google Gemini Live, use the MLLM (Multimodal Large Language Model) flow instead of the cascading ASR -> LLM -> TTS flow. See the [MLLM Overview](https://docs.agora.io/en/conversational-ai/models/mllm/overview) for more details.
+For real-time audio processing using OpenAI Realtime, Gemini Live, Vertex AI, or xAI Grok, use the MLLM (Multimodal Large Language Model) flow instead of the cascading ASR -> LLM -> TTS flow. MLLM mode does not require separate TTS, STT, or LLM vendors. See the [MLLM Overview](https://docs.agora.io/en/conversational-ai/models/mllm/overview) for more details.
 
 ```python
-from agora-agent-server-sdk import Agora
-from agora-agent-server-sdk.agents import (
+from agora_agent import Agora
+from agora_agent.agents import (
     StartAgentsRequestProperties,
-    StartAgentsRequestPropertiesAdvancedFeatures,
     StartAgentsRequestPropertiesMllm,
     StartAgentsRequestPropertiesMllmVendor,
-    StartAgentsRequestPropertiesTts,
-    StartAgentsRequestPropertiesTtsVendor,
-    StartAgentsRequestPropertiesLlm,
     StartAgentsRequestPropertiesTurnDetection,
     StartAgentsRequestPropertiesTurnDetectionType,
 )
@@ -311,10 +295,8 @@ client.agents.start(
         agent_rtc_uid="1001",
         remote_rtc_uids=["1002"],
         idle_timeout=120,
-        advanced_features=StartAgentsRequestPropertiesAdvancedFeatures(
-            enable_mllm=True,
-        ),
         mllm=StartAgentsRequestPropertiesMllm(
+            enable=True,
             url="wss://api.openai.com/v1/realtime",
             api_key="<your_openai_api_key>",
             vendor=StartAgentsRequestPropertiesMllmVendor.OPENAI,
@@ -330,14 +312,6 @@ client.agents.start(
             type=StartAgentsRequestPropertiesTurnDetectionType.SERVER_VAD,
             threshold=0.5,
             silence_duration_ms=500,
-        ),
-        # TTS and LLM are still required but not used when MLLM is enabled
-        tts=StartAgentsRequestPropertiesTts(
-            vendor=StartAgentsRequestPropertiesTtsVendor.MICROSOFT,
-            params={},
-        ),
-        llm=StartAgentsRequestPropertiesLlm(
-            url="https://api.openai.com/v1/chat/completions",
         ),
     ),
 )

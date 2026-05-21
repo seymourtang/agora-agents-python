@@ -17,12 +17,12 @@ The Agora Conversational AI Python SDK lets you build voice-powered AI agents on
 
 **Cascading flow** uses ASR -> LLM -> TTS and supports the broadest set of vendor combinations.
 
-**MLLM flow** uses a multimodal model such as OpenAI Realtime or Gemini Live for end-to-end audio.
+**MLLM flow** uses a multimodal model such as OpenAI Realtime, Gemini Live, Vertex AI, or xAI Grok for end-to-end audio.
 
 ## Choose a starting point
 
 - Use [Quick Start](./getting-started/quick-start.md) if you want the recommended preset-based path with no vendor keys.
-- Use [MLLM Flow](./guides/mllm-flow.md) if you want realtime end-to-end audio with OpenAI Realtime or Gemini Live.
+- Use [MLLM Flow](./guides/mllm-flow.md) if you want realtime end-to-end audio with OpenAI Realtime, Gemini Live, Vertex AI, or xAI Grok.
 - Use [Cascading Flow](./guides/cascading-flow.md) if you want separate ASR, LLM, and TTS vendors.
 
 ## SDK layers
@@ -45,8 +45,8 @@ The Agora Conversational AI Python SDK lets you build voice-powered AI agents on
 | [AgentSession](./concepts/session.md) | Manage the agent lifecycle |
 | [Vendors](./concepts/vendors.md) | Browse all LLM, TTS, STT, MLLM, and Avatar providers |
 | [Cascading Flow](./guides/cascading-flow.md) | Build an ASR -> LLM -> TTS pipeline |
-| [MLLM Flow](./guides/mllm-flow.md) | Use OpenAI Realtime or Gemini Live for end-to-end audio |
-| [Avatars](./guides/avatars.md) | Add a digital avatar with HeyGen or Akool |
+| [MLLM Flow](./guides/mllm-flow.md) | Use OpenAI Realtime, Gemini Live, Vertex AI, or xAI Grok for end-to-end audio |
+| [Avatars](./guides/avatars.md) | Add a digital avatar with LiveAvatar, Akool, Anam, or Generic Avatar |
 | [Regional Routing](./guides/regional-routing.md) | Route requests to the nearest region |
 | [Error Handling](./guides/error-handling.md) | Handle API errors with ApiError |
 | [Pagination](./guides/pagination.md) | Iterate over paginated list endpoints |
@@ -56,3 +56,4 @@ The Agora Conversational AI Python SDK lets you build voice-powered AI agents on
 | [Agent Reference](./reference/agent.md) | Full `Agent` builder API |
 | [Session Reference](./reference/session.md) | Full `AgentSession` / `AsyncAgentSession` API |
 | [Vendor Reference](./reference/vendors.md) | Constructor options for all vendor classes |
+| [Error Reference](./reference/errors.md) | v2.7 status codes and error reason values |
