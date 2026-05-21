@@ -2,6 +2,7 @@ from .agent import (
     Agent,
     AgentConfig,
     AgentConfigUpdate,
+    AsrConfig,
     ConversationHistory,
     ConversationRole,
     ConversationSessionTurn,
@@ -62,23 +63,23 @@ from .agent import (
     SessionListResponse,
     SessionSummary,
     SpeakPriority,
+    ThinkOnListeningAction,
+    ThinkOnSpeakingAction,
+    ThinkOnThinkingAction,
+    ThinkResponse,
+)
+# Deprecated think type aliases (prefer ThinkOn* names).
+from .agent import (
+    ThinkOnListeningAction as AgentThinkRequestOnListeningAction,
+    ThinkOnSpeakingAction as AgentThinkRequestOnSpeakingAction,
+    ThinkOnThinkingAction as AgentThinkRequestOnThinkingAction,
+    ThinkResponse as AgentThinkResponse,
 )
 from .agent_session import AgentSession, AgentSessionOptions, AsyncAgentSession
-from ..agent_management.types.agent_think_agent_management_response import (
-    AgentThinkAgentManagementResponse as AgentThinkResponse,
-)
-from ..agent_management.types.agent_think_agent_management_request_on_listening_action import (
-    AgentThinkAgentManagementRequestOnListeningAction as AgentThinkRequestOnListeningAction,
-)
-from ..agent_management.types.agent_think_agent_management_request_on_thinking_action import (
-    AgentThinkAgentManagementRequestOnThinkingAction as AgentThinkRequestOnThinkingAction,
-)
-from ..agent_management.types.agent_think_agent_management_request_on_speaking_action import (
-    AgentThinkAgentManagementRequestOnSpeakingAction as AgentThinkRequestOnSpeakingAction,
-)
 from .avatar_types import (
     is_akool_avatar,
     is_anam_avatar,
+    is_avatar_token_managed,
     is_generic_avatar,
     is_heygen_avatar,
     is_live_avatar_avatar,
@@ -94,6 +95,13 @@ from .constants import (
     GeofenceArea,
     GeofenceExcludeArea,
     FillerWordsSelectionRule,
+    ThinkOnListeningActionIgnore,
+    ThinkOnListeningActionInject,
+    ThinkOnListeningActionInterrupt,
+    ThinkOnSpeakingActionIgnore,
+    ThinkOnSpeakingActionInterrupt,
+    ThinkOnThinkingActionIgnore,
+    ThinkOnThinkingActionInterrupt,
     TurnDetectionTypeValues,
 )
 from .token import (
@@ -158,7 +166,6 @@ from .vendors import (
     SpeechmaticsSTT,
     VertexAI,
     XaiGrok,
-    XaiRealtime,
     LiveAvatarAvatar,
 )
 
@@ -172,6 +179,7 @@ __all__ = [
     "LlmConfig",
     "LlmStyle",
     "SttConfig",
+    "AsrConfig",
     "SttVendor",
     "TtsConfig",
     "MllmConfig",
@@ -230,6 +238,13 @@ __all__ = [
     "GeofenceExcludeArea",
     "FillerWordsSelectionRule",
     "TurnDetectionTypeValues",
+    "ThinkOnListeningActionInject",
+    "ThinkOnListeningActionInterrupt",
+    "ThinkOnListeningActionIgnore",
+    "ThinkOnThinkingActionInterrupt",
+    "ThinkOnThinkingActionIgnore",
+    "ThinkOnSpeakingActionInterrupt",
+    "ThinkOnSpeakingActionIgnore",
     # LLM sub-types
     "LlmGreetingConfigs",
     "LlmGreetingConfigsMode",
@@ -246,10 +261,16 @@ __all__ = [
     "ConversationTurns",
     "ConversationSessionTurn",
     "SpeakPriority",
+    "ThinkResponse",
+    "ThinkOnListeningAction",
+    "ThinkOnThinkingAction",
+    "ThinkOnSpeakingAction",
     "AgentThinkResponse",
     "AgentThinkRequestOnListeningAction",
     "AgentThinkRequestOnThinkingAction",
     "AgentThinkRequestOnSpeakingAction",
+    "is_avatar_token_managed",
+    "is_rtc_avatar",
     "AgentPresets",
     "DeepgramPresetModels",
     "OpenAIPresetModels",
@@ -303,7 +324,6 @@ __all__ = [
     "GeminiLive",
     "VertexAI",
     "XaiGrok",
-    "XaiRealtime",
     "HeyGenAvatar",
     "LiveAvatarAvatar",
     "AkoolAvatar",
@@ -314,7 +334,6 @@ __all__ = [
     "is_akool_avatar",
     "is_anam_avatar",
     "is_generic_avatar",
-    "is_rtc_avatar",
     "validate_avatar_config",
     "validate_tts_sample_rate",
 ]

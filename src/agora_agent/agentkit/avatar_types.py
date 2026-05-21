@@ -1,3 +1,4 @@
+import warnings
 import typing
 
 
@@ -21,11 +22,25 @@ def is_generic_avatar(config: typing.Dict[str, typing.Any]) -> bool:
     return config.get("vendor") == "generic"
 
 
-def is_rtc_avatar(config: typing.Dict[str, typing.Any]) -> bool:
-    params = config.get("params", {})
-    return isinstance(params, dict) and bool(params.get("agora_uid")) and (
-        is_heygen_avatar(config) or is_live_avatar_avatar(config) or is_generic_avatar(config)
+def is_avatar_token_managed(config: typing.Dict[str, typing.Any]) -> bool:
+    """Return True when AgentKit manages the avatar RTC publisher identity."""
+    return (
+        is_heygen_avatar(config)
+        or is_live_avatar_avatar(config)
+        or is_generic_avatar(config)
     )
+
+
+def is_rtc_avatar(config: typing.Dict[str, typing.Any]) -> bool:
+    """Deprecated: use :func:`is_avatar_token_managed` for vendor gating."""
+    warnings.warn(
+        "is_rtc_avatar is deprecated; use is_avatar_token_managed for vendor gating "
+        "and keep agora_uid checks in session enrichment.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    params = config.get("params", {})
+    return isinstance(params, dict) and bool(params.get("agora_uid")) and is_avatar_token_managed(config)
 
 
 def validate_avatar_config(
@@ -95,7 +110,7 @@ def validate_tts_sample_rate(
     """Validates that TTS sample rate is compatible with the avatar vendor.
 
     Different avatar vendors have specific sample rate requirements:
-    - HeyGen: ONLY supports 24,000 Hz
+    - HeyGen/LiveAvatar: ONLY supports 24,000 Hz
     - Akool: ONLY supports 16,000 Hz
 
     Parameters

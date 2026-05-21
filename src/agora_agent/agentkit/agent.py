@@ -66,13 +66,25 @@ from ..agents.types.start_agents_request_properties_filler_words_content import 
 from ..agents.types.start_agents_request_properties_filler_words_content_static_config import StartAgentsRequestPropertiesFillerWordsContentStaticConfig
 from ..agents.types.start_agents_request_properties_filler_words_content_static_config_selection_rule import StartAgentsRequestPropertiesFillerWordsContentStaticConfigSelectionRule
 from ..types.tts import Tts
-from .token import generate_convo_ai_token, _validate_expires_in
+from ..agent_management.types.agent_think_agent_management_request_on_listening_action import (
+    AgentThinkAgentManagementRequestOnListeningAction,
+)
+from ..agent_management.types.agent_think_agent_management_request_on_thinking_action import (
+    AgentThinkAgentManagementRequestOnThinkingAction,
+)
+from ..agent_management.types.agent_think_agent_management_request_on_speaking_action import (
+    AgentThinkAgentManagementRequestOnSpeakingAction,
+)
+from ..agent_management.types.agent_think_agent_management_response import (
+    AgentThinkAgentManagementResponse,
+)
 from .vendors.base import BaseAvatar, BaseLLM, BaseMLLM, BaseSTT, BaseTTS
 
 # Top-level aliases
 LlmConfig = StartAgentsRequestPropertiesLlm
 LlmStyle = StartAgentsRequestPropertiesLlmStyle
 SttConfig = StartAgentsRequestPropertiesAsr
+AsrConfig = SttConfig
 SttVendor = StartAgentsRequestPropertiesAsrVendor
 TtsConfig = Tts
 MllmConfig = StartAgentsRequestPropertiesMllm
@@ -158,6 +170,14 @@ FillerWordsTriggerFixedTimeConfig = StartAgentsRequestPropertiesFillerWordsTrigg
 FillerWordsContent = StartAgentsRequestPropertiesFillerWordsContent
 FillerWordsContentStaticConfig = StartAgentsRequestPropertiesFillerWordsContentStaticConfig
 FillerWordsContentSelectionRule = StartAgentsRequestPropertiesFillerWordsContentStaticConfigSelectionRule
+
+# Think type aliases and response
+ThinkOnListeningAction = AgentThinkAgentManagementRequestOnListeningAction
+ThinkOnThinkingAction = AgentThinkAgentManagementRequestOnThinkingAction
+ThinkOnSpeakingAction = AgentThinkAgentManagementRequestOnSpeakingAction
+ThinkResponse = AgentThinkAgentManagementResponse
+
+from .token import generate_convo_ai_token, _validate_expires_in
 
 
 class Agent:

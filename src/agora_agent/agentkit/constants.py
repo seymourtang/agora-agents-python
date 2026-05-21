@@ -58,3 +58,13 @@ class TurnDetectionTypeValues:
     AGORA_VAD = "agora_vad"
     SERVER_VAD = "server_vad"
     SEMANTIC_VAD = "semantic_vad"
+
+
+# Think action value constants (match Fern wire values)
+ThinkOnListeningActionInject = "inject"
+ThinkOnListeningActionInterrupt = "interrupt"
+ThinkOnListeningActionIgnore = "ignore"
+ThinkOnThinkingActionInterrupt = "interrupt"
+ThinkOnThinkingActionIgnore = "ignore"
+ThinkOnSpeakingActionInterrupt = "interrupt"
+ThinkOnSpeakingActionIgnore = "ignore"

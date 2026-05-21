@@ -20,10 +20,10 @@ from .agent import Agent
 from .avatar_types import (
     is_akool_avatar,
     is_anam_avatar,
+    is_avatar_token_managed,
     is_generic_avatar,
     is_heygen_avatar,
     is_live_avatar_avatar,
-    is_rtc_avatar,
     validate_avatar_config,
     validate_tts_sample_rate,
 )
@@ -242,7 +242,11 @@ class _AgentSessionBase:
             if not params.get("agora_channel"):
                 params["agora_channel"] = self._channel
 
-        if not is_rtc_avatar(avatar):
+        if not is_avatar_token_managed(avatar):
+            validate_avatar_config(avatar, require_session_fields=is_generic_avatar(avatar))
+            return
+
+        if not params.get("agora_uid"):
             validate_avatar_config(avatar, require_session_fields=is_generic_avatar(avatar))
             return
 
