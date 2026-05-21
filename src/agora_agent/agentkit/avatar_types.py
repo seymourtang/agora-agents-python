@@ -17,7 +17,21 @@ def is_anam_avatar(config: typing.Dict[str, typing.Any]) -> bool:
     return config.get("vendor") == "anam"
 
 
-def validate_avatar_config(config: typing.Dict[str, typing.Any]) -> None:
+def is_generic_avatar(config: typing.Dict[str, typing.Any]) -> bool:
+    return config.get("vendor") == "generic"
+
+
+def is_rtc_avatar(config: typing.Dict[str, typing.Any]) -> bool:
+    params = config.get("params", {})
+    return isinstance(params, dict) and bool(params.get("agora_uid")) and (
+        is_heygen_avatar(config) or is_live_avatar_avatar(config) or is_generic_avatar(config)
+    )
+
+
+def validate_avatar_config(
+    config: typing.Dict[str, typing.Any],
+    require_session_fields: bool = False,
+) -> None:
     """Validates avatar configuration at runtime.
 
     Parameters
@@ -45,6 +59,8 @@ def validate_avatar_config(config: typing.Dict[str, typing.Any]) -> None:
                 f"Invalid quality for {label}: {params.get('quality')}. "
                 f"Must be one of: {', '.join(valid_qualities)}"
             )
+        if require_session_fields and not params.get("agora_token"):
+            raise ValueError(f"{label} avatar requires agora_token after session enrichment")
     elif is_akool_avatar(config):
         params = config.get("params", {})
         if not params.get("api_key"):
@@ -53,6 +69,23 @@ def validate_avatar_config(config: typing.Dict[str, typing.Any]) -> None:
         params = config.get("params", {})
         if not params.get("api_key"):
             raise ValueError("Anam avatar requires api_key")
+    elif is_generic_avatar(config):
+        params = config.get("params", {})
+        if not params.get("api_key"):
+            raise ValueError("Generic avatar requires api_key")
+        if not params.get("api_base_url"):
+            raise ValueError("Generic avatar requires api_base_url")
+        if not params.get("avatar_id"):
+            raise ValueError("Generic avatar requires avatar_id")
+        if not params.get("agora_uid"):
+            raise ValueError("Generic avatar requires agora_uid")
+        if require_session_fields:
+            if not params.get("agora_token"):
+                raise ValueError("Generic avatar requires agora_token after session enrichment")
+            if not params.get("agora_appid"):
+                raise ValueError("Generic avatar requires agora_appid after session enrichment")
+            if not params.get("agora_channel"):
+                raise ValueError("Generic avatar requires agora_channel after session enrichment")
 
 
 def validate_tts_sample_rate(
