@@ -218,7 +218,7 @@ A full reference for this library is available [here](https://github.com/AgoraIO
 
 ## Package Rename Compatibility
 
-The published package name is now `agora-agents`, while the Python import path remains `agora_agent` for compatibility. The legacy PyPI distribution name `agora-agent-server-sdk` is maintained as a compatibility package in [compat/agora-agent-server-sdk](./compat/agora-agent-server-sdk), and the tag-based release workflow publishes both distributions together.
+The published package name is now `agora-agents`, while the Python import path remains `agora_agent` for compatibility. The legacy PyPI distribution name `agora-agent-server-sdk` is maintained as a compatibility package in [compat/agora-agent-server-sdk](./compat/agora-agent-server-sdk). It re-exports the public API from `agora-agents`, and the tag-based release workflow publishes both distributions together.
 
 ## MLLM Flow (Multimodal)
 

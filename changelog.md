@@ -23,6 +23,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 - **Avatar token gating** — Session enrichment uses `is_avatar_token_managed` (vendor-only); UID checks remain in session logic.
 - **`XaiGrok` is the primary xAI MLLM class** — Matches the product name ([xAI Grok](https://docs.agora.io/en/conversational-ai/models/mllm/xai)) and the TypeScript/Go SDKs.
 - **Package version** — Bumped to `v2.0.0` to match the Fern-generated SDK headers.
+- **PyPI distribution rename** — The published package name is now `agora-agents` (formerly `agora-agent-server-sdk`). The Python import path remains `agora_agent`.
 - **RTM data channel default** — When `advanced_features.enable_rtm=True`, AgentKit now defaults `parameters.data_channel` to `"rtm"` unless the caller explicitly sets a data channel.
 - **Agent-level LLM overrides** — In the standard ASR + LLM + TTS pipeline, agent-level `greeting`, `failure_message`, and `max_history` now override vendor defaults, matching the TypeScript SDK. In MLLM mode, agent-level `greeting` and `failure_message` fill only missing fields.
 - **MLLM core alignment** — MLLM wrappers no longer expose or emit unsupported `predefined_tools` or `max_history` fields because they are not present in the generated v2.7 core `mllm` type.
@@ -33,6 +34,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Migration notes
 
+- **PyPI package rename** — Install `agora-agents` instead of `agora-agent-server-sdk` (`pip install agora-agents` or `poetry add agora-agents`). The import path is unchanged (`from agora_agent import ...`). The legacy PyPI distribution name remains available as a compatibility shim that re-exports the public API from `agora-agents`.
 - **Deprecated aliases** — Use `LiveAvatarAvatar` instead of `HeyGenAvatar`, `is_avatar_token_managed` instead of `is_rtc_avatar`, and `ThinkOn*` / `ThinkResponse` instead of `AgentThinkRequestOn*` / `AgentThinkResponse`.
 
 - **`think()` default** — The server default for `on_listening_action` changed from `inject` to `interrupt` in API v2.7. Pass `on_listening_action="inject"` explicitly to preserve the old behavior.
