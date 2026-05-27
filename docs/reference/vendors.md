@@ -6,11 +6,11 @@ description: Constructor options for all LLM, TTS, STT, MLLM, and Avatar vendor 
 
 # Vendor Reference
 
-All vendor classes are available from `agora_agent.agentkit.vendors`:
+All vendor classes are available from `agora_agent`:
 
 <!-- snippet: fragment -->
 ```python
-from agora_agent.agentkit.vendors import OpenAI, ElevenLabsTTS, DeepgramTTS, DeepgramSTT, OpenAIRealtime, XaiGrok, GenericAvatar
+from agora_agent import OpenAI, ElevenLabsTTS, DeepgramTTS, DeepgramSTT, OpenAIRealtime, XaiGrok, GenericAvatar
 ```
 
 ---
@@ -41,7 +41,7 @@ from agora_agent.agentkit.vendors import OpenAI, ElevenLabsTTS, DeepgramTTS, Dee
 
 <!-- snippet: fragment -->
 ```python
-from agora_agent.agentkit.vendors import OpenAI
+from agora_agent import OpenAI
 
 llm = OpenAI(api_key='your-key', model='gpt-4o-mini', temperature=0.7)
 ```
@@ -69,7 +69,7 @@ llm = OpenAI(api_key='your-key', model='gpt-4o-mini', temperature=0.7)
 
 <!-- snippet: fragment -->
 ```python
-from agora_agent.agentkit.vendors import AzureOpenAI
+from agora_agent import AzureOpenAI
 
 llm = AzureOpenAI(
     api_key='your-azure-key',
@@ -99,7 +99,7 @@ llm = AzureOpenAI(
 
 <!-- snippet: fragment -->
 ```python
-from agora_agent.agentkit.vendors import Anthropic
+from agora_agent import Anthropic
 
 llm = Anthropic(api_key='your-anthropic-key', model='claude-3-5-sonnet-20241022')
 ```
@@ -126,7 +126,7 @@ llm = Anthropic(api_key='your-anthropic-key', model='claude-3-5-sonnet-20241022'
 
 <!-- snippet: fragment -->
 ```python
-from agora_agent.agentkit.vendors import Gemini
+from agora_agent import Gemini
 
 llm = Gemini(api_key='your-google-key', model='gemini-2.0-flash-exp')
 ```
@@ -409,7 +409,7 @@ Fixed sample rate: 24000 Hz.
 
 ### `XaiGrok`
 
-xAI Grok MLLM vendor (`mllm.vendor`: `"xai"`). Matches the [xAI Grok](https://docs.agora.io/en/conversational-ai/models/mllm/xai) product docs and the TypeScript SDK.
+xAI Grok MLLM vendor (`mllm.vendor`: `"xai"`). Matches the [xAI Grok](https://docs.agora.io/en/conversational-ai/models/mllm/xai) product docs.
 
 | Parameter | Type | Required | Default | Description |
 |---|---|---|---|---|

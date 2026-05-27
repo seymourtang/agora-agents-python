@@ -13,8 +13,7 @@ Create `Agora` or `AsyncAgora` with `app_id` and `app_certificate`, then let `Ag
 ## Recommended: app credentials
 
 ```python
-from agora_agent import Agora, Area
-from agora_agent.agentkit import Agent, AgentPresets
+from agora_agent import Agent, Agora, Area, AgentPresets
 
 client = Agora(
     area=Area.US,

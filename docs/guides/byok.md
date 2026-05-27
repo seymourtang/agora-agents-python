@@ -20,9 +20,7 @@ Typical reasons:
 ```python
 import os
 
-from agora_agent import Agora, Area
-from agora_agent.agentkit import Agent
-from agora_agent.agentkit.vendors import DeepgramSTT, ElevenLabsTTS, OpenAI
+from agora_agent import Agent, Agora, Area, DeepgramSTT, ElevenLabsTTS, OpenAI
 
 
 def main() -> None:

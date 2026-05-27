@@ -22,15 +22,13 @@ pip install agora-agents
 poetry add agora-agents
 ```
 
-## Dependencies
+## Imports
 
-The following packages are installed automatically:
+```python
+from agora_agent import Agent, Agora, Area, AgentPresets, DeepgramSTT, OpenAI
+```
 
-| Package | Purpose |
-|---|---|
-| `httpx` (>= 0.21.2) | HTTP client for sync and async requests |
-| `pydantic` (>= 1.9.2) | Data validation for vendor configuration and API types |
-| `typing_extensions` (>= 4.0.0) | Backported type hints for Python 3.8+ |
+The package installs as `agora-agents` and imports as `agora_agent`.
 
 ## Sync vs. Async
 
@@ -47,4 +45,12 @@ from agora_agent import Agora, Area
 from agora_agent import AsyncAgora, AsyncAgentSession, Area
 ```
 
-Both clients share the same constructor parameters and capabilities. See [Authentication](./authentication.md) for setup details.
+## Dependencies
+
+| Package                        | Purpose                                                |
+| ------------------------------ | ------------------------------------------------------ |
+| `httpx` (>= 0.21.2)            | HTTP client for sync and async requests                |
+| `pydantic` (>= 1.9.2)          | Data validation for vendor configuration and API types |
+| `typing_extensions` (>= 4.0.0) | Backported type hints for Python 3.8+                  |
+
+See [Authentication](./authentication.md) for setup details.

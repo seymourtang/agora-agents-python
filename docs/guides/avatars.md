@@ -45,9 +45,7 @@ Warning: LiveAvatar avatar detected but TTS sample_rate is not explicitly set. L
 HeyGen requires a TTS vendor configured at 24000 Hz:
 
 ```python
-from agora_agent import Agora, Area
-from agora_agent.agentkit import Agent
-from agora_agent.agentkit.vendors import OpenAI, ElevenLabsTTS, DeepgramSTT, HeyGenAvatar
+from agora_agent import Agent, Agora, Area, OpenAI, ElevenLabsTTS, DeepgramSTT, HeyGenAvatar
 
 client = Agora(
     area=Area.US,
@@ -84,7 +82,7 @@ session.stop()
 `GenericAvatar` supports custom avatar providers. `agora_appid`, `agora_channel`, and `agora_token` are optional when using `AgentSession.start()`.
 
 ```python
-from agora_agent.agentkit.vendors import GenericAvatar
+from agora_agent import GenericAvatar
 
 agent = agent.with_avatar(GenericAvatar(
     api_key='your-avatar-provider-key',
@@ -99,7 +97,7 @@ agent = agent.with_avatar(GenericAvatar(
 Akool requires a TTS vendor configured at 16000 Hz:
 
 ```python
-from agora_agent.agentkit.vendors import ElevenLabsTTS, AkoolAvatar
+from agora_agent import ElevenLabsTTS, AkoolAvatar
 
 agent = (
     Agent(name='akool-agent', instructions='You are a helpful assistant.')

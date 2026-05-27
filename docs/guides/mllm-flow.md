@@ -20,7 +20,7 @@ MLLM vendors supported by AgentKit:
 Call `agent.with_mllm(vendor)` to enable MLLM mode. The builder sets `mllm.enable = True` automatically. MLLM sessions do not require TTS, STT, or LLM vendors. Avatars are currently supported only with the cascading ASR + LLM + TTS pipeline.
 
 ```python
-from agora_agent.agentkit import Agent
+from agora_agent import Agent
 
 agent = Agent(name='realtime-agent')
 ```
@@ -30,9 +30,7 @@ agent = Agent(name='realtime-agent')
 ### Sync
 
 ```python
-from agora_agent import Agora, Area
-from agora_agent.agentkit import Agent
-from agora_agent.agentkit.vendors import OpenAIRealtime
+from agora_agent import Agent, Agora, Area, OpenAIRealtime
 
 client = Agora(
     area=Area.US,
@@ -58,9 +56,7 @@ session.stop()
 
 ```python
 import asyncio
-from agora_agent import AsyncAgora, Area
-from agora_agent.agentkit import Agent
-from agora_agent.agentkit.vendors import OpenAIRealtime
+from agora_agent import Agent, AsyncAgora, Area, OpenAIRealtime
 
 async def main():
     client = AsyncAgora(
@@ -89,9 +85,7 @@ asyncio.run(main())
 Gemini Live uses a Google AI API key:
 
 ```python
-from agora_agent import Agora, Area
-from agora_agent.agentkit import Agent
-from agora_agent.agentkit.vendors import GeminiLive
+from agora_agent import Agent, Agora, Area, GeminiLive
 
 client = Agora(
     area=Area.AP,
@@ -116,9 +110,7 @@ session.stop()
 ## xAI Grok
 
 ```python
-from agora_agent import Agora, Area
-from agora_agent.agentkit import Agent
-from agora_agent.agentkit.vendors import XaiGrok
+from agora_agent import Agent, Agora, Area, XaiGrok
 
 client = Agora(area=Area.US, app_id='your-app-id', app_certificate='your-app-certificate')
 
@@ -143,7 +135,7 @@ For xAI turn detection, use `mllm.turn_detection` with `agora_vad` or `server_va
 ## OpenAI Realtime with Custom Options
 
 ```python
-from agora_agent.agentkit.vendors import OpenAIRealtime
+from agora_agent import OpenAIRealtime
 
 mllm = OpenAIRealtime(
     api_key='your-openai-key',

@@ -8,11 +8,11 @@ description: Typed vendor classes for LLM, TTS, STT, MLLM, and Avatar providers.
 
 The SDK provides typed vendor classes for every supported provider. Each vendor class validates its configuration with Pydantic and produces the correct API payload automatically.
 
-All vendor classes are available from `agora_agent.agentkit.vendors`:
+All vendor classes are imported from `agora_agent`.
 
 <!-- snippet: executable -->
 ```python
-from agora_agent.agentkit.vendors import OpenAI, ElevenLabsTTS, DeepgramTTS, DeepgramSTT
+from agora_agent import OpenAI, ElevenLabsTTS, DeepgramTTS, DeepgramSTT
 ```
 
 ## LLM Vendors
@@ -28,7 +28,7 @@ Used with `agent.with_llm()` for the cascading flow (ASR → LLM → TTS).
 
 <!-- snippet: executable -->
 ```python
-from agora_agent.agentkit.vendors import OpenAI
+from agora_agent import OpenAI
 
 llm = OpenAI(api_key='your-openai-key', model='gpt-4o-mini')
 ```
@@ -55,7 +55,7 @@ Used with `agent.with_tts()`. Each TTS vendor produces audio at a specific sampl
 
 <!-- snippet: executable -->
 ```python
-from agora_agent.agentkit.vendors import ElevenLabsTTS
+from agora_agent import ElevenLabsTTS
 
 tts = ElevenLabsTTS(
     key='your-elevenlabs-key',
@@ -83,7 +83,7 @@ Used with `agent.with_stt()`.
 
 <!-- snippet: executable -->
 ```python
-from agora_agent.agentkit.vendors import DeepgramSTT
+from agora_agent import DeepgramSTT
 
 stt = DeepgramSTT(api_key='your-deepgram-key', language='en-US', model='nova-2')
 ```
@@ -101,7 +101,7 @@ Used with `agent.with_mllm()` for the [MLLM flow](../guides/mllm-flow.md). These
 
 <!-- snippet: executable -->
 ```python
-from agora_agent.agentkit.vendors import OpenAIRealtime
+from agora_agent import OpenAIRealtime
 
 mllm = OpenAIRealtime(api_key='your-openai-key', model='gpt-4o-realtime-preview')
 ```
@@ -120,7 +120,7 @@ Used with `agent.with_avatar()` in the cascading ASR + LLM + TTS pipeline. Some 
 
 <!-- snippet: executable -->
 ```python
-from agora_agent.agentkit.vendors import HeyGenAvatar
+from agora_agent import HeyGenAvatar
 
 avatar = HeyGenAvatar(api_key='your-heygen-key', quality='medium', agora_uid='2')
 ```

@@ -6,7 +6,7 @@ description: Full API reference for the Python Agent builder class.
 
 # Agent Reference
 
-**Import:** `from agora_agent.agentkit import Agent` or `from agora_agent import Agent`
+**Import:** `from agora_agent import Agent`
 
 ## Constructor
 
@@ -57,7 +57,7 @@ Set the LLM vendor for cascading flow.
 
 <!-- snippet: fragment -->
 ```python
-from agora_agent.agentkit.vendors import OpenAI
+from agora_agent import OpenAI
 agent = Agent().with_llm(OpenAI(api_key='your-key', model='gpt-4o-mini'))
 ```
 
@@ -67,7 +67,7 @@ Set the TTS vendor. Records the vendor's `sample_rate` for avatar validation.
 
 <!-- snippet: fragment -->
 ```python
-from agora_agent.agentkit.vendors import ElevenLabsTTS
+from agora_agent import ElevenLabsTTS
 agent = Agent().with_tts(ElevenLabsTTS(key='your-key', model_id='eleven_flash_v2_5', voice_id='your-voice-id'))
 ```
 
@@ -77,7 +77,7 @@ Set the STT (ASR) vendor.
 
 <!-- snippet: fragment -->
 ```python
-from agora_agent.agentkit.vendors import DeepgramSTT
+from agora_agent import DeepgramSTT
 agent = Agent().with_stt(DeepgramSTT(api_key='your-key', language='en-US'))
 ```
 
@@ -87,7 +87,7 @@ Set the MLLM vendor for multimodal flow. Calling `with_mllm()` automatically set
 
 <!-- snippet: fragment -->
 ```python
-from agora_agent.agentkit.vendors import OpenAIRealtime
+from agora_agent import OpenAIRealtime
 agent = Agent().with_mllm(OpenAIRealtime(api_key='your-key'))
 ```
 
@@ -99,7 +99,7 @@ Raises `ValueError` if the TTS sample rate does not match the avatar's `required
 
 <!-- snippet: fragment -->
 ```python
-from agora_agent.agentkit.vendors import HeyGenAvatar
+from agora_agent import HeyGenAvatar
 agent = agent.with_avatar(HeyGenAvatar(api_key='your-key', quality='medium', agora_uid='2'))
 ```
 
@@ -270,12 +270,3 @@ to_properties(
 Public aliases over Fern-generated types: `LlmConfig`, `SttConfig`, `AsrConfig` (= `SttConfig`), `MllmConfig`, `AvatarConfig`, session/conversation types, and think types (`ThinkOnListeningAction`, etc.).
 
 Think value constants: `ThinkOnListeningActionInject`, `ThinkOnListeningActionInterrupt`, `ThinkOnListeningActionIgnore`, `ThinkOnThinkingActionInterrupt`, `ThinkOnThinkingActionIgnore`, `ThinkOnSpeakingActionInterrupt`, `ThinkOnSpeakingActionIgnore`.
-
-## Cross-SDK discovery map
-
-| Concept | Python | TypeScript | Go |
-|---|---|---|---|
-| STT payload alias (wire: `asr`) | `SttConfig` / `AsrConfig` | `SttConfig` / `AsrConfig` | `AsrConfig` / `SttConfig` |
-| xAI MLLM (primary) | `XaiGrok` | `XaiGrok` | `XaiGrok` / `NewXaiGrok` |
-| Avatar token helper | `is_avatar_token_managed` | `isAvatarTokenManaged` | `IsAvatarTokenManaged` |
-| Think inject constant | `ThinkOnListeningActionInject` | `ThinkOnListeningActionInject` | `ThinkOnListeningActionInject` |

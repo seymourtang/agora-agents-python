@@ -6,9 +6,9 @@ description: How the Python SDK layers are structured and when to use each.
 
 # Architecture
 
-## Two-Layer Design
+## Three-Layer Design
 
-The Python SDK has two layers:
+The Python SDK has three layers:
 
 ```
 +--------------------------------------------------+
@@ -83,23 +83,20 @@ await session.stop()
 
 The `Agent` builder class is the same for both — it does not make HTTP calls, so it has no async variant.
 
-## Import Paths
+## Import paths
 
-<!-- snippet: executable -->
 ```python
-# Top-level client and types
-from agora_agent import Agora, AsyncAgora, Area, Pool
-
-# Agentkit layer
-from agora_agent.agentkit import Agent, AgentSession
-from agora_agent.agentkit.agent_session import AsyncAgentSession
-
-# Vendor classes
-from agora_agent.agentkit.vendors import OpenAI, ElevenLabsTTS, DeepgramSTT
-
-# Token helpers
-from agora_agent.agentkit.token import generate_rtc_token
-
-# Also available from top-level
-from agora_agent import Agent, AgentSession, AsyncAgentSession, generate_rtc_token
+from agora_agent import (
+    Agent,
+    AgentSession,
+    AsyncAgentSession,
+    Agora,
+    AsyncAgora,
+    Area,
+    Pool,
+    OpenAI,
+    ElevenLabsTTS,
+    DeepgramSTT,
+    generate_rtc_token,
+)
 ```

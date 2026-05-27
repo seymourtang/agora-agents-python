@@ -35,9 +35,7 @@ Use `Agent.create_session()` to create a session:
 
 <!-- snippet: executable -->
 ```python
-from agora_agent import Agora, Area
-from agora_agent.agentkit import Agent
-from agora_agent.agentkit.vendors import OpenAI, ElevenLabsTTS, DeepgramSTT
+from agora_agent import Agent, Agora, Area, OpenAI, ElevenLabsTTS, DeepgramSTT
 
 client = Agora(area=Area.US, app_id='your-app-id', app_certificate='your-app-certificate')
 

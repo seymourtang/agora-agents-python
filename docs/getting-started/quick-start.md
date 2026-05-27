@@ -16,8 +16,7 @@ This guide uses the recommended onboarding path:
 ## Sync example
 
 ```python
-from agora_agent import Agora, Area
-from agora_agent.agentkit import Agent, AgentPresets
+from agora_agent import Agent, Agora, Area, AgentPresets
 
 
 def main() -> None:
