@@ -41,7 +41,7 @@ pip install agora-agents
 
 ## Quick Start
 
-The recommended onboarding path is a server-side builder flow: define the agent once, configure preset-backed providers in the builder, and let AgentKit infer the reseller `preset` values when the session starts.
+The recommended onboarding path is a server-side builder flow: define the agent once, configure vendors on the builder, and let AgentKit infer Agora-managed configuration when credentials are omitted.
 
 ```python
 import os

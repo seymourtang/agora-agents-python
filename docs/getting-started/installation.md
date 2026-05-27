@@ -25,7 +25,7 @@ poetry add agora-agents
 ## Imports
 
 ```python
-from agora_agent import Agent, Agora, Area, AgentPresets, DeepgramSTT, OpenAI
+from agora_agent import Agent, Agora, Area, DeepgramSTT, OpenAI
 ```
 
 The package installs as `agora-agents` and imports as `agora_agent`.

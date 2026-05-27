@@ -22,7 +22,7 @@ The Python SDK has three layers:
 +--------------------------------------------------+
 ```
 
-### Agentkit Layer (`agora_agent.agentkit`)
+### AgentKit Layer (`agora_agent.agentkit`)
 
 This is the primary developer-facing API. It provides:
 

@@ -21,7 +21,7 @@ The Agora Conversational AI Python SDK lets you build voice-powered AI agents on
 
 ## Choose a starting point
 
-- Use [Quick Start](./getting-started/quick-start.md) if you want the recommended preset-based path with no vendor keys.
+- Use [Quick Start](./getting-started/quick-start.md) if you want the recommended builder-based path with app credentials.
 - Use [MLLM Flow](./guides/mllm-flow.md) if you want realtime end-to-end audio with OpenAI Realtime, Gemini Live, Vertex AI, or xAI Grok.
 - Use [Cascading Flow](./guides/cascading-flow.md) if you want separate ASR, LLM, and TTS vendors.
 
@@ -29,7 +29,7 @@ The Agora Conversational AI Python SDK lets you build voice-powered AI agents on
 
 | Layer | What it does | When to use |
 |---|---|---|
-| **Agentkit** (`Agent`, `AgentSession`, vendors, presets) | High-level builder pattern, lifecycle, typed vendors | Most use cases |
+| **AgentKit** (`Agent`, `AgentSession`, vendor classes) | High-level builder pattern, lifecycle, typed vendors | Most use cases |
 | **Fern-generated core** (`client.agents`, `client.telephony`) | Direct REST client mapping every API endpoint | Advanced use cases |
 
 ## Documentation
@@ -37,8 +37,9 @@ The Agora Conversational AI Python SDK lets you build voice-powered AI agents on
 | Section | What you will learn |
 |---|---|
 | [Installation](./getting-started/installation.md) | Install the SDK and prerequisites |
-| [Authentication](./getting-started/authentication.md) | Token auth for REST and RTC joins |
-| [Quick Start](./getting-started/quick-start.md) | Recommended preset-based onboarding flow |
+| [Authentication](./getting-started/authentication.md) | App credentials and other auth modes |
+| [Quick Start](./getting-started/quick-start.md) | Recommended builder-based onboarding flow |
+| [Agent Builder Features](./guides/agent-builder-features.md) | Turn detection, SAL, filler words, and advanced agent options |
 | [BYOK](./guides/byok.md) | Bring your own vendor credentials and config |
 | [Architecture](./concepts/architecture.md) | Understand the SDK layers and client types |
 | [Agent](./concepts/agent.md) | Configure agents with the fluent builder |
