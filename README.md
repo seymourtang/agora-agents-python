@@ -17,7 +17,6 @@ and multimodal flows (MLLM) for real-time audio processing.
 - [MLLM (Realtime / Multimodal)](#mllm-realtime--multimodal)
 - [Documentation](#documentation)
 - [Reference](#reference)
-- [Package Rename Compatibility](#package-rename-compatibility)
 - [Usage](#usage)
 - [Async Client](#async-client)
 - [Exception Handling](#exception-handling)
@@ -184,6 +183,8 @@ agent = Agent(
 )
 ```
 
+Migrating from `agora-agent-server-sdk` on PyPI? Use `pip install agora-agents`; imports stay `agora_agent` — see [changelog migration notes](./changelog.md#migration-notes) or [installation guide](./docs/getting-started/installation.md#migrating-from-a-previous-package-name).
+
 ## BYOK
 
 If you want to bring your own vendor credentials instead of using Agora-managed presets, use the BYOK guide:
@@ -215,10 +216,6 @@ API reference documentation is available [here](https://docs.agora.io/en/convers
 ## Reference
 
 A full reference for this library is available [here](https://github.com/AgoraIO-Conversational-AI/agent-server-sdk-python/blob/HEAD/./reference.md).
-
-## Package Rename Compatibility
-
-The published package name is now `agora-agents`. The import path is still `agora_agent`. The legacy PyPI name `agora-agent-server-sdk` remains available as a compatibility package in [compat/agora-agent-server-sdk](./compat/agora-agent-server-sdk).
 
 ## MLLM Flow (Multimodal)
 

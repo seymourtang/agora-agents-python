@@ -14,3 +14,5 @@ This compatibility package re-exports the public API from `agora-agents` to supp
 from agora_agent import Agora, Area
 from agora_agent_server_sdk_compat import Agora, Area
 ```
+
+Maintainers: dual-publish steps live in the repository release workflow, not in the root README.

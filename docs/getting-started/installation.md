@@ -53,4 +53,15 @@ from agora_agent import AsyncAgora, AsyncAgentSession, Area
 | `pydantic` (>= 1.9.2)          | Data validation for vendor configuration and API types |
 | `typing_extensions` (>= 4.0.0) | Backported type hints for Python 3.8+                  |
 
-See [Authentication](./authentication.md) for setup details.
+## Next steps
+
+- [Authentication](./authentication.md) — configure your credentials
+- [Quick Start](./quick-start.md) — build your first conversational agent
+
+## Migrating from a previous package name
+
+The PyPI distribution was renamed from `agora-agent-server-sdk` to `agora-agents` in v2.0.0. Install `agora-agents`; the import path remains `agora_agent`.
+
+The legacy PyPI name remains available as a compatibility shim that re-exports `agora-agents`. See [compat/agora-agent-server-sdk](../../compat/agora-agent-server-sdk/README.md).
+
+For release and version details, see [changelog — Migration notes](../../changelog.md#migration-notes).
