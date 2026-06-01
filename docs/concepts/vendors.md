@@ -74,13 +74,15 @@ tts = ElevenLabsTTS(
 
 Used with `agent.with_stt()`.
 
+Use `agent.with_interaction_language()` for Agora `asr.language`; it defaults to `en-US`. STT vendor `language` options are serialized under `asr.params` using each provider's own format.
+
 | Class | Provider | Required Parameters |
 |---|---|---|
 | `SpeechmaticsSTT` | Speechmatics | `api_key`, `language` |
 | `DeepgramSTT` | Deepgram | — (all optional) |
 | `MicrosoftSTT` | Microsoft Azure | `key`, `region` |
 | `OpenAISTT` | OpenAI | `api_key` |
-| `GoogleSTT` | Google Cloud | `api_key` |
+| `GoogleSTT` | Google Cloud | `project_id`, `location`, `adc_credentials_string` |
 | `AmazonSTT` | Amazon Transcribe | `access_key`, `secret_key`, `region` |
 | `AssemblyAISTT` | AssemblyAI | `api_key` |
 | `AresSTT` | Ares | — (all optional) |

@@ -287,12 +287,16 @@ Fixed sample rate: 24000 Hz.
 
 ## STT Vendors
 
+Use `agent.with_interaction_language()` for Agora `asr.language`; it defaults to `en-US`. Provider-specific language values remain under `asr.params` and may use a different format.
+
 ### `SpeechmaticsSTT`
 
 | Parameter | Type | Required | Default | Description |
 |---|---|---|---|---|
 | `api_key` | `str` | Yes | — | Speechmatics API key |
 | `language` | `str` | Yes | — | Language code (e.g., `en`) |
+| `interaction_language` | `str` | No | `None` | Agora `asr.language` override |
+| `uri` | `str` | No | `None` | Speechmatics streaming WebSocket URL |
 | `additional_params` | `Dict[str, Any]` | No | `None` | Additional parameters |
 
 ### `DeepgramSTT`
@@ -302,6 +306,7 @@ Fixed sample rate: 24000 Hz.
 | `api_key` | `str` | No | `None` | Deepgram API key |
 | `model` | `str` | No | `None` | Model (e.g., `nova-2`) |
 | `language` | `str` | No | `None` | Language code (e.g., `en-US`) |
+| `interaction_language` | `str` | No | `None` | Agora `asr.language` override |
 | `smart_format` | `bool` | No | `None` | Enable smart formatting |
 | `punctuation` | `bool` | No | `None` | Enable punctuation |
 | `additional_params` | `Dict[str, Any]` | No | `None` | Additional parameters |
@@ -313,6 +318,7 @@ Fixed sample rate: 24000 Hz.
 | `key` | `str` | Yes | — | Azure subscription key |
 | `region` | `str` | Yes | — | Azure region (e.g., `eastus`) |
 | `language` | `str` | No | `None` | Language code (e.g., `en-US`) |
+| `interaction_language` | `str` | No | `None` | Agora `asr.language` override |
 | `additional_params` | `Dict[str, Any]` | No | `None` | Additional parameters |
 
 ### `OpenAISTT`
@@ -322,14 +328,21 @@ Fixed sample rate: 24000 Hz.
 | `api_key` | `str` | Yes | — | OpenAI API key |
 | `model` | `str` | No | `None` | Model (default: `whisper-1`) |
 | `language` | `str` | No | `None` | Language code |
+| `prompt` | `str` | No | `None` | Prompt for OpenAI transcription |
+| `input_audio_transcription` | `Dict[str, Any]` | No | `None` | OpenAI transcription settings |
+| `interaction_language` | `str` | No | `None` | Agora `asr.language` override |
 | `additional_params` | `Dict[str, Any]` | No | `None` | Additional parameters |
 
 ### `GoogleSTT`
 
 | Parameter | Type | Required | Default | Description |
 |---|---|---|---|---|
-| `api_key` | `str` | Yes | — | Google Cloud API key |
+| `project_id` | `str` | Yes | — | Google Cloud project ID |
+| `location` | `str` | Yes | — | Google Cloud region |
+| `adc_credentials_string` | `str` | Yes | — | Google service account credentials JSON string |
 | `language` | `str` | No | `None` | Language code (e.g., `en-US`) |
+| `interaction_language` | `str` | No | `None` | Agora `asr.language` override |
+| `model` | `str` | No | `None` | Recognition model |
 | `additional_params` | `Dict[str, Any]` | No | `None` | Additional parameters |
 
 ### `AmazonSTT`
@@ -339,7 +352,8 @@ Fixed sample rate: 24000 Hz.
 | `access_key` | `str` | Yes | — | AWS Access Key ID |
 | `secret_key` | `str` | Yes | — | AWS Secret Access Key |
 | `region` | `str` | Yes | — | AWS region (e.g., `us-east-1`) |
-| `language` | `str` | No | `None` | Language code |
+| `language` | `str` | No | `None` | Amazon `language_code` |
+| `interaction_language` | `str` | No | `None` | Agora `asr.language` override |
 | `additional_params` | `Dict[str, Any]` | No | `None` | Additional parameters |
 
 ### `AssemblyAISTT`
@@ -348,6 +362,8 @@ Fixed sample rate: 24000 Hz.
 |---|---|---|---|---|
 | `api_key` | `str` | Yes | — | AssemblyAI API key |
 | `language` | `str` | No | `None` | Language code |
+| `interaction_language` | `str` | No | `None` | Agora `asr.language` override |
+| `uri` | `str` | No | `None` | AssemblyAI streaming WebSocket URL |
 | `additional_params` | `Dict[str, Any]` | No | `None` | Additional parameters |
 
 ### `AresSTT`
