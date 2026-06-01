@@ -18,8 +18,8 @@ For string values with a finite set of options (e.g. `data_channel`, `sal_mode`,
 | `advanced_features` | `with_advanced_features(features)` | Enable MLLM, RTM, SAL, tools |
 | `tools` | `with_tools(enabled=True)` | Enable MCP tool invocation |
 | `parameters` | `with_parameters(params)` | Silence config, farewell config, data channel |
-| `failure_message` | `with_failure_message(msg)` | Message spoken when LLM fails |
-| `max_history` | `with_max_history(n)` | Max conversation turns in LLM context |
+| `failure_message` | LLM/MLLM vendor option | Message spoken when LLM fails |
+| `max_history` | LLM vendor option | Max conversation turns in LLM context |
 | `geofence` | `with_geofence(config)` | Restrict backend server regions |
 | `labels` | `with_labels(labels)` | Custom key-value labels (returned in callbacks) |
 | `rtc` | `with_rtc(config)` | RTC media encryption |
@@ -45,14 +45,17 @@ from agora_agent import (
 agent = (
     Agent(
         name='sal-assistant',
-        instructions='You are a helpful assistant.',
         advanced_features=AdvancedFeatures(enable_sal=True),
     )
     .with_sal(SalConfig(
         sal_mode=SalModeValues.LOCKING,
         sample_urls={'primary-speaker': 'https://example.com/voiceprint.pcm'},
     ))
-    .with_llm(OpenAI(api_key='your-key', model='gpt-4o-mini'))
+    .with_llm(OpenAI(
+        api_key='your-key',
+        model='gpt-4o-mini',
+        system_messages=[{'role': 'system', 'content': 'You are a helpful assistant.'}],
+    ))
     .with_tts(ElevenLabsTTS(key='your-key', model_id='eleven_flash_v2_5', voice_id='your-voice-id', sample_rate=24000))
     .with_stt(DeepgramSTT(api_key='your-key', model='nova-2', language='en-US'))
 )
@@ -115,22 +118,13 @@ agent = (
 
 ```python
 agent = (
-    Agent(
-        name='assistant',
-        failure_message='Sorry, I encountered an error. Please try again.',
-        max_history=20,
-    )
-    .with_llm(OpenAI(api_key='...', model='gpt-4o-mini'))
-    .with_tts(ElevenLabsTTS(key='...', model_id='...', voice_id='...', sample_rate=24000))
-    .with_stt(DeepgramSTT(api_key='...', model='nova-2'))
-)
-
-# Or via builder methods
-agent = (
     Agent()
-    .with_failure_message('Something went wrong.')
-    .with_max_history(15)
-    .with_llm(OpenAI(api_key='...', model='gpt-4o-mini'))
+    .with_llm(OpenAI(
+        api_key='...',
+        model='gpt-4o-mini',
+        failure_message='Something went wrong.',
+        max_history=15,
+    ))
     .with_tts(ElevenLabsTTS(key='...', model_id='...', voice_id='...', sample_rate=24000))
     .with_stt(DeepgramSTT(api_key='...', model='nova-2'))
 )
@@ -245,13 +239,12 @@ Read back configuration via properties:
 from agora_agent import Agent, GeofenceConfig, GeofenceArea
 
 agent = (
-    Agent(max_history=20)
+    Agent()
     .with_geofence(GeofenceConfig(area=GeofenceArea.EUROPE))
     .with_labels({'env': 'staging'})
 )
 
 agent.name           # str | None
-agent.max_history    # 20
 agent.geofence       # GeofenceConfig(area='EUROPE')
 agent.labels         # {'env': 'staging'}
 agent.sal            # SalConfig | None
@@ -293,14 +286,15 @@ client = Agora(
 )
 
 agent = (
-    Agent(
-        name='full-featured-assistant',
-        instructions='You are a helpful voice assistant.',
-        greeting='Hello! How can I help?',
+    Agent(name='full-featured-assistant')
+    .with_llm(OpenAI(
+        api_key='your-key',
+        model='gpt-4o-mini',
+        system_messages=[{'role': 'system', 'content': 'You are a helpful voice assistant.'}],
+        greeting_message='Hello! How can I help?',
         failure_message='Sorry, I had trouble processing that.',
         max_history=20,
-    )
-    .with_llm(OpenAI(api_key='your-key', model='gpt-4o-mini'))
+    ))
     .with_tts(ElevenLabsTTS(key='your-key', model_id='eleven_flash_v2_5', voice_id='your-voice-id', sample_rate=24000))
     .with_stt(DeepgramSTT(api_key='your-key', model='nova-2', language='en-US'))
     .with_advanced_features(AdvancedFeatures(enable_rtm=True))

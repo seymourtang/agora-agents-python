@@ -33,19 +33,21 @@ Agent(
 | Parameter | Type | Default | Description |
 |---|---|---|---|
 | `name` | `Optional[str]` | `None` | Agent name, used as default session name |
-| `instructions` | `Optional[str]` | `None` | System prompt for the LLM |
+| `instructions` | `Optional[str]` | `None` | Deprecated. Use LLM vendor `system_messages` instead. |
 | `turn_detection` | `Optional[TurnDetectionConfig]` | `None` | Turn detection configuration |
 | `interruption` | `Optional[InterruptionConfig]` | `None` | Unified interruption control configuration |
 | `sal` | `Optional[SalConfig]` | `None` | Speech Activity Level configuration |
 | `advanced_features` | `Optional[Dict[str, Any]]` | `None` | Advanced features dict (e.g., `{'enable_rtm': True}`) |
 | `parameters` | `Optional[SessionParams]` | `None` | Additional session parameters |
-| `greeting` | `Optional[str]` | `None` | Auto-spoken greeting when agent joins |
-| `failure_message` | `Optional[str]` | `None` | Spoken on error |
-| `max_history` | `Optional[int]` | `None` | Max conversation history length |
+| `greeting` | `Optional[str]` | `None` | Deprecated. Use LLM/MLLM vendor `greeting_message` instead. |
+| `failure_message` | `Optional[str]` | `None` | Deprecated. Use LLM/MLLM vendor `failure_message` instead. |
+| `max_history` | `Optional[int]` | `None` | Deprecated. Use LLM vendor `max_history` instead. |
 | `geofence` | `Optional[GeofenceConfig]` | `None` | Regional access restriction |
 | `labels` | `Optional[Dict[str, str]]` | `None` | Custom key-value labels (returned in callbacks) |
 | `rtc` | `Optional[RtcConfig]` | `None` | RTC media encryption |
 | `filler_words` | `Optional[FillerWordsConfig]` | `None` | Filler words while waiting for LLM |
+
+The Agent-level `instructions`, `greeting`, `failure_message`, `max_history`, and `greeting_configs` fields are compatibility shims. New code should configure those values on the LLM or MLLM vendor because that matches the core request schema.
 
 ## Builder Methods
 
@@ -131,11 +133,11 @@ Configure unified interruption behavior using the top-level `interruption` objec
 
 ### `with_instructions(instructions: str) -> Agent`
 
-Override the system prompt.
+Deprecated. Configure `system_messages` on the LLM vendor instead.
 
 ### `with_greeting(greeting: str) -> Agent`
 
-Override the greeting message.
+Deprecated. Configure `greeting_message` on the LLM or MLLM vendor instead.
 
 ### `with_name(name: str) -> Agent`
 
@@ -165,11 +167,11 @@ Set `parameters.audio_scenario` without replacing existing session parameters.
 
 ### `with_failure_message(message: str) -> Agent`
 
-Set the message spoken via TTS when the LLM call fails.
+Deprecated. Configure `failure_message` on the LLM or MLLM vendor instead.
 
 ### `with_max_history(max_history: int) -> Agent`
 
-Set the maximum conversation history length for the standard ASR + LLM + TTS pipeline. The v2.7 MLLM core type does not expose `max_history`.
+Deprecated. Configure `max_history` on the LLM vendor instead.
 
 ### `with_geofence(geofence: GeofenceConfig) -> Agent`
 
@@ -246,10 +248,10 @@ to_properties(
 | Property | Type | Description |
 |---|---|---|
 | `name` | `Optional[str]` | Agent name |
-| `instructions` | `Optional[str]` | System prompt |
-| `greeting` | `Optional[str]` | Greeting message |
-| `failure_message` | `Optional[str]` | Message spoken when LLM fails |
-| `max_history` | `Optional[int]` | Max conversation history length |
+| `instructions` | `Optional[str]` | Deprecated Agent-level system prompt |
+| `greeting` | `Optional[str]` | Deprecated Agent-level greeting message |
+| `failure_message` | `Optional[str]` | Deprecated Agent-level failure message |
+| `max_history` | `Optional[int]` | Deprecated Agent-level max history |
 | `llm` | `Optional[Dict[str, Any]]` | LLM config dict (from `to_config()`) |
 | `tts` | `Optional[Dict[str, Any]]` | TTS config dict |
 | `stt` | `Optional[Dict[str, Any]]` | STT config dict |

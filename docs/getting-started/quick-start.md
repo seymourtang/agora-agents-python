@@ -27,14 +27,14 @@ def main() -> None:
     )
 
     agent = (
-        Agent(
-            name="support-assistant",
-            instructions="You are a concise support voice assistant.",
-            greeting="Hello! How can I help you today?",
-            max_history=10,
-        )
+        Agent(name="support-assistant")
         .with_stt(DeepgramSTT(model="nova-3", language="en"))
-        .with_llm(OpenAI(model="gpt-4o-mini"))
+        .with_llm(OpenAI(
+            model="gpt-4o-mini",
+            system_messages=[{"role": "system", "content": "You are a concise support voice assistant."}],
+            greeting_message="Hello! How can I help you today?",
+            max_history=10,
+        ))
         .with_tts(MiniMaxTTS(model="speech_2_6_turbo", voice_id="English_captivating_female1"))
     )
 

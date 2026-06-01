@@ -26,8 +26,12 @@ client = Agora(
 )
 
 agent = (
-    Agent(name='assistant', instructions='You are a friendly customer support agent.')
-    .with_llm(OpenAI(api_key='your-openai-key', model='gpt-4o-mini'))
+    Agent(name='assistant')
+    .with_llm(OpenAI(
+        api_key='your-openai-key',
+        model='gpt-4o-mini',
+        system_messages=[{'role': 'system', 'content': 'You are a friendly customer support agent.'}],
+    ))
     .with_tts(ElevenLabsTTS(key='your-elevenlabs-key', model_id='eleven_flash_v2_5', voice_id='your-voice-id', sample_rate=24000))
     .with_stt(DeepgramSTT(api_key='your-deepgram-key', language='en-US', model='nova-2'))
 )
@@ -53,8 +57,12 @@ async def main():
         )
 
     agent = (
-        Agent(name='assistant', instructions='You are a friendly customer support agent.')
-        .with_llm(OpenAI(api_key='your-openai-key', model='gpt-4o-mini'))
+        Agent(name='assistant')
+        .with_llm(OpenAI(
+            api_key='your-openai-key',
+            model='gpt-4o-mini',
+            system_messages=[{'role': 'system', 'content': 'You are a friendly customer support agent.'}],
+        ))
         .with_tts(ElevenLabsTTS(key='your-elevenlabs-key', model_id='eleven_flash_v2_5', voice_id='your-voice-id', sample_rate=24000))
         .with_stt(DeepgramSTT(api_key='your-deepgram-key', language='en-US', model='nova-2'))
     )
@@ -82,11 +90,12 @@ client = Agora(
 )
 
 agent = (
-    Agent(name='azure-agent', instructions='You are a helpful assistant for enterprise customers.')
+    Agent(name='azure-agent')
     .with_llm(AzureOpenAI(
         api_key='your-azure-key',
         endpoint='https://your-resource.openai.azure.com',
         deployment_name='gpt-4o-mini',
+        system_messages=[{'role': 'system', 'content': 'You are a helpful assistant for enterprise customers.'}],
     ))
     .with_tts(MicrosoftTTS(
         key='your-azure-speech-key',
@@ -125,14 +134,15 @@ llm = OpenAI(
 
 ## Adding a Greeting
 
-The `greeting` parameter on `Agent` makes the agent speak automatically when the session starts:
+Configure greetings on the LLM vendor so message ownership stays with the LLM configuration:
 
 ```python
-agent = Agent(
-    name='greeter',
-    instructions='You are a helpful assistant.',
-    greeting='Hi there! What can I do for you?',
-)
+agent = Agent(name='greeter').with_llm(OpenAI(
+    api_key='your-openai-key',
+    model='gpt-4o-mini',
+    system_messages=[{'role': 'system', 'content': 'You are a helpful assistant.'}],
+    greeting_message='Hi there! What can I do for you?',
+))
 ```
 
 ## Next Steps

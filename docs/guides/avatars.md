@@ -54,8 +54,12 @@ client = Agora(
 )
 
 agent = (
-    Agent(name='avatar-agent', instructions='You are a helpful assistant with a visual avatar.')
-    .with_llm(OpenAI(api_key='your-openai-key', model='gpt-4o-mini'))
+    Agent(name='avatar-agent')
+    .with_llm(OpenAI(
+        api_key='your-openai-key',
+        model='gpt-4o-mini',
+        system_messages=[{'role': 'system', 'content': 'You are a helpful assistant with a visual avatar.'}],
+    ))
     .with_tts(ElevenLabsTTS(
         key='your-elevenlabs-key',
         model_id='eleven_flash_v2_5',
@@ -100,8 +104,12 @@ Akool requires a TTS vendor configured at 16000 Hz:
 from agora_agent import ElevenLabsTTS, AkoolAvatar
 
 agent = (
-    Agent(name='akool-agent', instructions='You are a helpful assistant.')
-    .with_llm(OpenAI(api_key='your-openai-key', model='gpt-4o-mini'))
+    Agent(name='akool-agent')
+    .with_llm(OpenAI(
+        api_key='your-openai-key',
+        model='gpt-4o-mini',
+        system_messages=[{'role': 'system', 'content': 'You are a helpful assistant.'}],
+    ))
     .with_tts(ElevenLabsTTS(
         key='your-elevenlabs-key',
         model_id='eleven_flash_v2_5',
@@ -124,8 +132,12 @@ This example shows what happens when the TTS sample rate does not match the avat
 ```python
 # This raises ValueError at build time
 agent = (
-    Agent(name='broken-agent', instructions='You are a helpful assistant.')
-    .with_llm(OpenAI(api_key='your-openai-key', model='gpt-4o-mini'))
+    Agent(name='broken-agent')
+    .with_llm(OpenAI(
+        api_key='your-openai-key',
+        model='gpt-4o-mini',
+        system_messages=[{'role': 'system', 'content': 'You are a helpful assistant.'}],
+    ))
     .with_tts(ElevenLabsTTS(
         key='your-elevenlabs-key',
         model_id='eleven_flash_v2_5',
@@ -152,7 +164,7 @@ The `with_avatar()` call validates against the currently configured TTS. Always 
 ```python
 # Correct order: TTS first, then avatar
 agent = (
-    Agent(name='my-agent', instructions='You are helpful.')
+    Agent(name='my-agent')
     .with_tts(ElevenLabsTTS(key='your-elevenlabs-key', model_id='eleven_flash_v2_5', voice_id='your-voice-id', sample_rate=24000))
     .with_avatar(HeyGenAvatar(api_key='your-heygen-key', quality='medium', agora_uid='2'))
 )

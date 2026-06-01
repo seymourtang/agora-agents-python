@@ -58,10 +58,6 @@ def start_conversation() -> str:
 
     agent = Agent(
         name=f"conversation-{int(time.time())}",
-        instructions=AGENT_PROMPT,
-        greeting=GREETING,
-        failure_message="Please wait a moment.",
-        max_history=50,
         turn_detection={
             "config": {
                 "speech_threshold": 0.5,
@@ -96,9 +92,10 @@ def start_conversation() -> str:
     ).with_llm(
         OpenAI(
             model="gpt-4o-mini",
+            system_messages=[{"role": "system", "content": AGENT_PROMPT}],
             greeting_message=GREETING,
             failure_message="Please wait a moment.",
-            max_history=15,
+            max_history=50,
             params={
                 "max_tokens": 1024,
                 "temperature": 0.7,
@@ -134,10 +131,7 @@ def start_conversation() -> str:
 Use the same `Agent` builder shape, but provide credentials explicitly when you want vendor-managed billing and routing instead of Agora-managed models.
 
 ```python
-agent = Agent(
-    instructions=AGENT_PROMPT,
-    greeting=GREETING,
-).with_stt(
+agent = Agent().with_stt(
     DeepgramSTT(
         api_key=os.environ["DEEPGRAM_API_KEY"],
         model="nova-3",
@@ -147,6 +141,8 @@ agent = Agent(
     OpenAI(
         api_key=os.environ["OPENAI_API_KEY"],
         model="gpt-4o-mini",
+        system_messages=[{"role": "system", "content": AGENT_PROMPT}],
+        greeting_message=GREETING,
         max_tokens=1024,
         temperature=0.7,
         top_p=0.95,
