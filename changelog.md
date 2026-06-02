@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [v2.1.0] — 2026-06-02
+
+### Added
+
+- **Turn detection language** — AgentKit now manages Agora interaction language through `turn_detection.language`, validates it against the supported BCP-47 language list, and sends the default `en-US` when no language is provided.
+- **Provider parameter parity** — ASR, LLM, MLLM, TTS, and avatar wrappers expose typed provider parameters plus passthrough fields where the generated core supports additional properties.
+
+### Changed
+
+- **Generated core refresh** — Regenerated core types from the v2.1 API schema.
+- **Deepgram TTS passthrough** — `DeepgramTTS` now uses `additional_params` for passthrough fields and flattens them into `tts.params`; the removed nested `params.params` shape is no longer documented or emitted.
+- **OpenAI TTS** — Docs and tests now reflect the generated core shape, including `instructions` and `speed` under `tts.params`.
+- **TTS provider docs** — Updated TTS provider reference tables to match implemented wrapper fields and generated core params.
+
+### Fixed
+
+- **Managed-provider validation** — AgentKit validation now distinguishes preset-backed providers from BYOK providers so required provider fields are only required when credentials are caller-supplied.
+- **Language placement** — Provider-specific STT language values remain under `asr.params`, while Agora interaction language is emitted separately as `turn_detection.language`.
+
 ## [v2.0.0] — 2026-05-21
 
 ### Added
@@ -52,7 +71,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Added
 
-- **`DeepgramTTS`** — New TTS vendor wrapper for Deepgram (Beta). Accepts `api_key`, `model`, `base_url`, `sample_rate`, `params`, and `skip_patterns`.
+- **`DeepgramTTS`** — New TTS vendor wrapper for Deepgram (Beta). Accepts `api_key`, `model`, `base_url`, `sample_rate`, `additional_params`, and `skip_patterns`.
 - **`Agent.with_tools(enabled=True)`** — Dedicated builder method to enable MCP tool invocation (`advanced_features.enable_tools`). Replaces the raw `with_advanced_features(AdvancedFeatures(enable_tools=True))` call.
 - **LLM vendors: `headers` field** — All four LLM vendors (`OpenAI`, `AzureOpenAI`, `Anthropic`, `Gemini`) now accept an optional `headers: Dict[str, str]` parameter. Use this to pass custom HTTP headers to the LLM provider (e.g., tenant identifiers, routing headers).
 - **`AgentSession.think()` / `AsyncAgentSession.think()`** — Send a custom instruction to a running agent through the `agent_management` API.
@@ -107,7 +126,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Added
 
-- **`OpenAITTS`** — New optional parameters: `response_format` (str, e.g. `"pcm"`) and `speed` (float).
+- **`OpenAITTS`** — New optional parameters: `instructions` (str) and `speed` (float).
 - **`CartesiaTTS`** — `voice_id` user-facing field is preserved; voice is serialized to the required nested object format automatically.
 - **`RimeTTS`** — New optional parameters: `lang` (str), `sampling_rate` (int, serialized as `samplingRate`), `speed_alpha` (float, serialized as `speedAlpha`).
 - **`OpenAIRealtime`** — New optional parameter: `failure_message` (str).

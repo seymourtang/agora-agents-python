@@ -8,14 +8,8 @@ if typing.TYPE_CHECKING:
     from .agent_session import AgentSession, AsyncAgentSession
 
 from ..agents.types.start_agents_request_properties import StartAgentsRequestProperties
-from ..agents.types.start_agents_request_properties_asr import StartAgentsRequestPropertiesAsr
-from ..agents.types.start_agents_request_properties_asr_vendor import StartAgentsRequestPropertiesAsrVendor
 from ..agents.types.start_agents_request_properties_avatar import StartAgentsRequestPropertiesAvatar
 from ..agents.types.start_agents_request_properties_avatar_vendor import StartAgentsRequestPropertiesAvatarVendor
-from ..agents.types.start_agents_request_properties_llm import StartAgentsRequestPropertiesLlm
-from ..agents.types.start_agents_request_properties_llm_style import StartAgentsRequestPropertiesLlmStyle
-from ..agents.types.start_agents_request_properties_mllm import StartAgentsRequestPropertiesMllm
-from ..agents.types.start_agents_request_properties_mllm_vendor import StartAgentsRequestPropertiesMllmVendor
 from ..agents.types.update_agents_request_properties import UpdateAgentsRequestProperties
 from ..agents.types.get_agents_response import GetAgentsResponse
 from ..agents.types.list_agents_response import ListAgentsResponse
@@ -52,11 +46,6 @@ from ..agents.types.start_agents_request_properties_parameters_data_channel impo
 from ..agents.types.start_agents_request_properties_parameters_audio_scenario import StartAgentsRequestPropertiesParametersAudioScenario
 from ..agents.types.start_agents_request_properties_interruption import StartAgentsRequestPropertiesInterruption
 from ..agents.types.start_agents_request_properties_interruption_mode import StartAgentsRequestPropertiesInterruptionMode
-from ..agents.types.start_agents_request_properties_mllm_turn_detection import StartAgentsRequestPropertiesMllmTurnDetection
-from ..agents.types.start_agents_request_properties_mllm_turn_detection_mode import StartAgentsRequestPropertiesMllmTurnDetectionMode
-from ..agents.types.start_agents_request_properties_llm_greeting_configs import StartAgentsRequestPropertiesLlmGreetingConfigs
-from ..agents.types.start_agents_request_properties_llm_greeting_configs_mode import StartAgentsRequestPropertiesLlmGreetingConfigsMode
-from ..agents.types.start_agents_request_properties_llm_mcp_servers_item import StartAgentsRequestPropertiesLlmMcpServersItem
 from ..agents.types.start_agents_request_properties_geofence import StartAgentsRequestPropertiesGeofence
 from ..agents.types.start_agents_request_properties_rtc import StartAgentsRequestPropertiesRtc
 from ..agents.types.start_agents_request_properties_advanced_features import StartAgentsRequestPropertiesAdvancedFeatures
@@ -67,6 +56,13 @@ from ..agents.types.start_agents_request_properties_filler_words_content import 
 from ..agents.types.start_agents_request_properties_filler_words_content_static_config import StartAgentsRequestPropertiesFillerWordsContentStaticConfig
 from ..agents.types.start_agents_request_properties_filler_words_content_static_config_selection_rule import StartAgentsRequestPropertiesFillerWordsContentStaticConfigSelectionRule
 from ..types.tts import Tts
+from ..types.asr import Asr
+from ..types.llm import Llm
+from ..types.llm_style import LlmStyle as GeneratedLlmStyle
+from ..types.mllm import Mllm
+from ..types.mllm_turn_detection import MllmTurnDetection
+from ..types.mllm_turn_detection_mode import MllmTurnDetectionMode as GeneratedMllmTurnDetectionMode
+from ..types.mllm_vendor import MllmVendor as GeneratedMllmVendor
 from ..agent_management.types.agent_think_agent_management_request_on_listening_action import (
     AgentThinkAgentManagementRequestOnListeningAction,
 )
@@ -82,14 +78,14 @@ from ..agent_management.types.agent_think_agent_management_response import (
 from .vendors.base import BaseAvatar, BaseLLM, BaseMLLM, BaseSTT, BaseTTS
 
 # Top-level aliases
-LlmConfig = StartAgentsRequestPropertiesLlm
-LlmStyle = StartAgentsRequestPropertiesLlmStyle
-SttConfig = StartAgentsRequestPropertiesAsr
+LlmConfig = Llm
+LlmStyle = GeneratedLlmStyle
+SttConfig = Asr
 AsrConfig = SttConfig
-SttVendor = StartAgentsRequestPropertiesAsrVendor
+SttVendor = typing.Any
 TtsConfig = Tts
-MllmConfig = StartAgentsRequestPropertiesMllm
-MllmVendor = StartAgentsRequestPropertiesMllmVendor
+MllmConfig = Mllm
+MllmVendor = GeneratedMllmVendor
 AvatarConfig = StartAgentsRequestPropertiesAvatar
 AvatarVendor = StartAgentsRequestPropertiesAvatarVendor
 TurnDetectionConfig = StartAgentsRequestPropertiesTurnDetection
@@ -133,8 +129,8 @@ ParametersDataChannel = StartAgentsRequestPropertiesParametersDataChannel
 ParametersAudioScenario = StartAgentsRequestPropertiesParametersAudioScenario
 InterruptionConfig = StartAgentsRequestPropertiesInterruption
 InterruptionMode = StartAgentsRequestPropertiesInterruptionMode
-MllmTurnDetectionConfig = StartAgentsRequestPropertiesMllmTurnDetection
-MllmTurnDetectionMode = StartAgentsRequestPropertiesMllmTurnDetectionMode
+MllmTurnDetectionConfig = MllmTurnDetection
+MllmTurnDetectionMode = GeneratedMllmTurnDetectionMode
 AgentConfig = StartAgentsRequestProperties
 AgentConfigUpdate = UpdateAgentsRequestProperties
 SessionInfo = GetAgentsResponse
@@ -192,9 +188,9 @@ class SessionOptions(typing_extensions.TypedDict, total=False):
     warn: typing.Callable[[str], None]
 
 # LLM sub-type aliases
-LlmGreetingConfigs = StartAgentsRequestPropertiesLlmGreetingConfigs
-LlmGreetingConfigsMode = StartAgentsRequestPropertiesLlmGreetingConfigsMode
-McpServersItem = StartAgentsRequestPropertiesLlmMcpServersItem
+LlmGreetingConfigs = typing.Dict[str, typing.Any]
+LlmGreetingConfigsMode = typing.Any
+McpServersItem = typing.Dict[str, typing.Any]
 
 # Additional top-level config aliases
 GeofenceConfig = StartAgentsRequestPropertiesGeofence
@@ -214,6 +210,78 @@ ThinkResponse = AgentThinkAgentManagementResponse
 
 from .token import generate_convo_ai_token, _parse_numeric_uid, _validate_expires_in
 
+TurnDetectionLanguage = typing_extensions.Literal[
+    "ar-EG",
+    "ar-JO",
+    "ar-SA",
+    "ar-AE",
+    "bn-IN",
+    "zh-CN",
+    "zh-HK",
+    "zh-TW",
+    "nl-NL",
+    "en-IN",
+    "en-US",
+    "fil-PH",
+    "fr-FR",
+    "de-DE",
+    "gu-IN",
+    "he-IL",
+    "hi-IN",
+    "id-ID",
+    "it-IT",
+    "ja-JP",
+    "kn-IN",
+    "ko-KR",
+    "ms-MY",
+    "fa-IR",
+    "pt-PT",
+    "ru-RU",
+    "es-ES",
+    "ta-IN",
+    "te-IN",
+    "th-TH",
+    "tr-TR",
+    "vi-VN",
+]
+
+DEFAULT_TURN_DETECTION_LANGUAGE: TurnDetectionLanguage = "en-US"
+TURN_DETECTION_LANGUAGE_VALUES: typing.Tuple[TurnDetectionLanguage, ...] = (
+    "ar-EG",
+    "ar-JO",
+    "ar-SA",
+    "ar-AE",
+    "bn-IN",
+    "zh-CN",
+    "zh-HK",
+    "zh-TW",
+    "nl-NL",
+    "en-IN",
+    "en-US",
+    "fil-PH",
+    "fr-FR",
+    "de-DE",
+    "gu-IN",
+    "he-IL",
+    "hi-IN",
+    "id-ID",
+    "it-IT",
+    "ja-JP",
+    "kn-IN",
+    "ko-KR",
+    "ms-MY",
+    "fa-IR",
+    "pt-PT",
+    "ru-RU",
+    "es-ES",
+    "ta-IN",
+    "te-IN",
+    "th-TH",
+    "tr-TR",
+    "vi-VN",
+)
+_TURN_DETECTION_LANGUAGES = set(TURN_DETECTION_LANGUAGE_VALUES)
+
 
 def _dump_optional_model(value: typing.Any) -> typing.Any:
     if hasattr(value, "model_dump"):
@@ -223,11 +291,27 @@ def _dump_optional_model(value: typing.Any) -> typing.Any:
     return value
 
 
+def _is_turn_detection_language(value: typing.Any) -> bool:
+    return isinstance(value, str) and value in _TURN_DETECTION_LANGUAGES
+
+
+def _validate_turn_detection_language(value: typing.Any) -> TurnDetectionLanguage:
+    if not _is_turn_detection_language(value):
+        raise ValueError(f"Invalid interaction language: {value}")
+    return value  # type: ignore[return-value]
+
+
 class Agent:
     """A reusable agent definition.
 
     Use the fluent builder methods (.with_llm(), .with_tts(), .with_stt(), .with_mllm())
     to configure vendor settings after construction.
+
+    Deprecated:
+        The Agent-level ``instructions``, ``greeting``, ``failure_message``,
+        ``max_history``, and ``greeting_configs`` convenience fields are kept
+        for compatibility. Configure those values on the LLM or MLLM vendor
+        instead.
 
     Examples
     --------
@@ -236,8 +320,8 @@ class Agent:
     >>> agent = Agent(instructions="You are a helpful voice assistant.")
     >>> agent = (
     ...     agent
-    ...     .with_llm(OpenAI(api_key="...", model="gpt-4"))
-    ...     .with_tts(ElevenLabsTTS(key="...", model_id="...", voice_id="...", sample_rate=24000))
+    ...     .with_llm(OpenAI(api_key="...", base_url="https://api.openai.com/v1/chat/completions", model="gpt-4"))
+    ...     .with_tts(ElevenLabsTTS(key="...", model_id="...", voice_id="...", base_url="wss://api.elevenlabs.io/v1", sample_rate=24000))
     ...     .with_stt(DeepgramSTT(api_key="...", model="nova-2"))
     ... )
     """
@@ -259,8 +343,10 @@ class Agent:
         rtc: typing.Optional[RtcConfig] = None,
         filler_words: typing.Optional[FillerWordsConfig] = None,
         greeting_configs: typing.Optional[LlmGreetingConfigs] = None,
+        pipeline_id: typing.Optional[str] = None,
     ):
         self._name = name
+        self._pipeline_id = pipeline_id
         self._instructions = instructions
         self._greeting = greeting
         self._failure_message = failure_message
@@ -369,17 +455,19 @@ class Agent:
         return new_agent
 
     def with_instructions(self, instructions: str) -> "Agent":
+        """Deprecated. Configure system messages on the LLM vendor instead."""
         new_agent = self._clone()
         new_agent._instructions = instructions
         return new_agent
 
     def with_greeting(self, greeting: str) -> "Agent":
+        """Deprecated. Configure the greeting on the LLM or MLLM vendor instead."""
         new_agent = self._clone()
         new_agent._greeting = greeting
         return new_agent
 
     def with_greeting_configs(self, configs: LlmGreetingConfigs) -> "Agent":
-        """Returns a new Agent with greeting playback configuration."""
+        """Deprecated. Configure greeting playback on the LLM vendor instead."""
         new_agent = self._clone()
         new_agent._greeting_configs = configs
         return new_agent
@@ -448,16 +536,13 @@ class Agent:
         return new_agent
 
     def with_failure_message(self, message: str) -> "Agent":
-        """Returns a new Agent with the specified failure message.
-
-        The failure message is played via TTS when the LLM call fails.
-        """
+        """Deprecated. Configure the failure message on the LLM or MLLM vendor instead."""
         new_agent = self._clone()
         new_agent._failure_message = message
         return new_agent
 
     def with_max_history(self, max_history: int) -> "Agent":
-        """Returns a new Agent with the specified maximum conversation history length."""
+        """Deprecated. Configure max history on the LLM vendor instead."""
         new_agent = self._clone()
         new_agent._max_history = max_history
         return new_agent
@@ -525,6 +610,11 @@ class Agent:
     @property
     def name(self) -> typing.Optional[str]:
         return self._name
+
+    @property
+    def pipeline_id(self) -> typing.Optional[str]:
+        """Published AI Studio pipeline ID used as this agent's base configuration."""
+        return self._pipeline_id
 
     @property
     def llm(self) -> typing.Optional[typing.Dict[str, typing.Any]]:
@@ -610,6 +700,7 @@ class Agent:
     def config(self) -> typing.Dict[str, typing.Any]:
         return {
             "name": self._name,
+            "pipeline_id": self._pipeline_id,
             "instructions": self._instructions,
             "greeting": self._greeting,
             "failure_message": self._failure_message,
@@ -804,6 +895,9 @@ class Agent:
                 base_kwargs["mllm"] = mllm_config
             return StartAgentsRequestProperties(**base_kwargs)
 
+        base_kwargs["asr"] = self._resolve_asr_config()
+        base_kwargs["turn_detection"] = self._resolve_turn_detection_config()
+
         if skip_vendor_validation:
             return StartAgentsRequestProperties(**base_kwargs)
 
@@ -829,14 +923,37 @@ class Agent:
 
         base_kwargs["llm"] = llm_config
         base_kwargs["tts"] = self._tts
-        if self._stt is not None:
-            base_kwargs["asr"] = self._stt
 
         return StartAgentsRequestProperties(**base_kwargs)
+
+    def _resolve_asr_config(self) -> typing.Dict[str, typing.Any]:
+        asr_config = dict(self._stt or {})
+        asr_config.pop("language", None)
+        if not asr_config:
+            asr_config["vendor"] = "ares"
+        return asr_config
+
+    def _resolve_turn_detection_config(self) -> TurnDetectionConfig:
+        existing_stt_language = self._stt.get("language") if self._stt is not None else None
+        existing_turn_detection_language = self._field_value(self._turn_detection, "language")
+        language = (
+            existing_turn_detection_language
+            if existing_turn_detection_language is not None
+            else existing_stt_language
+            if _is_turn_detection_language(existing_stt_language)
+            else DEFAULT_TURN_DETECTION_LANGUAGE
+        )
+        language = _validate_turn_detection_language(language)
+        if self._turn_detection is None:
+            return StartAgentsRequestPropertiesTurnDetection(language=language)
+        if isinstance(self._turn_detection, dict):
+            return typing.cast(TurnDetectionConfig, {**self._turn_detection, "language": language})
+        return self._copy_model_update(self._turn_detection, {"language": language})
 
     def _clone(self) -> "Agent":
         new_agent = Agent.__new__(Agent)
         new_agent._name = self._name
+        new_agent._pipeline_id = self._pipeline_id
         new_agent._llm = self._llm
         new_agent._tts = self._tts
         new_agent._stt = self._stt

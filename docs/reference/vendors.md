@@ -23,9 +23,9 @@ from agora_agent import OpenAI, ElevenLabsTTS, DeepgramTTS, DeepgramSTT, OpenAIR
 
 | Parameter | Type | Required | Default | Description |
 |---|---|---|---|---|
-| `api_key` | `str` | Yes | — | OpenAI API key |
-| `model` | `str` | No | `gpt-4o-mini` | Model name |
-| `base_url` | `str` | No | `None` | Custom base URL (overrides default OpenAI endpoint) |
+| `api_key` | `str` | BYOK only | `None` | OpenAI API key. Optional for supported Agora-managed OpenAI models. |
+| `model` | `str` | Yes | — | Model name |
+| `base_url` | `str` | BYOK only | `None` | OpenAI Chat Completions endpoint URL. Required when `api_key` is set. |
 | `temperature` | `float` | No | `None` | Sampling temperature (0.0–2.0) |
 | `top_p` | `float` | No | `None` | Nucleus sampling (0.0–1.0) |
 | `max_tokens` | `int` | No | `None` | Maximum tokens to generate |
@@ -43,7 +43,7 @@ from agora_agent import OpenAI, ElevenLabsTTS, DeepgramTTS, DeepgramSTT, OpenAIR
 ```python
 from agora_agent import OpenAI
 
-llm = OpenAI(api_key='your-key', model='gpt-4o-mini', temperature=0.7)
+llm = OpenAI(api_key='your-key', base_url='https://api.openai.com/v1/chat/completions', model='gpt-4o-mini', temperature=0.7)
 ```
 
 ### `AzureOpenAI`
@@ -51,6 +51,7 @@ llm = OpenAI(api_key='your-key', model='gpt-4o-mini', temperature=0.7)
 | Parameter | Type | Required | Default | Description |
 |---|---|---|---|---|
 | `api_key` | `str` | Yes | — | Azure OpenAI API key |
+| `model` | `str` | Yes | — | Deployment's base model name. Emitted as `params.model`. |
 | `endpoint` | `str` | Yes | — | Azure endpoint URL |
 | `deployment_name` | `str` | Yes | — | Azure deployment name |
 | `api_version` | `str` | No | `2024-08-01-preview` | Azure API version |
@@ -73,6 +74,7 @@ from agora_agent import AzureOpenAI
 
 llm = AzureOpenAI(
     api_key='your-azure-key',
+    model='gpt-4o-mini',
     endpoint='https://your-resource.openai.azure.com',
     deployment_name='gpt-4o-mini',
 )
@@ -83,8 +85,10 @@ llm = AzureOpenAI(
 | Parameter | Type | Required | Default | Description |
 |---|---|---|---|---|
 | `api_key` | `str` | Yes | — | Anthropic API key |
-| `model` | `str` | No | `claude-3-5-sonnet-20241022` | Model name |
-| `max_tokens` | `int` | No | `None` | Maximum tokens |
+| `model` | `str` | Yes | — | Model name |
+| `url` | `str` | Yes | — | Anthropic messages endpoint URL |
+| `headers` | `Dict[str, str]` | Yes | — | Request headers, including Anthropic API version |
+| `max_tokens` | `int` | Yes | — | Maximum tokens |
 | `temperature` | `float` | No | `None` | Sampling temperature (0.0–1.0) |
 | `top_p` | `float` | No | `None` | Nucleus sampling (0.0–1.0) |
 | `system_messages` | `List[Dict]` | No | `None` | System messages |
@@ -93,7 +97,6 @@ llm = AzureOpenAI(
 | `input_modalities` | `List[str]` | No | `None` | Input modalities |
 | `output_modalities` | `List[str]` | No | `None` | Output modalities |
 | `params` | `Dict[str, Any]` | No | `None` | Additional model parameters |
-| `headers` | `Dict[str, str]` | No | `None` | Custom HTTP headers forwarded to the LLM provider |
 | `greeting_configs` | `Dict[str, Any]` | No | `None` | Greeting playback configuration |
 | `template_variables` | `Dict[str, str]` | No | `None` | Template variables for messages |
 
@@ -101,7 +104,13 @@ llm = AzureOpenAI(
 ```python
 from agora_agent import Anthropic
 
-llm = Anthropic(api_key='your-anthropic-key', model='claude-3-5-sonnet-20241022')
+llm = Anthropic(
+    api_key='your-anthropic-key',
+    url='https://api.anthropic.com/v1/messages',
+    headers={'anthropic-version': '2023-06-01'},
+    model='claude-3-5-sonnet-20241022',
+    max_tokens=1024,
+)
 ```
 
 ### `Gemini`
@@ -109,7 +118,7 @@ llm = Anthropic(api_key='your-anthropic-key', model='claude-3-5-sonnet-20241022'
 | Parameter | Type | Required | Default | Description |
 |---|---|---|---|---|
 | `api_key` | `str` | Yes | — | Google AI API key |
-| `model` | `str` | No | `gemini-2.0-flash-exp` | Model name |
+| `model` | `str` | Yes | — | Model name |
 | `temperature` | `float` | No | `None` | Sampling temperature (0.0–2.0) |
 | `top_p` | `float` | No | `None` | Nucleus sampling (0.0–1.0) |
 | `top_k` | `int` | No | `None` | Top-k sampling |
@@ -137,10 +146,10 @@ The SDK also includes named helpers for the remaining Agora-supported LLM provid
 
 | Class | Provider | Key parameters |
 |---|---|---|
-| `Groq` | Groq | `api_key`, `model`, `base_url?` |
+| `Groq` | Groq | `api_key`, `model`, `base_url` |
 | `VertexAILLM` | Google Vertex AI | `api_key`, `model`, `project_id`, `location`, `url?` |
-| `AmazonBedrock` | Amazon Bedrock | `api_key`, `url`, `model` |
-| `Dify` | Dify | `api_key`, `url`, `user?`, `conversation_id?` |
+| `AmazonBedrock` | Amazon Bedrock | `access_key`, `secret_key`, `region`, `model` |
+| `Dify` | Dify | `api_key`, `url`, `model`, `user?`, `conversation_id?` |
 | `CustomLLM` | OpenAI-compatible LLM | `api_key`, `model`, `base_url` |
 
 ---
@@ -154,7 +163,7 @@ The SDK also includes named helpers for the remaining Agora-supported LLM provid
 | `key` | `str` | Yes | — | ElevenLabs API key |
 | `model_id` | `str` | Yes | — | Model ID (e.g., `eleven_flash_v2_5`) |
 | `voice_id` | `str` | Yes | — | Voice ID |
-| `base_url` | `str` | No | `None` | Custom WebSocket base URL |
+| `base_url` | `str` | Yes | — | WebSocket base URL |
 | `sample_rate` | `int` | No | `None` | Sample rate: 16000, 22050, 24000, or 44100 Hz |
 | `skip_patterns` | `List[int]` | No | `None` | Skip patterns |
 | `optimize_streaming_latency` | `int` | No | `None` | Latency optimization level (0–4) |
@@ -171,20 +180,23 @@ The SDK also includes named helpers for the remaining Agora-supported LLM provid
 | `region` | `str` | Yes | — | Azure region (e.g., `eastus`) |
 | `voice_name` | `str` | Yes | — | Voice name (e.g., `en-US-JennyNeural`) |
 | `sample_rate` | `int` | No | `None` | Sample rate: 8000, 16000, 24000, or 48000 Hz |
+| `speed` | `float` | No | `None` | Speaking rate multiplier |
+| `volume` | `float` | No | `None` | Audio volume |
 | `skip_patterns` | `List[int]` | No | `None` | Skip patterns |
 
 ### `OpenAITTS`
 
 | Parameter | Type | Required | Default | Description |
 |---|---|---|---|---|
-| `api_key` | `str` | Yes | — | OpenAI API key |
+| `api_key` | `str` | BYOK only | `None` | OpenAI API key |
 | `voice` | `str` | Yes | — | Voice: `alloy`, `echo`, `fable`, `onyx`, `nova`, `shimmer` |
-| `model` | `str` | No | `None` | Model: `tts-1` or `tts-1-hd` |
-| `response_format` | `str` | No | `None` | Audio format (e.g., `pcm`) |
+| `model` | `str` | BYOK only | `None` | Model: `tts-1` or `tts-1-hd` |
+| `base_url` | `str` | BYOK only | `None` | OpenAI TTS endpoint URL |
+| `instructions` | `str` | No | `None` | Custom instructions for voice style, accent, pace, and tone |
 | `speed` | `float` | No | `None` | Speech speed multiplier |
 | `skip_patterns` | `List[int]` | No | `None` | Skip patterns |
 
-Fixed sample rate: 24000 Hz.
+`api_key`, `model`, and `base_url` are required together for BYOK. Without `api_key`, `model` must be omitted or set to the Agora-managed `tts-1` path. Fixed sample rate: 24000 Hz.
 
 ### `CartesiaTTS`
 
@@ -192,7 +204,9 @@ Fixed sample rate: 24000 Hz.
 |---|---|---|---|---|
 | `api_key` | `str` | Yes | — | Cartesia API key |
 | `voice_id` | `str` | Yes | — | Voice ID (serialized as `{"mode": "id", "id": "..."}`) |
-| `model_id` | `str` | No | `None` | Model ID |
+| `model_id` | `str` | Yes | — | Model ID |
+| `base_url` | `str` | No | `None` | WebSocket URL |
+| `language` | `str` | No | `None` | Target language |
 | `sample_rate` | `int` | No | `None` | Sample rate: 8000–48000 Hz |
 | `skip_patterns` | `List[int]` | No | `None` | Skip patterns |
 
@@ -203,6 +217,7 @@ Fixed sample rate: 24000 Hz.
 | `key` | `str` | Yes | — | Google Cloud API key |
 | `voice_name` | `str` | Yes | — | Voice name |
 | `language_code` | `str` | No | `None` | Language code (e.g., `en-US`) |
+| `sample_rate_hertz` | `int` | No | `None` | Sample rate in Hz |
 | `skip_patterns` | `List[int]` | No | `None` | Skip patterns |
 
 ### `AmazonTTS`
@@ -213,6 +228,7 @@ Fixed sample rate: 24000 Hz.
 | `secret_key` | `str` | Yes | — | AWS secret key |
 | `region` | `str` | Yes | — | AWS region (e.g., `us-east-1`) |
 | `voice_id` | `str` | Yes | — | Amazon Polly voice ID |
+| `engine` | `str` | Yes | — | Amazon Polly engine type |
 | `skip_patterns` | `List[int]` | No | `None` | Skip patterns |
 
 ### `DeepgramTTS`
@@ -223,7 +239,7 @@ Fixed sample rate: 24000 Hz.
 | `model` | `str` | Yes | — | Deepgram TTS model (e.g., `aura-2-thalia-en`) |
 | `base_url` | `str` | No | `None` | WebSocket endpoint; defaults server-side to `wss://api.deepgram.com/v1/speak` |
 | `sample_rate` | `int` | No | `None` | Sample rate in Hz (for example, `24000`) |
-| `params` | `Dict[str, Any]` | No | `None` | Additional Deepgram TTS parameters |
+| `additional_params` | `Dict[str, Any]` | No | `None` | Additional Deepgram TTS parameters, flattened into `params` |
 | `skip_patterns` | `List[int]` | No | `None` | Skip patterns |
 
 ### `HumeAITTS`
@@ -231,7 +247,12 @@ Fixed sample rate: 24000 Hz.
 | Parameter | Type | Required | Default | Description |
 |---|---|---|---|---|
 | `key` | `str` | Yes | — | Hume AI API key |
+| `voice_id` | `str` | Yes | — | Hume AI voice ID |
+| `provider` | `str` | Yes | — | Voice provider type, such as `CUSTOM_VOICE` or `HUME_AI` |
 | `config_id` | `str` | No | `None` | Configuration ID |
+| `base_url` | `str` | No | `None` | Base URL |
+| `speed` | `float` | No | `None` | Playback speed |
+| `trailing_silence` | `float` | No | `None` | Trailing silence in seconds |
 | `skip_patterns` | `List[int]` | No | `None` | Skip patterns |
 
 ### `RimeTTS`
@@ -240,10 +261,8 @@ Fixed sample rate: 24000 Hz.
 |---|---|---|---|---|
 | `key` | `str` | Yes | — | Rime API key |
 | `speaker` | `str` | Yes | — | Speaker ID |
-| `model_id` | `str` | No | `None` | Model ID |
-| `lang` | `str` | No | `None` | Language code |
-| `sampling_rate` | `int` | No | `None` | Sampling rate in Hz (serialized as `samplingRate`) |
-| `speed_alpha` | `float` | No | `None` | Speed multiplier (serialized as `speedAlpha`) |
+| `model_id` | `str` | Yes | — | Model ID |
+| `base_url` | `str` | No | `None` | WebSocket URL |
 | `skip_patterns` | `List[int]` | No | `None` | Skip patterns |
 
 ### `FishAudioTTS`
@@ -252,26 +271,34 @@ Fixed sample rate: 24000 Hz.
 |---|---|---|---|---|
 | `key` | `str` | Yes | — | Fish Audio API key |
 | `reference_id` | `str` | Yes | — | Reference ID |
+| `backend` | `str` | Yes | — | Backend model version |
 | `skip_patterns` | `List[int]` | No | `None` | Skip patterns |
 
 ### `MiniMaxTTS`
 
 | Parameter | Type | Required | Default | Description |
 |---|---|---|---|---|
-| `key` | `str` | Yes | — | MiniMax API key |
-| `group_id` | `str` | Yes | — | MiniMax group ID |
+| `key` | `str` | BYOK only | `None` | MiniMax API key. Optional for supported Agora-managed MiniMax models |
+| `group_id` | `str` | BYOK only | `None` | MiniMax group ID |
 | `model` | `str` | Yes | — | Model name (e.g., `speech-02-turbo`) |
-| `voice_id` | `str` | Yes | — | Voice style identifier |
-| `url` | `str` | Yes | — | WebSocket endpoint |
+| `voice_id` | `str` | BYOK only | `None` | Voice style identifier |
+| `url` | `str` | BYOK only | `None` | WebSocket endpoint |
 | `skip_patterns` | `List[int]` | No | `None` | Skip patterns |
+
+`key`, `group_id`, `voice_id`, and `url` are required together for BYOK. Without `key`, `model` must be one of the supported Agora-managed MiniMax models.
 
 ### `MurfTTS`
 
 | Parameter | Type | Required | Default | Description |
 |---|---|---|---|---|
 | `key` | `str` | Yes | — | Murf API key |
-| `voice_id` | `str` | Yes | — | Voice ID (e.g., `Ariana`, `Natalie`) |
-| `style` | `str` | No | `None` | Voice style (e.g., `Conversational`) |
+| `voice_id` | `str` | No | `None` | Voice ID (e.g., `Ariana`, `Natalie`) |
+| `base_url` | `str` | No | `None` | WebSocket endpoint |
+| `locale` | `str` | No | `None` | Voice locale |
+| `rate` | `float` | No | `None` | Speech rate |
+| `pitch` | `float` | No | `None` | Pitch adjustment |
+| `model` | `str` | No | `None` | TTS model |
+| `sample_rate` | `int` | No | `None` | Audio sample rate |
 | `skip_patterns` | `List[int]` | No | `None` | Skip patterns |
 
 ### `SarvamTTS`
@@ -281,11 +308,17 @@ Fixed sample rate: 24000 Hz.
 | `key` | `str` | Yes | — | Sarvam API key |
 | `speaker` | `str` | Yes | — | Speaker name |
 | `target_language_code` | `str` | Yes | — | Target language code |
+| `pitch` | `float` | No | `None` | Pitch adjustment |
+| `pace` | `float` | No | `None` | Speed of speech |
+| `loudness` | `float` | No | `None` | Volume level |
+| `sample_rate` | `int` | No | `None` | Audio sample rate |
 | `skip_patterns` | `List[int]` | No | `None` | Skip patterns |
 
 ---
 
 ## STT Vendors
+
+Use `turn_detection.language` for Agora interaction language; it defaults to `en-US`. Provider-specific language values remain under `asr.params` and may use a different format.
 
 ### `SpeechmaticsSTT`
 
@@ -293,18 +326,21 @@ Fixed sample rate: 24000 Hz.
 |---|---|---|---|---|
 | `api_key` | `str` | Yes | — | Speechmatics API key |
 | `language` | `str` | Yes | — | Language code (e.g., `en`) |
+| `uri` | `str` | No | `None` | Speechmatics streaming WebSocket URL |
 | `additional_params` | `Dict[str, Any]` | No | `None` | Additional parameters |
 
 ### `DeepgramSTT`
 
 | Parameter | Type | Required | Default | Description |
 |---|---|---|---|---|
-| `api_key` | `str` | No | `None` | Deepgram API key |
+| `api_key` | `str` | BYOK only | `None` | Deepgram API key. Optional only for Agora-managed `nova-2` and `nova-3`. |
 | `model` | `str` | No | `None` | Model (e.g., `nova-2`) |
 | `language` | `str` | No | `None` | Language code (e.g., `en-US`) |
 | `smart_format` | `bool` | No | `None` | Enable smart formatting |
 | `punctuation` | `bool` | No | `None` | Enable punctuation |
 | `additional_params` | `Dict[str, Any]` | No | `None` | Additional parameters |
+
+For `nova-2` and `nova-3`, omit `api_key` to use Agora-managed credentials. For all other Deepgram models, AgentKit requires `api_key`.
 
 ### `MicrosoftSTT`
 
@@ -312,7 +348,7 @@ Fixed sample rate: 24000 Hz.
 |---|---|---|---|---|
 | `key` | `str` | Yes | — | Azure subscription key |
 | `region` | `str` | Yes | — | Azure region (e.g., `eastus`) |
-| `language` | `str` | No | `None` | Language code (e.g., `en-US`) |
+| `language` | `str` | Yes | — | Language code (e.g., `en-US`) |
 | `additional_params` | `Dict[str, Any]` | No | `None` | Additional parameters |
 
 ### `OpenAISTT`
@@ -322,14 +358,19 @@ Fixed sample rate: 24000 Hz.
 | `api_key` | `str` | Yes | — | OpenAI API key |
 | `model` | `str` | No | `None` | Model (default: `whisper-1`) |
 | `language` | `str` | No | `None` | Language code |
+| `prompt` | `str` | No | `None` | Prompt for OpenAI transcription |
+| `input_audio_transcription` | `Dict[str, Any]` | No | `None` | OpenAI transcription settings |
 | `additional_params` | `Dict[str, Any]` | No | `None` | Additional parameters |
 
 ### `GoogleSTT`
 
 | Parameter | Type | Required | Default | Description |
 |---|---|---|---|---|
-| `api_key` | `str` | Yes | — | Google Cloud API key |
-| `language` | `str` | No | `None` | Language code (e.g., `en-US`) |
+| `project_id` | `str` | Yes | — | Google Cloud project ID |
+| `location` | `str` | Yes | — | Google Cloud region |
+| `adc_credentials_string` | `str` | Yes | — | Google service account credentials JSON string |
+| `language` | `str` | Yes | — | Language code (e.g., `en-US`) |
+| `model` | `str` | No | `None` | Recognition model |
 | `additional_params` | `Dict[str, Any]` | No | `None` | Additional parameters |
 
 ### `AmazonSTT`
@@ -339,7 +380,7 @@ Fixed sample rate: 24000 Hz.
 | `access_key` | `str` | Yes | — | AWS Access Key ID |
 | `secret_key` | `str` | Yes | — | AWS Secret Access Key |
 | `region` | `str` | Yes | — | AWS region (e.g., `us-east-1`) |
-| `language` | `str` | No | `None` | Language code |
+| `language` | `str` | Yes | — | Amazon `language_code` |
 | `additional_params` | `Dict[str, Any]` | No | `None` | Additional parameters |
 
 ### `AssemblyAISTT`
@@ -347,7 +388,8 @@ Fixed sample rate: 24000 Hz.
 | Parameter | Type | Required | Default | Description |
 |---|---|---|---|---|
 | `api_key` | `str` | Yes | — | AssemblyAI API key |
-| `language` | `str` | No | `None` | Language code |
+| `language` | `str` | Yes | — | Language code |
+| `uri` | `str` | No | `None` | AssemblyAI streaming WebSocket URL |
 | `additional_params` | `Dict[str, Any]` | No | `None` | Additional parameters |
 
 ### `AresSTT`

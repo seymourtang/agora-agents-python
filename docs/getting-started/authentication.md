@@ -20,9 +20,12 @@ client = Agora(
 )
 
 agent = (
-    Agent(instructions="Be concise.")
+    Agent()
     .with_stt(DeepgramSTT(model="nova-3"))
-    .with_llm(OpenAI(model="gpt-4o-mini"))
+    .with_llm(OpenAI(
+        model="gpt-4o-mini",
+        system_messages=[{"role": "system", "content": "Be concise."}],
+    ))
     .with_tts(MiniMaxTTS(model="speech_2_6_turbo", voice_id="English_captivating_female1"))
 )
 

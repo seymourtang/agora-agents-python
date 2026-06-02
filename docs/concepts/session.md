@@ -40,9 +40,14 @@ from agora_agent import Agent, Agora, Area, OpenAI, ElevenLabsTTS, DeepgramSTT
 client = Agora(area=Area.US, app_id='your-app-id', app_certificate='your-app-certificate')
 
 agent = (
-    Agent(name='my-agent', instructions='You are helpful.')
-    .with_llm(OpenAI(api_key='your-openai-key', model='gpt-4o-mini'))
-    .with_tts(ElevenLabsTTS(key='your-elevenlabs-key', model_id='eleven_flash_v2_5', voice_id='your-voice-id'))
+    Agent(name='my-agent')
+    .with_llm(OpenAI(
+        api_key='your-openai-key',
+        base_url='https://api.openai.com/v1/chat/completions',
+        model='gpt-4o-mini',
+        system_messages=[{'role': 'system', 'content': 'You are helpful.'}],
+    ))
+    .with_tts(ElevenLabsTTS(key='your-elevenlabs-key', model_id='eleven_flash_v2_5', voice_id='your-voice-id', base_url='wss://api.elevenlabs.io/v1'))
     .with_stt(DeepgramSTT(api_key='your-deepgram-key', language='en-US'))
 )
 

@@ -20,6 +20,7 @@ pip install agora-agents
 ## Quick Start
 
 Start with the `Agent` builder: create a client with app credentials, choose your ASR, LLM, and TTS providers, then start a session. Omit vendor API keys for supported Agora-managed models, or provide keys when you want BYOK.
+Set Agora interaction language with `turn_detection.language`; provider-specific STT language values remain under `asr.params`.
 
 ```python
 import os
@@ -29,12 +30,9 @@ from agora_agent import (
     Agent,
     Agora,
     Area,
-    DataChannel,
     DeepgramSTT,
-    GenericAvatar,
     MiniMaxTTS,
     OpenAI,
-    XaiGrok,
     expires_in_hours,
 )
 
@@ -56,39 +54,7 @@ def start_conversation() -> str:
         app_certificate=app_certificate,
     )
 
-    agent = Agent(
-        name=f"conversation-{int(time.time())}",
-        instructions=AGENT_PROMPT,
-        greeting=GREETING,
-        failure_message="Please wait a moment.",
-        max_history=50,
-        turn_detection={
-            "config": {
-                "speech_threshold": 0.5,
-                "start_of_speech": {
-                    "mode": "vad",
-                    "vad_config": {
-                        "interrupt_duration_ms": 160,
-                        "prefix_padding_ms": 300,
-                    },
-                },
-                "end_of_speech": {
-                    "mode": "vad",
-                    "vad_config": {
-                        "silence_duration_ms": 480,
-                    },
-                },
-            },
-        },
-        advanced_features={
-            "enable_rtm": True,
-            "enable_tools": True,
-        },
-        parameters={
-            "data_channel": DataChannel.RTM,
-            "enable_error_message": True,
-        },
-    ).with_stt(
+    agent = Agent(name=f"conversation-{int(time.time())}", turn_detection={"language": "en-US"}).with_stt(
         DeepgramSTT(
             model="nova-3",
             language="en",
@@ -96,9 +62,10 @@ def start_conversation() -> str:
     ).with_llm(
         OpenAI(
             model="gpt-4o-mini",
+            system_messages=[{"role": "system", "content": AGENT_PROMPT}],
             greeting_message=GREETING,
             failure_message="Please wait a moment.",
-            max_history=15,
+            max_history=50,
             params={
                 "max_tokens": 1024,
                 "temperature": 0.7,
@@ -129,15 +96,44 @@ def start_conversation() -> str:
 
 `Agora` generates the required ConvoAI REST auth and RTC join tokens automatically when you provide `app_id` and `app_certificate`. For supported Agora-managed models, leave vendor API keys unset; provide keys when you want BYOK.
 
+## AI Studio pipeline IDs
+
+Use `pipeline_id` when you want a published AI Studio pipeline to provide the base agent configuration:
+
+```python
+agent = Agent(
+    name="support",
+    pipeline_id="studio-pipeline-id",
+)
+
+session = agent.create_session(
+    client,
+    channel="support-room",
+    agent_uid="1",
+    remote_uids=["100"],
+)
+```
+
+You can override it per session:
+
+```python
+session = agent.create_session(
+    client,
+    channel="support-room",
+    agent_uid="1",
+    remote_uids=["100"],
+    pipeline_id="session-pipeline-id",
+)
+```
+
+AgentKit sends the resolved value as the top-level `/join` field `pipeline_id`, not inside `properties`. Explicit Agent config such as `with_llm()`, `with_tts()`, `with_stt()`, `with_mllm()`, and `advanced_features` may send `properties` fields that override the saved pipeline settings.
+
 ### BYOK version
 
 Use the same `Agent` builder shape, but provide credentials explicitly when you want vendor-managed billing and routing instead of Agora-managed models.
 
 ```python
-agent = Agent(
-    instructions=AGENT_PROMPT,
-    greeting=GREETING,
-).with_stt(
+agent = Agent(turn_detection={"language": "en-US"}).with_stt(
     DeepgramSTT(
         api_key=os.environ["DEEPGRAM_API_KEY"],
         model="nova-3",
@@ -146,7 +142,10 @@ agent = Agent(
 ).with_llm(
     OpenAI(
         api_key=os.environ["OPENAI_API_KEY"],
+        base_url="https://api.openai.com/v1/chat/completions",
         model="gpt-4o-mini",
+        system_messages=[{"role": "system", "content": AGENT_PROMPT}],
+        greeting_message=GREETING,
         max_tokens=1024,
         temperature=0.7,
         top_p=0.95,

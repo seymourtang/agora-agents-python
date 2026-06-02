@@ -32,12 +32,7 @@ def main() -> None:
 
     # In BYOK mode, each vendor carries its own credentials.
     agent = (
-        Agent(
-            name="support-assistant",
-            instructions="You are a concise support voice assistant.",
-            greeting="Hello! How can I help you today?",
-            max_history=10,
-        )
+        Agent(name="support-assistant")
         .with_stt(
             DeepgramSTT(
                 api_key=os.environ["DEEPGRAM_API_KEY"],
@@ -48,7 +43,11 @@ def main() -> None:
         .with_llm(
             OpenAI(
                 api_key=os.environ["OPENAI_API_KEY"],
+                base_url="https://api.openai.com/v1/chat/completions",
                 model="gpt-4o-mini",
+                system_messages=[{"role": "system", "content": "You are a concise support voice assistant."}],
+                greeting_message="Hello! How can I help you today?",
+                max_history=10,
             )
         )
         .with_tts(
@@ -56,6 +55,7 @@ def main() -> None:
                 key=os.environ["ELEVENLABS_API_KEY"],
                 model_id="eleven_flash_v2_5",
                 voice_id=os.environ["ELEVENLABS_VOICE_ID"],
+                base_url="wss://api.elevenlabs.io/v1",
                 sample_rate=24000,
             )
         )
