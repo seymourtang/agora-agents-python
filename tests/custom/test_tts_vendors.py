@@ -1,4 +1,4 @@
-from agora_agent import AmazonTTS, CartesiaTTS, FishAudioTTS, GoogleTTS, MurfTTS, RimeTTS, SarvamTTS
+from agora_agent import AmazonTTS, CartesiaTTS, ElevenLabsTTS, FishAudioTTS, GoogleTTS, HumeAITTS, MiniMaxTTS, MurfTTS, OpenAITTS, RimeTTS, SarvamTTS
 
 
 def test_tts_vendor_params_match_generated_core_shapes() -> None:
@@ -35,6 +35,38 @@ def test_tts_vendor_params_match_generated_core_shapes() -> None:
         "backend": "speech-1.5",
     }
 
+    assert ElevenLabsTTS(key="eleven-key", model_id="eleven_flash_v2_5", voice_id="voice", base_url="wss://api.elevenlabs.io/v1").to_config()["params"] == {
+        "key": "eleven-key",
+        "base_url": "wss://api.elevenlabs.io/v1",
+        "model_id": "eleven_flash_v2_5",
+        "voice_id": "voice",
+    }
+
+    assert OpenAITTS(api_key="openai-key", voice="coral", model="gpt-4o-mini-tts", base_url="https://api.openai.com/v1").to_config()["params"] == {
+        "voice": "coral",
+        "api_key": "openai-key",
+        "base_url": "https://api.openai.com/v1",
+        "model": "gpt-4o-mini-tts",
+    }
+
+    assert OpenAITTS(voice="coral").to_config()["params"] == {
+        "voice": "coral",
+    }
+
+    assert HumeAITTS(key="hume-key", voice_id="voice", provider="CUSTOM_VOICE").to_config()["params"] == {
+        "key": "hume-key",
+        "voice_id": "voice",
+        "provider": "CUSTOM_VOICE",
+    }
+
+    assert MiniMaxTTS(key="minimax-key", group_id="group", model="speech-02-turbo", voice_id="voice", url="wss://api-uw.minimax.io/ws/v1/t2a_v2").to_config()["params"] == {
+        "model": "speech-02-turbo",
+        "key": "minimax-key",
+        "group_id": "group",
+        "voice_setting": {"voice_id": "voice"},
+        "url": "wss://api-uw.minimax.io/ws/v1/t2a_v2",
+    }
+
     assert SarvamTTS(key="sarvam-key", speaker="anushka", target_language_code="en-IN", sample_rate=24000).to_config()["params"] == {
         "api_subscription_key": "sarvam-key",
         "speaker": "anushka",
@@ -42,10 +74,24 @@ def test_tts_vendor_params_match_generated_core_shapes() -> None:
         "sample_rate": 24000,
     }
 
-    assert MurfTTS(key="murf-key", voice_id="Ariana", base_url="wss://murf.example/ws").to_config()["params"] == {
+    assert MurfTTS(
+        key="murf-key",
+        voice_id="Ariana",
+        base_url="wss://murf.example/ws",
+        locale="en-US",
+        rate=0,
+        pitch=0,
+        model="FALCON",
+        sample_rate=24000,
+    ).to_config()["params"] == {
         "api_key": "murf-key",
         "base_url": "wss://murf.example/ws",
         "voiceId": "Ariana",
+        "locale": "en-US",
+        "rate": 0,
+        "pitch": 0,
+        "model": "FALCON",
+        "sample_rate": 24000,
     }
 
     assert MurfTTS(key="murf-key").to_config()["params"] == {

@@ -20,8 +20,8 @@ def dump(value):
 def base_agent() -> Agent:
     return (
         Agent()
-        .with_llm(OpenAI(api_key="llm-key", model="gpt-4o-mini"))
-        .with_tts(ElevenLabsTTS(key="tts-key", voice_id="voice", model_id="eleven_flash_v2_5"))
+        .with_llm(OpenAI(api_key="llm-key", model="gpt-4o-mini", base_url="https://api.openai.com/v1/chat/completions"))
+        .with_tts(ElevenLabsTTS(key="tts-key", voice_id="voice", model_id="eleven_flash_v2_5", base_url="wss://api.elevenlabs.io/v1"))
     )
 
 

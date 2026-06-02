@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from .base import BaseLLM
 
@@ -46,6 +46,14 @@ class OpenAIOptions(BaseModel):
     vendor: Optional[str] = Field(default=None)
     mcp_servers: Optional[List[Dict[str, Any]]] = Field(default=None)
     max_history: Optional[int] = Field(default=None, gt=0, description="Maximum number of conversation history messages to cache")
+
+    @model_validator(mode="after")
+    def _validate_byok_params(self) -> "OpenAIOptions":
+        if self.api_key is not None and self.base_url is None:
+            raise ValueError("OpenAI requires base_url when api_key is set")
+        if self.api_key is None and self.base_url is not None:
+            raise ValueError("OpenAI base_url is only valid when api_key is set")
+        return self
 
 class OpenAI(BaseLLM):
     def __init__(self, **kwargs: Any):
@@ -101,6 +109,7 @@ class AzureOpenAIOptions(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     api_key: str = Field(..., description="Azure OpenAI API key")
+    model: str = Field(..., description="Azure deployment model name")
     endpoint: str = Field(..., description="Azure endpoint URL")
     deployment_name: str = Field(..., description="Azure deployment name")
     api_version: str = Field(default="2024-08-01-preview", description="Azure API version")
@@ -139,7 +148,7 @@ class AzureOpenAI(BaseLLM):
         }
 
         # Named fields take precedence over anything in the generic params dict.
-        params: Dict[str, Any] = dict(self.options.params or {})
+        params: Dict[str, Any] = {"model": self.options.model, **(self.options.params or {})}
         if self.options.temperature is not None:
             params["temperature"] = self.options.temperature
         if self.options.top_p is not None:
@@ -176,8 +185,8 @@ class AnthropicOptions(BaseModel):
 
     api_key: str = Field(..., description="Anthropic API key")
     model: str = Field(default="claude-3-5-sonnet-20241022", description="Model name")
-    url: Optional[str] = Field(default=None, description="Custom API endpoint URL")
-    max_tokens: Optional[int] = Field(default=None, gt=0)
+    url: str = Field(..., description="Anthropic messages endpoint URL")
+    max_tokens: int = Field(..., gt=0)
     temperature: Optional[float] = Field(default=None, ge=0.0, le=1.0)
     top_p: Optional[float] = Field(default=None, ge=0.0, le=1.0)
     system_messages: Optional[List[Dict[str, Any]]] = Field(default=None)
@@ -185,7 +194,7 @@ class AnthropicOptions(BaseModel):
     failure_message: Optional[str] = Field(default=None)
     input_modalities: Optional[List[str]] = Field(default=None)
     params: Optional[Dict[str, Any]] = Field(default=None)
-    headers: Optional[Dict[str, str]] = Field(default=None)
+    headers: Dict[str, str] = Field(..., description="Anthropic request headers")
     output_modalities: Optional[List[str]] = Field(default=None)
     greeting_configs: Optional[LlmGreetingConfigs] = Field(default=None)
     template_variables: Optional[Dict[str, str]] = Field(default=None)
@@ -208,17 +217,16 @@ class Anthropic(BaseLLM):
             params["top_p"] = self.options.top_p
 
         config: Dict[str, Any] = {
-            "url": self.options.url or "https://api.anthropic.com/v1/messages",
+            "url": self.options.url,
             "api_key": self.options.api_key,
             "params": params,
+            "headers": self.options.headers,
             "style": "anthropic",
             "input_modalities": self.options.input_modalities or ["text"],
         }
 
         if self.options.system_messages is not None:
             config["system_messages"] = self.options.system_messages
-        if self.options.headers is not None:
-            config["headers"] = self.options.headers
         if self.options.greeting_message is not None:
             config["greeting_message"] = self.options.greeting_message
         if self.options.failure_message is not None:
@@ -315,7 +323,7 @@ class GroqOptions(OpenAIOptions):
 
     api_key: str = Field(..., description="Groq API key")
     model: str = Field(default="llama-3.3-70b-versatile", description="Model name")
-    base_url: Optional[str] = Field(default=None, description="Custom Groq-compatible endpoint")
+    base_url: str = Field(..., description="Groq-compatible endpoint")
 
 
 class Groq(BaseLLM):
@@ -324,7 +332,7 @@ class Groq(BaseLLM):
 
     def to_config(self) -> Dict[str, Any]:
         config = OpenAI(**_dump_optional_model(self.options)).to_config()
-        config["url"] = self.options.base_url or "https://api.groq.com/openai/v1/chat/completions"
+        config["url"] = self.options.base_url
         return config
 
 
@@ -375,8 +383,10 @@ class AmazonBedrockOptions(AnthropicOptions):
     access_key: str = Field(..., description="AWS access key ID")
     secret_key: str = Field(..., description="AWS secret access key")
     region: str = Field(..., description="AWS region")
+    max_tokens: Optional[int] = Field(default=None, gt=0)
     api_key: Optional[str] = Field(default=None, description="Unused; kept for AnthropicOptions compatibility")
     url: Optional[str] = Field(default=None, description="Unused; kept for AnthropicOptions compatibility")
+    headers: Optional[Dict[str, str]] = Field(default=None)
 
 
 class AmazonBedrock(BaseLLM):
@@ -393,6 +403,7 @@ class AmazonBedrock(BaseLLM):
             params["top_p"] = self.options.top_p
 
         config: Dict[str, Any] = {
+            "url": self.options.url or f"https://bedrock-runtime.{self.options.region}.amazonaws.com/model/{self.options.model}/converse-stream",
             "access_key": self.options.access_key,
             "secret_key": self.options.secret_key,
             "region": self.options.region,
@@ -429,6 +440,7 @@ class DifyOptions(BaseModel):
 
     api_key: str = Field(..., description="Dify API key")
     url: str = Field(..., description="Dify workflow or chat endpoint")
+    model: str = Field(..., description="Dify model identifier")
     user: Optional[str] = Field(default=None, description="Dify user identifier")
     conversation_id: Optional[str] = Field(default=None, description="Dify conversation ID")
     system_messages: Optional[List[Dict[str, Any]]] = Field(default=None)
@@ -450,7 +462,7 @@ class Dify(BaseLLM):
         self.options = DifyOptions(**kwargs)
 
     def to_config(self) -> Dict[str, Any]:
-        params: Dict[str, Any] = dict(self.options.params or {})
+        params: Dict[str, Any] = {"model": self.options.model, **(self.options.params or {})}
         if self.options.user is not None:
             params["user"] = self.options.user
         if self.options.conversation_id is not None:

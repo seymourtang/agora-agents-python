@@ -1,9 +1,8 @@
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from .base import BaseTTS, CartesiaSampleRate, ElevenLabsSampleRate, GoogleTTSSampleRate, MicrosoftSampleRate
-
 
 class ElevenLabsTTSOptions(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -11,7 +10,7 @@ class ElevenLabsTTSOptions(BaseModel):
     key: str = Field(..., description="ElevenLabs API key")
     model_id: str = Field(..., description="Model ID (e.g., eleven_flash_v2_5)")
     voice_id: str = Field(..., description="Voice ID")
-    base_url: Optional[str] = Field(default=None, description="WebSocket base URL")
+    base_url: str = Field(..., description="WebSocket base URL")
     sample_rate: Optional[ElevenLabsSampleRate] = Field(default=None, description="Sample rate in Hz")
     skip_patterns: Optional[List[int]] = Field(default=None)
     optimize_streaming_latency: Optional[int] = Field(default=None, ge=0, le=4)
@@ -31,12 +30,11 @@ class ElevenLabsTTS(BaseTTS):
     def to_config(self) -> Dict[str, Any]:
         params: Dict[str, Any] = {
             "key": self.options.key,
+            "base_url": self.options.base_url,
             "model_id": self.options.model_id,
             "voice_id": self.options.voice_id,
         }
 
-        if self.options.base_url is not None:
-            params["base_url"] = self.options.base_url
         if self.options.sample_rate is not None:
             params["sample_rate"] = self.options.sample_rate
         if self.options.optimize_streaming_latency is not None:
@@ -107,6 +105,23 @@ class OpenAITTSOptions(BaseModel):
     speed: Optional[float] = Field(default=None, description="Speech speed multiplier")
     skip_patterns: Optional[List[int]] = Field(default=None)
 
+    @model_validator(mode="after")
+    def _validate_byok_params(self) -> "OpenAITTSOptions":
+        if self.api_key is not None:
+            missing = [
+                name
+                for name, value in (
+                    ("model", self.model),
+                    ("base_url", self.base_url),
+                )
+                if value is None
+            ]
+            if missing:
+                raise ValueError(f"OpenAITTS requires {', '.join(missing)} when api_key is set")
+        elif self.base_url is not None:
+            raise ValueError("OpenAITTS base_url is only valid when api_key is set")
+        return self
+
 class OpenAITTS(BaseTTS):
     def __init__(self, **kwargs: Any):
         self.options = OpenAITTSOptions(**kwargs)
@@ -121,11 +136,11 @@ class OpenAITTS(BaseTTS):
         }
         if self.options.api_key is not None:
             params["api_key"] = self.options.api_key
-        if self.options.base_url is not None:
             params["base_url"] = self.options.base_url
-
-        if self.options.model is not None:
             params["model"] = self.options.model
+        elif self.options.model is not None:
+            params["model"] = self.options.model
+
         if self.options.response_format is not None:
             params["response_format"] = self.options.response_format
         if self.options.instructions is not None:
@@ -286,9 +301,9 @@ class HumeAITTSOptions(BaseModel):
 
     key: str = Field(..., description="Hume AI API key")
     config_id: Optional[str] = Field(default=None, description="Configuration ID")
-    voice_id: Optional[str] = Field(default=None, description="Hume AI voice ID")
+    voice_id: str = Field(..., description="Hume AI voice ID")
     base_url: Optional[str] = Field(default=None, description="Base URL")
-    provider: Optional[str] = Field(default=None, description="Voice provider type")
+    provider: str = Field(..., description="Voice provider type")
     speed: Optional[float] = Field(default=None, description="Playback speed")
     trailing_silence: Optional[float] = Field(default=None, description="Trailing silence in seconds")
     skip_patterns: Optional[List[int]] = Field(default=None)
@@ -302,16 +317,16 @@ class HumeAITTS(BaseTTS):
         return None
 
     def to_config(self) -> Dict[str, Any]:
-        params: Dict[str, Any] = {"key": self.options.key}
+        params: Dict[str, Any] = {
+            "key": self.options.key,
+            "voice_id": self.options.voice_id,
+            "provider": self.options.provider,
+        }
 
         if self.options.config_id is not None:
             params["config_id"] = self.options.config_id
-        if self.options.voice_id is not None:
-            params["voice_id"] = self.options.voice_id
         if self.options.base_url is not None:
             params["base_url"] = self.options.base_url
-        if self.options.provider is not None:
-            params["provider"] = self.options.provider
         if self.options.speed is not None:
             params["speed"] = self.options.speed
         if self.options.trailing_silence is not None:
@@ -393,6 +408,22 @@ class MiniMaxTTSOptions(BaseModel):
     voice_id: Optional[str] = Field(default=None, description="Voice style identifier (e.g., 'English_captivating_female1')")
     url: Optional[str] = Field(default=None, description="WebSocket endpoint (e.g., 'wss://api-uw.minimax.io/ws/v1/t2a_v2')")
     skip_patterns: Optional[List[int]] = Field(default=None)
+
+    @model_validator(mode="after")
+    def _validate_byok_params(self) -> "MiniMaxTTSOptions":
+        if self.key is not None:
+            missing = [
+                name
+                for name, value in (
+                    ("group_id", self.group_id),
+                    ("voice_id", self.voice_id),
+                    ("url", self.url),
+                )
+                if value is None
+            ]
+            if missing:
+                raise ValueError(f"MiniMaxTTS requires {', '.join(missing)} when key is set")
+        return self
 
 class MiniMaxTTS(BaseTTS):
     def __init__(self, **kwargs: Any):
