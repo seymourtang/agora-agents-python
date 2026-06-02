@@ -34,7 +34,6 @@ Agent(
 | Parameter | Type | Default | Description |
 |---|---|---|---|
 | `name` | `Optional[str]` | `None` | Agent name, used as default session name |
-| `pipeline_id` | `Optional[str]` | `None` | Published AI Studio pipeline ID used as this agent's base configuration |
 | `instructions` | `Optional[str]` | `None` | Deprecated. Use LLM vendor `system_messages` instead. |
 | `turn_detection` | `Optional[TurnDetectionConfig]` | `None` | Interaction language and turn detection configuration |
 | `interruption` | `Optional[InterruptionConfig]` | `None` | Unified interruption control configuration |
@@ -48,6 +47,7 @@ Agent(
 | `labels` | `Optional[Dict[str, str]]` | `None` | Custom key-value labels (returned in callbacks) |
 | `rtc` | `Optional[RtcConfig]` | `None` | RTC media encryption |
 | `filler_words` | `Optional[FillerWordsConfig]` | `None` | Filler words while waiting for LLM |
+| `pipeline_id` | `Optional[str]` | `None` | Published AI Studio pipeline ID used as this agent's base configuration |
 
 `pipeline_id` is an AI Studio base configuration. Explicit Agent config such as `with_llm()`, `with_tts()`, `with_stt()`, `with_mllm()`, `advanced_features`, and other builder options may send fields in `properties` that override the saved pipeline settings. Session-level `pipeline_id` overrides the agent-level value.
 
