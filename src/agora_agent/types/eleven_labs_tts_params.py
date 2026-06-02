@@ -12,7 +12,7 @@ class ElevenLabsTtsParams(UncheckedBaseModel):
     ElevenLabs TTS configuration parameters.
     """
 
-    base_url: typing.Optional[str] = pydantic.Field(default=None)
+    base_url: str = pydantic.Field()
     """
     WebSocket URL (e.g., "wss://api.elevenlabs.io/v1")
     """

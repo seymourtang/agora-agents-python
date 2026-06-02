@@ -22,7 +22,7 @@ class FishAudioTtsParams(UncheckedBaseModel):
     Fish Audio reference ID
     """
 
-    backend: typing.Optional[str] = pydantic.Field(default=None)
+    backend: str = pydantic.Field()
     """
     Backend model version to use
     """

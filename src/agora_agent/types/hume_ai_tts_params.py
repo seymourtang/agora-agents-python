@@ -18,7 +18,7 @@ class HumeAiTtsParams(UncheckedBaseModel):
     Hume AI API key
     """
 
-    voice_id: typing.Optional[str] = pydantic.Field(default=None)
+    voice_id: str = pydantic.Field()
     """
     Hume AI voice ID
     """
@@ -28,7 +28,7 @@ class HumeAiTtsParams(UncheckedBaseModel):
     Base URL for the Hume AI API
     """
 
-    provider: typing.Optional[HumeAiTtsParamsProvider] = pydantic.Field(default=None)
+    provider: HumeAiTtsParamsProvider = pydantic.Field()
     """
     Voice provider type
     """

@@ -33,7 +33,7 @@ class AmazonTtsParams(UncheckedBaseModel):
     Amazon Polly voice ID
     """
 
-    engine: typing.Optional[AmazonTtsParamsEngine] = pydantic.Field(default=None)
+    engine: AmazonTtsParamsEngine = pydantic.Field()
     """
     Amazon Polly engine type
     """

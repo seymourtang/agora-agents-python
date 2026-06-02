@@ -19,12 +19,14 @@ class MurfTtsParams(UncheckedBaseModel):
     Murf API key
     """
 
-    base_url: str = pydantic.Field()
+    base_url: typing.Optional[str] = pydantic.Field(default=None)
     """
     WebSocket endpoint for streaming TTS output
     """
 
-    voice_id: typing_extensions.Annotated[str, FieldMetadata(alias="voiceId")] = pydantic.Field()
+    voice_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="voiceId")] = pydantic.Field(
+        default=None
+    )
     """
     Voice ID (e.g., Matthew)
     """

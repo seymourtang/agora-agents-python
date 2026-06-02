@@ -24,9 +24,7 @@ class RimeTtsParams(UncheckedBaseModel):
     Rime speaker ID
     """
 
-    model_id: typing_extensions.Annotated[typing.Optional[str], FieldMetadata(alias="modelId")] = pydantic.Field(
-        default=None
-    )
+    model_id: typing_extensions.Annotated[str, FieldMetadata(alias="modelId")] = pydantic.Field()
     """
     Rime TTS model ID
     """
