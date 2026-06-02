@@ -497,7 +497,6 @@ class MurfTTSOptions(BaseModel):
     key: str = Field(..., description="Murf API key")
     voice_id: Optional[str] = Field(default=None, description="Voice ID (e.g., 'Ariana', 'Natalie', 'Ken')")
     base_url: Optional[str] = Field(default=None, description="WebSocket endpoint")
-    style: Optional[str] = Field(default=None, description="Voice style (e.g., 'Angry', 'Sad', 'Conversational', 'Newscast')")
     locale: Optional[str] = Field(default=None, description="Voice locale")
     rate: Optional[float] = Field(default=None, description="Speech rate")
     pitch: Optional[float] = Field(default=None, description="Pitch adjustment")
@@ -520,8 +519,6 @@ class MurfTTS(BaseTTS):
             params["base_url"] = self.options.base_url
         if self.options.voice_id is not None:
             params["voiceId"] = self.options.voice_id
-        if self.options.style is not None:
-            params["style"] = self.options.style
         if self.options.locale is not None:
             params["locale"] = self.options.locale
         if self.options.rate is not None:

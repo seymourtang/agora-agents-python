@@ -1,3 +1,5 @@
+import pytest
+
 from agora_agent import (
     Agent,
     AmazonSTT,
@@ -62,6 +64,14 @@ def test_explicit_interaction_language_can_differ_from_provider_language() -> No
 
     assert props["asr"]["language"] == "fr-FR"
     assert props["asr"]["params"]["language"] == "en"
+
+
+def test_invalid_explicit_interaction_language_is_rejected() -> None:
+    with pytest.raises(ValueError, match="Invalid interaction language: en"):
+        Agent(interaction_language="en")  # type: ignore[arg-type]
+
+    with pytest.raises(ValueError, match="Invalid interaction language: xx-YY"):
+        base_agent().with_interaction_language("xx-YY")  # type: ignore[arg-type]
 
 
 def test_default_interaction_language_is_sent_without_stt() -> None:

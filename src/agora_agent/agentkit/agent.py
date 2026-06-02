@@ -261,6 +261,12 @@ def _is_interaction_language(value: typing.Any) -> bool:
     return isinstance(value, str) and value in _INTERACTION_LANGUAGES
 
 
+def _validate_interaction_language(value: typing.Any) -> InteractionLanguage:
+    if not _is_interaction_language(value):
+        raise ValueError(f"Invalid interaction language: {value}")
+    return value  # type: ignore[return-value]
+
+
 class Agent:
     """A reusable agent definition.
 
@@ -322,7 +328,11 @@ class Agent:
         self._sal = sal
         self._advanced_features = advanced_features
         self._parameters = parameters
-        self._interaction_language = interaction_language
+        self._interaction_language = (
+            _validate_interaction_language(interaction_language)
+            if interaction_language is not None
+            else None
+        )
         self._geofence = geofence
         self._labels = labels
         self._rtc = rtc
@@ -363,7 +373,7 @@ class Agent:
         remain under ``asr.params``, for example ``asr.params.language``.
         """
         new_agent = self._clone()
-        new_agent._interaction_language = language
+        new_agent._interaction_language = _validate_interaction_language(language)
         return new_agent
 
     def with_mllm(self, vendor: BaseMLLM) -> "Agent":

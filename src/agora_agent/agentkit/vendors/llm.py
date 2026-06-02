@@ -29,7 +29,7 @@ class OpenAIOptions(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     api_key: Optional[str] = Field(default=None, description="OpenAI API key")
-    model: str = Field(default="gpt-4o-mini", description="Model name")
+    model: str = Field(..., description="Model name")
     base_url: Optional[str] = Field(default=None, description="Custom base URL")
     temperature: Optional[float] = Field(default=None, ge=0.0, le=2.0)
     top_p: Optional[float] = Field(default=None, ge=0.0, le=1.0)
@@ -49,6 +49,8 @@ class OpenAIOptions(BaseModel):
 
     @model_validator(mode="after")
     def _validate_byok_params(self) -> "OpenAIOptions":
+        if not self.model:
+            raise ValueError("OpenAI requires model")
         if self.api_key is not None and self.base_url is None:
             raise ValueError("OpenAI requires base_url when api_key is set")
         if self.api_key is None and self.base_url is not None:
@@ -184,7 +186,7 @@ class AnthropicOptions(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     api_key: str = Field(..., description="Anthropic API key")
-    model: str = Field(default="claude-3-5-sonnet-20241022", description="Model name")
+    model: str = Field(..., description="Model name")
     url: str = Field(..., description="Anthropic messages endpoint URL")
     max_tokens: int = Field(..., gt=0)
     temperature: Optional[float] = Field(default=None, ge=0.0, le=1.0)
@@ -251,7 +253,7 @@ class GeminiOptions(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     api_key: str = Field(..., description="Google AI API key")
-    model: str = Field(default="gemini-2.0-flash-exp", description="Model name")
+    model: str = Field(..., description="Model name")
     url: Optional[str] = Field(default=None, description="Custom API endpoint URL")
     temperature: Optional[float] = Field(default=None, ge=0.0, le=2.0)
     top_p: Optional[float] = Field(default=None, ge=0.0, le=1.0)
@@ -322,7 +324,7 @@ class GroqOptions(OpenAIOptions):
     model_config = ConfigDict(extra="forbid")
 
     api_key: str = Field(..., description="Groq API key")
-    model: str = Field(default="llama-3.3-70b-versatile", description="Model name")
+    model: str = Field(..., description="Model name")
     base_url: str = Field(..., description="Groq-compatible endpoint")
 
 
@@ -383,6 +385,7 @@ class AmazonBedrockOptions(AnthropicOptions):
     access_key: str = Field(..., description="AWS access key ID")
     secret_key: str = Field(..., description="AWS secret access key")
     region: str = Field(..., description="AWS region")
+    model: str = Field(..., description="Amazon Bedrock model identifier")
     max_tokens: Optional[int] = Field(default=None, gt=0)
     api_key: Optional[str] = Field(default=None, description="Unused; kept for AnthropicOptions compatibility")
     url: Optional[str] = Field(default=None, description="Unused; kept for AnthropicOptions compatibility")

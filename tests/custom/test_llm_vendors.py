@@ -1,4 +1,6 @@
-from agora_agent import AmazonBedrock, Anthropic, AzureOpenAI, CustomLLM, Dify, Groq, VertexAILLM
+import pytest
+
+from agora_agent import AmazonBedrock, Anthropic, AzureOpenAI, CustomLLM, Dify, Gemini, Groq, OpenAI, VertexAILLM
 
 
 def test_groq_serializes_as_openai_compatible() -> None:
@@ -95,3 +97,28 @@ def test_dify_serializes_conversation_fields() -> None:
     assert config["params"]["model"] == "default"
     assert config["params"]["user"] == "user-1"
     assert config["params"]["conversation_id"] == "conversation-1"
+
+
+def test_llm_vendors_reject_missing_required_models() -> None:
+    with pytest.raises(Exception, match="model"):
+        OpenAI(api_key="openai-key", base_url="https://api.openai.com/v1/chat/completions")
+
+    with pytest.raises(Exception, match="model"):
+        Anthropic(
+            api_key="anthropic-key",
+            url="https://api.anthropic.com/v1/messages",
+            headers={"anthropic-version": "2023-06-01"},
+            max_tokens=1024,
+        )
+
+    with pytest.raises(Exception, match="model"):
+        Gemini(api_key="google-key")
+
+    with pytest.raises(Exception, match="model"):
+        Groq(api_key="groq-key", base_url="https://api.groq.com/openai/v1/chat/completions")
+
+    with pytest.raises(Exception, match="model"):
+        VertexAILLM(api_key="vertex-token", project_id="project", location="us-central1")
+
+    with pytest.raises(Exception, match="model"):
+        AmazonBedrock(access_key="aws-access", secret_key="aws-secret", region="us-east-1")

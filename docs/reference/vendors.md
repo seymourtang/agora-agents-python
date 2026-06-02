@@ -23,9 +23,9 @@ from agora_agent import OpenAI, ElevenLabsTTS, DeepgramTTS, DeepgramSTT, OpenAIR
 
 | Parameter | Type | Required | Default | Description |
 |---|---|---|---|---|
-| `api_key` | `str` | Yes | — | OpenAI API key |
-| `model` | `str` | No | `gpt-4o-mini` | Model name |
-| `base_url` | `str` | No | `None` | Custom base URL (overrides default OpenAI endpoint) |
+| `api_key` | `str` | BYOK only | `None` | OpenAI API key. Optional for supported Agora-managed OpenAI models. |
+| `model` | `str` | Yes | — | Model name |
+| `base_url` | `str` | BYOK only | `None` | OpenAI Chat Completions endpoint URL. Required when `api_key` is set. |
 | `temperature` | `float` | No | `None` | Sampling temperature (0.0–2.0) |
 | `top_p` | `float` | No | `None` | Nucleus sampling (0.0–1.0) |
 | `max_tokens` | `int` | No | `None` | Maximum tokens to generate |
@@ -83,7 +83,7 @@ llm = AzureOpenAI(
 | Parameter | Type | Required | Default | Description |
 |---|---|---|---|---|
 | `api_key` | `str` | Yes | — | Anthropic API key |
-| `model` | `str` | No | `claude-3-5-sonnet-20241022` | Model name |
+| `model` | `str` | Yes | — | Model name |
 | `url` | `str` | Yes | — | Anthropic messages endpoint URL |
 | `headers` | `Dict[str, str]` | Yes | — | Request headers, including Anthropic API version |
 | `max_tokens` | `int` | Yes | — | Maximum tokens |
@@ -116,7 +116,7 @@ llm = Anthropic(
 | Parameter | Type | Required | Default | Description |
 |---|---|---|---|---|
 | `api_key` | `str` | Yes | — | Google AI API key |
-| `model` | `str` | No | `gemini-2.0-flash-exp` | Model name |
+| `model` | `str` | Yes | — | Model name |
 | `temperature` | `float` | No | `None` | Sampling temperature (0.0–2.0) |
 | `top_p` | `float` | No | `None` | Nucleus sampling (0.0–1.0) |
 | `top_k` | `int` | No | `None` | Top-k sampling |
@@ -146,8 +146,8 @@ The SDK also includes named helpers for the remaining Agora-supported LLM provid
 |---|---|---|
 | `Groq` | Groq | `api_key`, `model`, `base_url?` |
 | `VertexAILLM` | Google Vertex AI | `api_key`, `model`, `project_id`, `location`, `url?` |
-| `AmazonBedrock` | Amazon Bedrock | `api_key`, `url`, `model` |
-| `Dify` | Dify | `api_key`, `url`, `user?`, `conversation_id?` |
+| `AmazonBedrock` | Amazon Bedrock | `access_key`, `secret_key`, `region`, `model` |
+| `Dify` | Dify | `api_key`, `url`, `model`, `user?`, `conversation_id?` |
 | `CustomLLM` | OpenAI-compatible LLM | `api_key`, `model`, `base_url` |
 
 ---
@@ -285,7 +285,6 @@ The SDK also includes named helpers for the remaining Agora-supported LLM provid
 | `key` | `str` | Yes | — | Murf API key |
 | `voice_id` | `str` | No | `None` | Voice ID (e.g., `Ariana`, `Natalie`) |
 | `base_url` | `str` | No | `None` | WebSocket endpoint |
-| `style` | `str` | No | `None` | Voice style (e.g., `Conversational`) |
 | `locale` | `str` | No | `None` | Voice locale |
 | `rate` | `float` | No | `None` | Speech rate |
 | `pitch` | `float` | No | `None` | Pitch adjustment |
