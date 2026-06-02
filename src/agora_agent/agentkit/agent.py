@@ -210,7 +210,7 @@ ThinkResponse = AgentThinkAgentManagementResponse
 
 from .token import generate_convo_ai_token, _parse_numeric_uid, _validate_expires_in
 
-InteractionLanguage = typing_extensions.Literal[
+TurnDetectionLanguage = typing_extensions.Literal[
     "ar-EG",
     "ar-JO",
     "ar-SA",
@@ -245,8 +245,8 @@ InteractionLanguage = typing_extensions.Literal[
     "vi-VN",
 ]
 
-DEFAULT_INTERACTION_LANGUAGE: InteractionLanguage = "en-US"
-INTERACTION_LANGUAGE_VALUES: typing.Tuple[InteractionLanguage, ...] = (
+DEFAULT_TURN_DETECTION_LANGUAGE: TurnDetectionLanguage = "en-US"
+TURN_DETECTION_LANGUAGE_VALUES: typing.Tuple[TurnDetectionLanguage, ...] = (
     "ar-EG",
     "ar-JO",
     "ar-SA",
@@ -280,7 +280,7 @@ INTERACTION_LANGUAGE_VALUES: typing.Tuple[InteractionLanguage, ...] = (
     "tr-TR",
     "vi-VN",
 )
-_INTERACTION_LANGUAGES = set(INTERACTION_LANGUAGE_VALUES)
+_TURN_DETECTION_LANGUAGES = set(TURN_DETECTION_LANGUAGE_VALUES)
 
 
 def _dump_optional_model(value: typing.Any) -> typing.Any:
@@ -291,12 +291,12 @@ def _dump_optional_model(value: typing.Any) -> typing.Any:
     return value
 
 
-def _is_interaction_language(value: typing.Any) -> bool:
-    return isinstance(value, str) and value in _INTERACTION_LANGUAGES
+def _is_turn_detection_language(value: typing.Any) -> bool:
+    return isinstance(value, str) and value in _TURN_DETECTION_LANGUAGES
 
 
-def _validate_interaction_language(value: typing.Any) -> InteractionLanguage:
-    if not _is_interaction_language(value):
+def _validate_turn_detection_language(value: typing.Any) -> TurnDetectionLanguage:
+    if not _is_turn_detection_language(value):
         raise ValueError(f"Invalid interaction language: {value}")
     return value  # type: ignore[return-value]
 
@@ -335,7 +335,6 @@ class Agent:
         sal: typing.Optional[SalConfig] = None,
         advanced_features: typing.Optional[AdvancedFeatures] = None,
         parameters: typing.Optional[typing.Union[SessionParams, SessionParamsInput]] = None,
-        interaction_language: typing.Optional[InteractionLanguage] = None,
         greeting: typing.Optional[str] = None,
         failure_message: typing.Optional[str] = None,
         max_history: typing.Optional[int] = None,
@@ -362,11 +361,6 @@ class Agent:
         self._sal = sal
         self._advanced_features = advanced_features
         self._parameters = parameters
-        self._interaction_language = (
-            _validate_interaction_language(interaction_language)
-            if interaction_language is not None
-            else None
-        )
         self._geofence = geofence
         self._labels = labels
         self._rtc = rtc
@@ -398,16 +392,6 @@ class Agent:
     def with_stt(self, vendor: BaseSTT) -> "Agent":
         new_agent = self._clone()
         new_agent._stt = vendor.to_config()
-        return new_agent
-
-    def with_interaction_language(self, language: InteractionLanguage) -> "Agent":
-        """Returns a new Agent with the Agora interaction language.
-
-        This serializes to ``asr.language``. Vendor-specific language values
-        remain under ``asr.params``, for example ``asr.params.language``.
-        """
-        new_agent = self._clone()
-        new_agent._interaction_language = _validate_interaction_language(language)
         return new_agent
 
     def with_mllm(self, vendor: BaseMLLM) -> "Agent":
@@ -706,10 +690,6 @@ class Agent:
         return self._filler_words
 
     @property
-    def interaction_language(self) -> typing.Optional[InteractionLanguage]:
-        return self._interaction_language
-
-    @property
     def config(self) -> typing.Dict[str, typing.Any]:
         return {
             "name": self._name,
@@ -727,7 +707,6 @@ class Agent:
             "avatar": self._avatar,
             "advanced_features": self._advanced_features,
             "parameters": self._parameters,
-            "interaction_language": self._interaction_language,
             "geofence": self._geofence,
             "labels": self._labels,
             "rtc": self._rtc,
@@ -909,6 +888,7 @@ class Agent:
             return StartAgentsRequestProperties(**base_kwargs)
 
         base_kwargs["asr"] = self._resolve_asr_config()
+        base_kwargs["turn_detection"] = self._resolve_turn_detection_config()
 
         if skip_vendor_validation:
             return StartAgentsRequestProperties(**base_kwargs)
@@ -940,12 +920,27 @@ class Agent:
 
     def _resolve_asr_config(self) -> typing.Dict[str, typing.Any]:
         asr_config = dict(self._stt or {})
-        existing_language = asr_config.get("language")
-        language = self._interaction_language
-        if language is None:
-            language = existing_language if _is_interaction_language(existing_language) else DEFAULT_INTERACTION_LANGUAGE
-        asr_config["language"] = language
+        asr_config.pop("language", None)
+        if not asr_config:
+            asr_config["vendor"] = "ares"
         return asr_config
+
+    def _resolve_turn_detection_config(self) -> TurnDetectionConfig:
+        existing_stt_language = self._stt.get("language") if self._stt is not None else None
+        existing_turn_detection_language = self._field_value(self._turn_detection, "language")
+        language = (
+            existing_turn_detection_language
+            if existing_turn_detection_language is not None
+            else existing_stt_language
+            if _is_turn_detection_language(existing_stt_language)
+            else DEFAULT_TURN_DETECTION_LANGUAGE
+        )
+        language = _validate_turn_detection_language(language)
+        if self._turn_detection is None:
+            return StartAgentsRequestPropertiesTurnDetection(language=language)
+        if isinstance(self._turn_detection, dict):
+            return typing.cast(TurnDetectionConfig, {**self._turn_detection, "language": language})
+        return self._copy_model_update(self._turn_detection, {"language": language})
 
     def _clone(self) -> "Agent":
         new_agent = Agent.__new__(Agent)
@@ -962,7 +957,6 @@ class Agent:
         new_agent._sal = self._sal
         new_agent._advanced_features = self._advanced_features
         new_agent._parameters = self._parameters
-        new_agent._interaction_language = self._interaction_language
         new_agent._instructions = self._instructions
         new_agent._greeting = self._greeting
         new_agent._failure_message = self._failure_message

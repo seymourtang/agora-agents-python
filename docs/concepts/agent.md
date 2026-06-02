@@ -64,7 +64,7 @@ Each `with_*` method returns a **new** `Agent` instance — the original is unch
 | `with_instructions(text)` | `str` | Deprecated. Use LLM vendor `system_messages` instead. |
 | `with_greeting(text)` | `str` | Deprecated. Use LLM/MLLM vendor `greeting_message` instead. |
 | `with_name(name)` | `str` | Override the agent name |
-| `with_turn_detection(config)` | `TurnDetectionConfig` | Override cascading-flow SOS/EOS detection; use `with_interruption()` for interruption behavior |
+| `with_turn_detection(config)` | `TurnDetectionConfig` | Configure `turn_detection.language` and cascading-flow SOS/EOS detection; use `with_interruption()` for interruption behavior |
 | `with_sal(config)` | `SalConfig` | Set SAL configuration |
 | `with_advanced_features(features)` | `Dict[str, Any]` | Set advanced features |
 | `with_parameters(parameters)` | `SessionParams` | Set session parameters |

@@ -10,6 +10,7 @@ from agora_agent import (
     OpenAI,
     OpenAISTT,
     SpeechmaticsSTT,
+    TurnDetectionConfig,
 )
 
 
@@ -38,46 +39,47 @@ def properties(agent: Agent) -> dict:
     )
 
 
-def test_bcp47_stt_language_sets_asr_language_and_provider_param() -> None:
+def test_bcp47_stt_language_sets_turn_detection_language_and_provider_param() -> None:
     props = properties(base_agent().with_stt(SpeechmaticsSTT(api_key="stt-key", language="en-US")))
 
     assert props["asr"]["vendor"] == "speechmatics"
-    assert props["asr"]["language"] == "en-US"
+    assert "language" not in props["asr"]
+    assert props["turn_detection"]["language"] == "en-US"
     assert props["asr"]["params"]["language"] == "en-US"
 
 
-def test_provider_language_defaults_interaction_language_when_not_supported_by_ares() -> None:
+def test_provider_language_defaults_turn_detection_language_when_not_supported_by_ares() -> None:
     props = properties(base_agent().with_stt(SpeechmaticsSTT(api_key="stt-key", language="en")))
 
     assert props["asr"]["vendor"] == "speechmatics"
-    assert props["asr"]["language"] == "en-US"
+    assert "language" not in props["asr"]
+    assert props["turn_detection"]["language"] == "en-US"
     assert props["asr"]["params"]["language"] == "en"
-    assert "turn_detection" not in props
 
 
-def test_explicit_interaction_language_can_differ_from_provider_language() -> None:
+def test_turn_detection_language_can_differ_from_provider_language() -> None:
     props = properties(
-        base_agent()
-        .with_interaction_language("fr-FR")
+        Agent(turn_detection=TurnDetectionConfig(language="fr-FR"))
+        .with_llm(OpenAI(api_key="llm-key", model="gpt-4o-mini", base_url="https://api.openai.com/v1/chat/completions"))
+        .with_tts(ElevenLabsTTS(key="tts-key", voice_id="voice", model_id="eleven_flash_v2_5", base_url="wss://api.elevenlabs.io/v1"))
         .with_stt(SpeechmaticsSTT(api_key="stt-key", language="en"))
     )
 
-    assert props["asr"]["language"] == "fr-FR"
+    assert props["turn_detection"]["language"] == "fr-FR"
+    assert "language" not in props["asr"]
     assert props["asr"]["params"]["language"] == "en"
 
 
-def test_invalid_explicit_interaction_language_is_rejected() -> None:
+def test_invalid_turn_detection_language_is_rejected() -> None:
     with pytest.raises(ValueError, match="Invalid interaction language: en"):
-        Agent(interaction_language="en")  # type: ignore[arg-type]
-
-    with pytest.raises(ValueError, match="Invalid interaction language: xx-YY"):
-        base_agent().with_interaction_language("xx-YY")  # type: ignore[arg-type]
+        properties(Agent(turn_detection=TurnDetectionConfig(language="en")))  # type: ignore[arg-type]
 
 
-def test_default_interaction_language_is_sent_without_stt() -> None:
+def test_default_turn_detection_language_is_sent_without_stt() -> None:
     props = properties(base_agent())
 
-    assert props["asr"]["language"] == "en-US"
+    assert props["asr"] == {"vendor": "ares"}
+    assert props["turn_detection"] == {"language": "en-US"}
 
 
 def test_stt_vendor_params_match_documented_shapes() -> None:

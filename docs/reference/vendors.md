@@ -318,7 +318,7 @@ The SDK also includes named helpers for the remaining Agora-supported LLM provid
 
 ## STT Vendors
 
-Use `agent.with_interaction_language()` for Agora `asr.language`; it defaults to `en-US`. Provider-specific language values remain under `asr.params` and may use a different format.
+Use `turn_detection.language` for Agora interaction language; it defaults to `en-US`. Provider-specific language values remain under `asr.params` and may use a different format.
 
 ### `SpeechmaticsSTT`
 
@@ -326,7 +326,6 @@ Use `agent.with_interaction_language()` for Agora `asr.language`; it defaults to
 |---|---|---|---|---|
 | `api_key` | `str` | Yes | — | Speechmatics API key |
 | `language` | `str` | Yes | — | Language code (e.g., `en`) |
-| `interaction_language` | `str` | No | `None` | Agora `asr.language` override |
 | `uri` | `str` | No | `None` | Speechmatics streaming WebSocket URL |
 | `additional_params` | `Dict[str, Any]` | No | `None` | Additional parameters |
 
@@ -337,7 +336,6 @@ Use `agent.with_interaction_language()` for Agora `asr.language`; it defaults to
 | `api_key` | `str` | BYOK only | `None` | Deepgram API key. Optional only for Agora-managed `nova-2` and `nova-3`. |
 | `model` | `str` | No | `None` | Model (e.g., `nova-2`) |
 | `language` | `str` | No | `None` | Language code (e.g., `en-US`) |
-| `interaction_language` | `str` | No | `None` | Agora `asr.language` override |
 | `smart_format` | `bool` | No | `None` | Enable smart formatting |
 | `punctuation` | `bool` | No | `None` | Enable punctuation |
 | `additional_params` | `Dict[str, Any]` | No | `None` | Additional parameters |
@@ -351,7 +349,6 @@ For `nova-2` and `nova-3`, omit `api_key` to use Agora-managed credentials. For 
 | `key` | `str` | Yes | — | Azure subscription key |
 | `region` | `str` | Yes | — | Azure region (e.g., `eastus`) |
 | `language` | `str` | Yes | — | Language code (e.g., `en-US`) |
-| `interaction_language` | `str` | No | `None` | Agora `asr.language` override |
 | `additional_params` | `Dict[str, Any]` | No | `None` | Additional parameters |
 
 ### `OpenAISTT`
@@ -363,7 +360,6 @@ For `nova-2` and `nova-3`, omit `api_key` to use Agora-managed credentials. For 
 | `language` | `str` | No | `None` | Language code |
 | `prompt` | `str` | No | `None` | Prompt for OpenAI transcription |
 | `input_audio_transcription` | `Dict[str, Any]` | No | `None` | OpenAI transcription settings |
-| `interaction_language` | `str` | No | `None` | Agora `asr.language` override |
 | `additional_params` | `Dict[str, Any]` | No | `None` | Additional parameters |
 
 ### `GoogleSTT`
@@ -374,7 +370,6 @@ For `nova-2` and `nova-3`, omit `api_key` to use Agora-managed credentials. For 
 | `location` | `str` | Yes | — | Google Cloud region |
 | `adc_credentials_string` | `str` | Yes | — | Google service account credentials JSON string |
 | `language` | `str` | Yes | — | Language code (e.g., `en-US`) |
-| `interaction_language` | `str` | No | `None` | Agora `asr.language` override |
 | `model` | `str` | No | `None` | Recognition model |
 | `additional_params` | `Dict[str, Any]` | No | `None` | Additional parameters |
 
@@ -386,7 +381,6 @@ For `nova-2` and `nova-3`, omit `api_key` to use Agora-managed credentials. For 
 | `secret_key` | `str` | Yes | — | AWS Secret Access Key |
 | `region` | `str` | Yes | — | AWS region (e.g., `us-east-1`) |
 | `language` | `str` | Yes | — | Amazon `language_code` |
-| `interaction_language` | `str` | No | `None` | Agora `asr.language` override |
 | `additional_params` | `Dict[str, Any]` | No | `None` | Additional parameters |
 
 ### `AssemblyAISTT`
@@ -395,7 +389,6 @@ For `nova-2` and `nova-3`, omit `api_key` to use Agora-managed credentials. For 
 |---|---|---|---|---|
 | `api_key` | `str` | Yes | — | AssemblyAI API key |
 | `language` | `str` | Yes | — | Language code |
-| `interaction_language` | `str` | No | `None` | Agora `asr.language` override |
 | `uri` | `str` | No | `None` | AssemblyAI streaming WebSocket URL |
 | `additional_params` | `Dict[str, Any]` | No | `None` | Additional parameters |
 

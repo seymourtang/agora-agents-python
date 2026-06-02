@@ -5,7 +5,7 @@ from typing_extensions import Literal
 
 from .base import BaseSTT
 
-InteractionLanguage = Literal[
+TurnDetectionLanguage = Literal[
     "ar-EG",
     "ar-JO",
     "ar-SA",
@@ -40,7 +40,7 @@ InteractionLanguage = Literal[
     "vi-VN",
 ]
 
-INTERACTION_LANGUAGE_VALUES: Tuple[InteractionLanguage, ...] = (
+TURN_DETECTION_LANGUAGE_VALUES: Tuple[TurnDetectionLanguage, ...] = (
     "ar-EG",
     "ar-JO",
     "ar-SA",
@@ -74,14 +74,12 @@ INTERACTION_LANGUAGE_VALUES: Tuple[InteractionLanguage, ...] = (
     "tr-TR",
     "vi-VN",
 )
-_INTERACTION_LANGUAGES = set(INTERACTION_LANGUAGE_VALUES)
+_TURN_DETECTION_LANGUAGES = set(TURN_DETECTION_LANGUAGE_VALUES)
 _DEEPGRAM_MANAGED_MODELS = {"nova-2", "nova-3"}
 
 
-def _interaction_language(language: Optional[str], interaction_language: Optional[InteractionLanguage]) -> Optional[InteractionLanguage]:
-    if interaction_language is not None:
-        return interaction_language
-    if language in _INTERACTION_LANGUAGES:
+def _turn_detection_language(language: Optional[str]) -> Optional[TurnDetectionLanguage]:
+    if language in _TURN_DETECTION_LANGUAGES:
         return language  # type: ignore[return-value]
     return None
 
@@ -91,7 +89,6 @@ class SpeechmaticsSTTOptions(BaseModel):
 
     api_key: str = Field(..., description="Speechmatics API key")
     language: str = Field(..., description="Language code (e.g., en, es, fr)")
-    interaction_language: Optional[InteractionLanguage] = Field(default=None, description="Agora interaction language for asr.language")
     model: Optional[str] = Field(default=None, description="Model name")
     uri: Optional[str] = Field(default=None, description="Speechmatics streaming WebSocket URL")
     additional_params: Optional[Dict[str, Any]] = Field(default=None)
@@ -115,9 +112,9 @@ class SpeechmaticsSTT(BaseSTT):
             "vendor": "speechmatics",
             "params": params,
         }
-        interaction_language = _interaction_language(self.options.language, self.options.interaction_language)
-        if interaction_language is not None:
-            config["language"] = interaction_language
+        turn_detection_language = _turn_detection_language(self.options.language)
+        if turn_detection_language is not None:
+            config["language"] = turn_detection_language
         return config
 
 
@@ -127,7 +124,6 @@ class DeepgramSTTOptions(BaseModel):
     api_key: Optional[str] = Field(default=None, description="Deepgram API key")
     model: Optional[str] = Field(default=None, description="Model (e.g., nova-2, enhanced, base)")
     language: Optional[str] = Field(default=None, description="Language code (e.g., en-US)")
-    interaction_language: Optional[InteractionLanguage] = Field(default=None, description="Agora interaction language for asr.language")
     smart_format: Optional[bool] = Field(default=None, description="Enable smart formatting")
     punctuation: Optional[bool] = Field(default=None, description="Enable punctuation")
     additional_params: Optional[Dict[str, Any]] = Field(default=None)
@@ -159,9 +155,9 @@ class DeepgramSTT(BaseSTT):
             "vendor": "deepgram",
             "params": params,
         }
-        interaction_language = _interaction_language(self.options.language, self.options.interaction_language)
-        if interaction_language is not None:
-            config["language"] = interaction_language
+        turn_detection_language = _turn_detection_language(self.options.language)
+        if turn_detection_language is not None:
+            config["language"] = turn_detection_language
         return config
 
 
@@ -171,7 +167,6 @@ class MicrosoftSTTOptions(BaseModel):
     key: str = Field(..., description="Azure subscription key")
     region: str = Field(..., description="Azure region (e.g., eastus)")
     language: str = Field(..., description="Language code (e.g., en-US)")
-    interaction_language: Optional[InteractionLanguage] = Field(default=None, description="Agora interaction language for asr.language")
     additional_params: Optional[Dict[str, Any]] = Field(default=None)
 
 class MicrosoftSTT(BaseSTT):
@@ -191,9 +186,9 @@ class MicrosoftSTT(BaseSTT):
             "vendor": "microsoft",
             "params": params,
         }
-        interaction_language = _interaction_language(self.options.language, self.options.interaction_language)
-        if interaction_language is not None:
-            config["language"] = interaction_language
+        turn_detection_language = _turn_detection_language(self.options.language)
+        if turn_detection_language is not None:
+            config["language"] = turn_detection_language
         return config
 
 
@@ -205,7 +200,6 @@ class OpenAISTTOptions(BaseModel):
     language: Optional[str] = Field(default=None, description="Language code")
     prompt: Optional[str] = Field(default=None, description="Prompt that guides OpenAI transcription")
     input_audio_transcription: Optional[Dict[str, Any]] = Field(default=None, description="OpenAI transcription settings")
-    interaction_language: Optional[InteractionLanguage] = Field(default=None, description="Agora interaction language for asr.language")
     additional_params: Optional[Dict[str, Any]] = Field(default=None)
 
 class OpenAISTT(BaseSTT):
@@ -229,9 +223,9 @@ class OpenAISTT(BaseSTT):
             "vendor": "openai",
             "params": params,
         }
-        interaction_language = _interaction_language(self.options.language, self.options.interaction_language)
-        if interaction_language is not None:
-            config["language"] = interaction_language
+        turn_detection_language = _turn_detection_language(self.options.language)
+        if turn_detection_language is not None:
+            config["language"] = turn_detection_language
         return config
 
 
@@ -242,7 +236,6 @@ class GoogleSTTOptions(BaseModel):
     location: str = Field(..., description="Google Cloud region")
     adc_credentials_string: str = Field(..., description="Google service account credentials JSON string")
     language: str = Field(..., description="Language code (e.g., en-US)")
-    interaction_language: Optional[InteractionLanguage] = Field(default=None, description="Agora interaction language for asr.language")
     model: Optional[str] = Field(default=None, description="Recognition model")
     additional_params: Optional[Dict[str, Any]] = Field(default=None)
 
@@ -267,9 +260,9 @@ class GoogleSTT(BaseSTT):
             "vendor": "google",
             "params": params,
         }
-        interaction_language = _interaction_language(self.options.language, self.options.interaction_language)
-        if interaction_language is not None:
-            config["language"] = interaction_language
+        turn_detection_language = _turn_detection_language(self.options.language)
+        if turn_detection_language is not None:
+            config["language"] = turn_detection_language
         return config
 
 
@@ -280,7 +273,6 @@ class AmazonSTTOptions(BaseModel):
     secret_key: str = Field(..., description="AWS Secret Access Key")
     region: str = Field(..., description="AWS region (e.g., us-east-1)")
     language: str = Field(..., description="Language code")
-    interaction_language: Optional[InteractionLanguage] = Field(default=None, description="Agora interaction language for asr.language")
     additional_params: Optional[Dict[str, Any]] = Field(default=None)
 
 class AmazonSTT(BaseSTT):
@@ -301,9 +293,9 @@ class AmazonSTT(BaseSTT):
             "vendor": "amazon",
             "params": params,
         }
-        interaction_language = _interaction_language(self.options.language, self.options.interaction_language)
-        if interaction_language is not None:
-            config["language"] = interaction_language
+        turn_detection_language = _turn_detection_language(self.options.language)
+        if turn_detection_language is not None:
+            config["language"] = turn_detection_language
         return config
 
 
@@ -312,7 +304,6 @@ class AssemblyAISTTOptions(BaseModel):
 
     api_key: str = Field(..., description="AssemblyAI API key")
     language: str = Field(..., description="Language code")
-    interaction_language: Optional[InteractionLanguage] = Field(default=None, description="Agora interaction language for asr.language")
     uri: Optional[str] = Field(default=None, description="AssemblyAI streaming WebSocket URL")
     additional_params: Optional[Dict[str, Any]] = Field(default=None)
 
@@ -332,16 +323,16 @@ class AssemblyAISTT(BaseSTT):
             "vendor": "assemblyai",
             "params": params,
         }
-        interaction_language = _interaction_language(self.options.language, self.options.interaction_language)
-        if interaction_language is not None:
-            config["language"] = interaction_language
+        turn_detection_language = _turn_detection_language(self.options.language)
+        if turn_detection_language is not None:
+            config["language"] = turn_detection_language
         return config
 
 
 class AresSTTOptions(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    language: Optional[InteractionLanguage] = Field(default=None, description="Language code")
+    language: Optional[TurnDetectionLanguage] = Field(default=None, description="Language code")
     additional_params: Optional[Dict[str, Any]] = Field(default=None)
 
 class AresSTT(BaseSTT):
@@ -362,7 +353,6 @@ class SarvamSTTOptions(BaseModel):
 
     api_key: str = Field(..., description="Sarvam API key")
     language: str = Field(..., description="Language code (e.g., en, hi, ta)")
-    interaction_language: Optional[InteractionLanguage] = Field(default=None, description="Agora interaction language for asr.language")
     model: Optional[str] = Field(default=None, description="Model name")
     additional_params: Optional[Dict[str, Any]] = Field(default=None)
 
@@ -383,7 +373,7 @@ class SarvamSTT(BaseSTT):
             "vendor": "sarvam",
             "params": params,
         }
-        interaction_language = _interaction_language(self.options.language, self.options.interaction_language)
-        if interaction_language is not None:
-            config["language"] = interaction_language
+        turn_detection_language = _turn_detection_language(self.options.language)
+        if turn_detection_language is not None:
+            config["language"] = turn_detection_language
         return config

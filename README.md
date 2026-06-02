@@ -20,7 +20,7 @@ pip install agora-agents
 ## Quick Start
 
 Start with the `Agent` builder: create a client with app credentials, choose your ASR, LLM, and TTS providers, then start a session. Omit vendor API keys for supported Agora-managed models, or provide keys when you want BYOK.
-Use `with_interaction_language()` for Agora `asr.language`; provider-specific STT language values remain under `asr.params`.
+Set Agora interaction language with `turn_detection.language`; provider-specific STT language values remain under `asr.params`.
 
 ```python
 import os
@@ -54,7 +54,7 @@ def start_conversation() -> str:
         app_certificate=app_certificate,
     )
 
-    agent = Agent(name=f"conversation-{int(time.time())}").with_interaction_language("en-US").with_stt(
+    agent = Agent(name=f"conversation-{int(time.time())}", turn_detection={"language": "en-US"}).with_stt(
         DeepgramSTT(
             model="nova-3",
             language="en",
@@ -101,7 +101,7 @@ def start_conversation() -> str:
 Use the same `Agent` builder shape, but provide credentials explicitly when you want vendor-managed billing and routing instead of Agora-managed models.
 
 ```python
-agent = Agent().with_interaction_language("en-US").with_stt(
+agent = Agent(turn_detection={"language": "en-US"}).with_stt(
     DeepgramSTT(
         api_key=os.environ["DEEPGRAM_API_KEY"],
         model="nova-3",

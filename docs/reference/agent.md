@@ -34,7 +34,7 @@ Agent(
 |---|---|---|---|
 | `name` | `Optional[str]` | `None` | Agent name, used as default session name |
 | `instructions` | `Optional[str]` | `None` | Deprecated. Use LLM vendor `system_messages` instead. |
-| `turn_detection` | `Optional[TurnDetectionConfig]` | `None` | Turn detection configuration |
+| `turn_detection` | `Optional[TurnDetectionConfig]` | `None` | Interaction language and turn detection configuration |
 | `interruption` | `Optional[InterruptionConfig]` | `None` | Unified interruption control configuration |
 | `sal` | `Optional[SalConfig]` | `None` | Speech Activity Level configuration |
 | `advanced_features` | `Optional[Dict[str, Any]]` | `None` | Advanced features dict (e.g., `{'enable_rtm': True}`) |
@@ -109,7 +109,7 @@ agent = agent.with_avatar(HeyGenAvatar(api_key='your-key', quality='medium', ago
 
 ### `with_turn_detection(config: TurnDetectionConfig) -> Agent`
 
-Override cascading-flow turn detection settings. Use `config.start_of_speech` and `config.end_of_speech` for SOS/EOS detection. Use `with_interruption()` for interruption behavior and MLLM vendor `turn_detection` for MLLM turn detection.
+Override cascading-flow turn detection settings. Use `language` for the Agora interaction language, `config.start_of_speech` and `config.end_of_speech` for SOS/EOS detection, `with_interruption()` for interruption behavior, and MLLM vendor `turn_detection` for MLLM turn detection.
 
 Pause-state detection is configured under semantic end-of-speech:
 
@@ -257,7 +257,7 @@ to_properties(
 | `stt` | `Optional[Dict[str, Any]]` | STT config dict |
 | `mllm` | `Optional[Dict[str, Any]]` | MLLM config dict |
 | `avatar` | `Optional[Dict[str, Any]]` | Avatar config dict |
-| `turn_detection` | `Optional[TurnDetectionConfig]` | Turn detection settings |
+| `turn_detection` | `Optional[TurnDetectionConfig]` | Interaction language and turn detection settings |
 | `sal` | `Optional[SalConfig]` | SAL configuration |
 | `advanced_features` | `Optional[Dict[str, Any]]` | Advanced features |
 | `parameters` | `Optional[SessionParams]` | Session parameters |
