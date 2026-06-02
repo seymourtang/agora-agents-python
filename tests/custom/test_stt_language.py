@@ -81,6 +81,14 @@ def test_default_interaction_language_is_sent_without_stt() -> None:
 
 
 def test_stt_vendor_params_match_documented_shapes() -> None:
+    assert DeepgramSTT(model="nova-3", language="en-US").to_config()["params"] == {
+        "model": "nova-3",
+        "language": "en-US",
+    }
+
+    with pytest.raises(Exception, match="api_key"):
+        DeepgramSTT(model="enhanced")
+
     assert DeepgramSTT(api_key="dg-key", language="en").to_config()["params"] == {
         "key": "dg-key",
         "language": "en",

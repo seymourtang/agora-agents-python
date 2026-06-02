@@ -1,6 +1,6 @@
 from typing import Any, Dict, Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 from typing_extensions import Literal
 
 from .base import BaseSTT
@@ -41,6 +41,7 @@ InteractionLanguage = Literal[
 ]
 
 _INTERACTION_LANGUAGES = set(InteractionLanguage.__args__)
+_DEEPGRAM_MANAGED_MODELS = {"nova-2", "nova-3"}
 
 
 def _interaction_language(language: Optional[str], interaction_language: Optional[InteractionLanguage]) -> Optional[InteractionLanguage]:
@@ -96,6 +97,12 @@ class DeepgramSTTOptions(BaseModel):
     smart_format: Optional[bool] = Field(default=None, description="Enable smart formatting")
     punctuation: Optional[bool] = Field(default=None, description="Enable punctuation")
     additional_params: Optional[Dict[str, Any]] = Field(default=None)
+
+    @model_validator(mode="after")
+    def _validate_managed_model(self) -> "DeepgramSTTOptions":
+        if self.api_key is None and (self.model is None or self.model.strip().lower() not in _DEEPGRAM_MANAGED_MODELS):
+            raise ValueError("DeepgramSTT requires api_key unless using a supported Agora-managed model")
+        return self
 
 class DeepgramSTT(BaseSTT):
     def __init__(self, **kwargs: Any):

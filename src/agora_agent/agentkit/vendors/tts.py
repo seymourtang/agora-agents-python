@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from .base import BaseTTS, CartesiaSampleRate, ElevenLabsSampleRate, GoogleTTSSampleRate, MicrosoftSampleRate
+from ..presets import MiniMaxPresetModels, OpenAITtsPresetModels
 
 class ElevenLabsTTSOptions(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -100,7 +101,6 @@ class OpenAITTSOptions(BaseModel):
     voice: str = Field(..., description="Voice name (alloy, echo, fable, onyx, nova, shimmer)")
     model: Optional[str] = Field(default=None, description="Model name (tts-1, tts-1-hd)")
     base_url: Optional[str] = Field(default=None, description="Endpoint URL")
-    response_format: Optional[str] = Field(default=None, description="Audio format (e.g., pcm)")
     instructions: Optional[str] = Field(default=None, description="Custom voice instructions")
     speed: Optional[float] = Field(default=None, description="Speech speed multiplier")
     skip_patterns: Optional[List[int]] = Field(default=None)
@@ -118,8 +118,11 @@ class OpenAITTSOptions(BaseModel):
             ]
             if missing:
                 raise ValueError(f"OpenAITTS requires {', '.join(missing)} when api_key is set")
-        elif self.base_url is not None:
-            raise ValueError("OpenAITTS base_url is only valid when api_key is set")
+        else:
+            if self.model is not None and self.model.strip().lower() not in OpenAITtsPresetModels:
+                raise ValueError("OpenAITTS requires api_key unless using the Agora-managed tts-1 model")
+            if self.base_url is not None:
+                raise ValueError("OpenAITTS base_url is only valid when api_key is set")
         return self
 
 class OpenAITTS(BaseTTS):
@@ -141,8 +144,6 @@ class OpenAITTS(BaseTTS):
         elif self.options.model is not None:
             params["model"] = self.options.model
 
-        if self.options.response_format is not None:
-            params["response_format"] = self.options.response_format
         if self.options.instructions is not None:
             params["instructions"] = self.options.instructions
         if self.options.speed is not None:
@@ -423,6 +424,8 @@ class MiniMaxTTSOptions(BaseModel):
             ]
             if missing:
                 raise ValueError(f"MiniMaxTTS requires {', '.join(missing)} when key is set")
+        elif self.model.strip().lower() not in MiniMaxPresetModels:
+            raise ValueError("MiniMaxTTS requires key unless using a supported Agora-managed model")
         return self
 
 class MiniMaxTTS(BaseTTS):

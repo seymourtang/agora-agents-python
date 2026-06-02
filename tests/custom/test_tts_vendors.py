@@ -1,3 +1,5 @@
+import pytest
+
 from agora_agent import AmazonTTS, CartesiaTTS, ElevenLabsTTS, FishAudioTTS, GoogleTTS, HumeAITTS, MiniMaxTTS, MurfTTS, OpenAITTS, RimeTTS, SarvamTTS
 
 
@@ -97,3 +99,11 @@ def test_tts_vendor_params_match_generated_core_shapes() -> None:
     assert MurfTTS(key="murf-key").to_config()["params"] == {
         "api_key": "murf-key",
     }
+
+
+def test_tts_managed_mode_validation_matches_core_shapes() -> None:
+    with pytest.raises(Exception, match="OpenAITTS requires api_key"):
+        OpenAITTS(voice="coral", model="tts-1-hd")
+
+    with pytest.raises(Exception, match="MiniMaxTTS requires key"):
+        MiniMaxTTS(model="speech-02-turbo")

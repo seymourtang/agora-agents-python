@@ -54,7 +54,7 @@ Used with `agent.with_tts()`. Each TTS vendor produces audio at a specific sampl
 | `RimeTTS` | Rime | `key`, `speaker`, `model_id` | — |
 | `FishAudioTTS` | Fish Audio | `key`, `reference_id`, `backend` | — |
 | `GroqTTS` | Groq | `key` | — |
-| `MiniMaxTTS` | MiniMax | `key` | — |
+| `MiniMaxTTS` | MiniMax | `model` for supported Agora-managed models; `key`, `group_id`, `model`, `voice_id`, `url` for BYOK | — |
 | `DeepgramTTS` | Deepgram | `api_key`, `model` | Configurable |
 | `SarvamTTS` | Sarvam | `api_key` | — |
 
@@ -80,7 +80,7 @@ Use `agent.with_interaction_language()` for Agora `asr.language`; it defaults to
 | Class | Provider | Required Parameters |
 |---|---|---|
 | `SpeechmaticsSTT` | Speechmatics | `api_key`, `language` |
-| `DeepgramSTT` | Deepgram | — (all optional) |
+| `DeepgramSTT` | Deepgram | `model` for Agora-managed `nova-2`/`nova-3`; `api_key` for BYOK |
 | `MicrosoftSTT` | Microsoft Azure | `key`, `region`, `language` |
 | `OpenAISTT` | OpenAI | `api_key` |
 | `GoogleSTT` | Google Cloud | `project_id`, `location`, `adc_credentials_string`, `language` |

@@ -190,11 +190,10 @@ The SDK also includes named helpers for the remaining Agora-supported LLM provid
 | `voice` | `str` | Yes | — | Voice: `alloy`, `echo`, `fable`, `onyx`, `nova`, `shimmer` |
 | `model` | `str` | BYOK only | `None` | Model: `tts-1` or `tts-1-hd` |
 | `base_url` | `str` | BYOK only | `None` | OpenAI TTS endpoint URL |
-| `response_format` | `str` | No | `None` | Audio format (e.g., `pcm`) |
 | `speed` | `float` | No | `None` | Speech speed multiplier |
 | `skip_patterns` | `List[int]` | No | `None` | Skip patterns |
 
-`api_key`, `model`, and `base_url` are required together for BYOK. Without `api_key`, AgentKit uses the Agora-managed `tts-1` path. Fixed sample rate: 24000 Hz.
+`api_key`, `model`, and `base_url` are required together for BYOK. Without `api_key`, `model` must be omitted or set to the Agora-managed `tts-1` path. Fixed sample rate: 24000 Hz.
 
 ### `CartesiaTTS`
 
@@ -323,13 +322,15 @@ Use `agent.with_interaction_language()` for Agora `asr.language`; it defaults to
 
 | Parameter | Type | Required | Default | Description |
 |---|---|---|---|---|
-| `api_key` | `str` | No | `None` | Deepgram API key |
+| `api_key` | `str` | BYOK only | `None` | Deepgram API key. Optional only for Agora-managed `nova-2` and `nova-3`. |
 | `model` | `str` | No | `None` | Model (e.g., `nova-2`) |
 | `language` | `str` | No | `None` | Language code (e.g., `en-US`) |
 | `interaction_language` | `str` | No | `None` | Agora `asr.language` override |
 | `smart_format` | `bool` | No | `None` | Enable smart formatting |
 | `punctuation` | `bool` | No | `None` | Enable punctuation |
 | `additional_params` | `Dict[str, Any]` | No | `None` | Additional parameters |
+
+For `nova-2` and `nova-3`, omit `api_key` to use Agora-managed credentials. For all other Deepgram models, AgentKit requires `api_key`.
 
 ### `MicrosoftSTT`
 
