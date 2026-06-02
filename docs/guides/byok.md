@@ -54,6 +54,7 @@ def main() -> None:
                 key=os.environ["ELEVENLABS_API_KEY"],
                 model_id="eleven_flash_v2_5",
                 voice_id=os.environ["ELEVENLABS_VOICE_ID"],
+                base_url="wss://api.elevenlabs.io/v1",
                 sample_rate=24000,
             )
         )

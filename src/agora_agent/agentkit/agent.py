@@ -281,7 +281,7 @@ class Agent:
     >>> agent = (
     ...     agent
     ...     .with_llm(OpenAI(api_key="...", model="gpt-4"))
-    ...     .with_tts(ElevenLabsTTS(key="...", model_id="...", voice_id="...", sample_rate=24000))
+    ...     .with_tts(ElevenLabsTTS(key="...", model_id="...", voice_id="...", base_url="wss://api.elevenlabs.io/v1", sample_rate=24000))
     ...     .with_stt(DeepgramSTT(api_key="...", model="nova-2"))
     ... )
     """

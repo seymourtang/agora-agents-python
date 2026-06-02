@@ -64,6 +64,7 @@ agent = (
         key='your-elevenlabs-key',
         model_id='eleven_flash_v2_5',
         voice_id='your-voice-id',
+        base_url='wss://api.elevenlabs.io/v1',
         sample_rate=24000,  # Must be 24000 for HeyGen
     ))
     .with_stt(DeepgramSTT(api_key='your-deepgram-key', language='en-US'))
@@ -114,6 +115,7 @@ agent = (
         key='your-elevenlabs-key',
         model_id='eleven_flash_v2_5',
         voice_id='your-voice-id',
+        base_url='wss://api.elevenlabs.io/v1',
         sample_rate=16000,  # Must be 16000 for Akool
     ))
     .with_stt(DeepgramSTT(api_key='your-deepgram-key', language='en-US'))
@@ -142,6 +144,7 @@ agent = (
         key='your-elevenlabs-key',
         model_id='eleven_flash_v2_5',
         voice_id='your-voice-id',
+        base_url='wss://api.elevenlabs.io/v1',
         sample_rate=16000,  # 16 kHz
     ))
     .with_stt(DeepgramSTT(api_key='your-deepgram-key', language='en-US'))
@@ -165,7 +168,7 @@ The `with_avatar()` call validates against the currently configured TTS. Always 
 # Correct order: TTS first, then avatar
 agent = (
     Agent(name='my-agent')
-    .with_tts(ElevenLabsTTS(key='your-elevenlabs-key', model_id='eleven_flash_v2_5', voice_id='your-voice-id', sample_rate=24000))
+    .with_tts(ElevenLabsTTS(key='your-elevenlabs-key', model_id='eleven_flash_v2_5', voice_id='your-voice-id', base_url='wss://api.elevenlabs.io/v1', sample_rate=24000))
     .with_avatar(HeyGenAvatar(api_key='your-heygen-key', quality='medium', agora_uid='2'))
 )
 ```

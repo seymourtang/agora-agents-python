@@ -70,7 +70,7 @@ Set the TTS vendor. Records the vendor's `sample_rate` for avatar validation.
 <!-- snippet: fragment -->
 ```python
 from agora_agent import ElevenLabsTTS
-agent = Agent().with_tts(ElevenLabsTTS(key='your-key', model_id='eleven_flash_v2_5', voice_id='your-voice-id'))
+agent = Agent().with_tts(ElevenLabsTTS(key='your-key', model_id='eleven_flash_v2_5', voice_id='your-voice-id', base_url='wss://api.elevenlabs.io/v1'))
 ```
 
 ### `with_stt(vendor: BaseSTT) -> Agent`

@@ -46,7 +46,7 @@ agent = (
         model='gpt-4o-mini',
         system_messages=[{'role': 'system', 'content': 'You are helpful.'}],
     ))
-    .with_tts(ElevenLabsTTS(key='your-elevenlabs-key', model_id='eleven_flash_v2_5', voice_id='your-voice-id'))
+    .with_tts(ElevenLabsTTS(key='your-elevenlabs-key', model_id='eleven_flash_v2_5', voice_id='your-voice-id', base_url='wss://api.elevenlabs.io/v1'))
     .with_stt(DeepgramSTT(api_key='your-deepgram-key', language='en-US'))
 )
 

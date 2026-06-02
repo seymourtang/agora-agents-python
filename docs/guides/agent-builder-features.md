@@ -56,7 +56,7 @@ agent = (
         model='gpt-4o-mini',
         system_messages=[{'role': 'system', 'content': 'You are a helpful assistant.'}],
     ))
-    .with_tts(ElevenLabsTTS(key='your-key', model_id='eleven_flash_v2_5', voice_id='your-voice-id', sample_rate=24000))
+    .with_tts(ElevenLabsTTS(key='your-key', model_id='eleven_flash_v2_5', voice_id='your-voice-id', base_url='wss://api.elevenlabs.io/v1', sample_rate=24000))
     .with_stt(DeepgramSTT(api_key='your-key', model='nova-2', language='en-US'))
 )
 ```
@@ -109,7 +109,7 @@ agent = (
         data_channel=DataChannel.RTM,  # or DataChannel.DATASTREAM
     ))
     .with_llm(OpenAI(api_key='...', model='gpt-4o-mini'))
-    .with_tts(ElevenLabsTTS(key='...', model_id='...', voice_id='...', sample_rate=24000))
+    .with_tts(ElevenLabsTTS(key='...', model_id='...', voice_id='...', base_url='wss://api.elevenlabs.io/v1', sample_rate=24000))
     .with_stt(DeepgramSTT(api_key='...', model='nova-2'))
 )
 ```
@@ -125,7 +125,7 @@ agent = (
         failure_message='Something went wrong.',
         max_history=15,
     ))
-    .with_tts(ElevenLabsTTS(key='...', model_id='...', voice_id='...', sample_rate=24000))
+    .with_tts(ElevenLabsTTS(key='...', model_id='...', voice_id='...', base_url='wss://api.elevenlabs.io/v1', sample_rate=24000))
     .with_stt(DeepgramSTT(api_key='...', model='nova-2'))
 )
 ```
@@ -141,7 +141,7 @@ agent = (
     Agent()
     .with_geofence(GeofenceConfig(area=GeofenceArea.NORTH_AMERICA))
     .with_llm(OpenAI(api_key='...', model='gpt-4o-mini'))
-    .with_tts(ElevenLabsTTS(key='...', model_id='...', voice_id='...', sample_rate=24000))
+    .with_tts(ElevenLabsTTS(key='...', model_id='...', voice_id='...', base_url='wss://api.elevenlabs.io/v1', sample_rate=24000))
     .with_stt(DeepgramSTT(api_key='...', model='nova-2'))
 )
 
@@ -150,7 +150,7 @@ agent = (
     Agent()
     .with_geofence(GeofenceConfig(area=GeofenceArea.GLOBAL, exclude_area=GeofenceExcludeArea.EUROPE))
     .with_llm(OpenAI(api_key='...', model='gpt-4o-mini'))
-    .with_tts(ElevenLabsTTS(key='...', model_id='...', voice_id='...', sample_rate=24000))
+    .with_tts(ElevenLabsTTS(key='...', model_id='...', voice_id='...', base_url='wss://api.elevenlabs.io/v1', sample_rate=24000))
     .with_stt(DeepgramSTT(api_key='...', model='nova-2'))
 )
 ```
@@ -170,7 +170,7 @@ agent = (
         'version': '1.2.0',
     })
     .with_llm(OpenAI(api_key='...', model='gpt-4o-mini'))
-    .with_tts(ElevenLabsTTS(key='...', model_id='...', voice_id='...', sample_rate=24000))
+    .with_tts(ElevenLabsTTS(key='...', model_id='...', voice_id='...', base_url='wss://api.elevenlabs.io/v1', sample_rate=24000))
     .with_stt(DeepgramSTT(api_key='...', model='nova-2'))
 )
 ```
@@ -189,7 +189,7 @@ agent = (
         encryption_mode=5,  # AES_128_GCM
     ))
     .with_llm(OpenAI(api_key='...', model='gpt-4o-mini'))
-    .with_tts(ElevenLabsTTS(key='...', model_id='...', voice_id='...', sample_rate=24000))
+    .with_tts(ElevenLabsTTS(key='...', model_id='...', voice_id='...', base_url='wss://api.elevenlabs.io/v1', sample_rate=24000))
     .with_stt(DeepgramSTT(api_key='...', model='nova-2'))
 )
 ```
@@ -226,7 +226,7 @@ agent = (
         ),
     ))
     .with_llm(OpenAI(api_key='...', model='gpt-4o-mini'))
-    .with_tts(ElevenLabsTTS(key='...', model_id='...', voice_id='...', sample_rate=24000))
+    .with_tts(ElevenLabsTTS(key='...', model_id='...', voice_id='...', base_url='wss://api.elevenlabs.io/v1', sample_rate=24000))
     .with_stt(DeepgramSTT(api_key='...', model='nova-2'))
 )
 ```
@@ -295,7 +295,7 @@ agent = (
         failure_message='Sorry, I had trouble processing that.',
         max_history=20,
     ))
-    .with_tts(ElevenLabsTTS(key='your-key', model_id='eleven_flash_v2_5', voice_id='your-voice-id', sample_rate=24000))
+    .with_tts(ElevenLabsTTS(key='your-key', model_id='eleven_flash_v2_5', voice_id='your-voice-id', base_url='wss://api.elevenlabs.io/v1', sample_rate=24000))
     .with_stt(DeepgramSTT(api_key='your-key', model='nova-2', language='en-US'))
     .with_advanced_features(AdvancedFeatures(enable_rtm=True))
     .with_parameters(SessionParams(

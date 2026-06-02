@@ -154,7 +154,7 @@ The SDK also includes named helpers for the remaining Agora-supported LLM provid
 | `key` | `str` | Yes | — | ElevenLabs API key |
 | `model_id` | `str` | Yes | — | Model ID (e.g., `eleven_flash_v2_5`) |
 | `voice_id` | `str` | Yes | — | Voice ID |
-| `base_url` | `str` | No | `None` | Custom WebSocket base URL |
+| `base_url` | `str` | Yes | — | WebSocket base URL |
 | `sample_rate` | `int` | No | `None` | Sample rate: 16000, 22050, 24000, or 44100 Hz |
 | `skip_patterns` | `List[int]` | No | `None` | Skip patterns |
 | `optimize_streaming_latency` | `int` | No | `None` | Latency optimization level (0–4) |
@@ -192,7 +192,7 @@ Fixed sample rate: 24000 Hz.
 |---|---|---|---|---|
 | `api_key` | `str` | Yes | — | Cartesia API key |
 | `voice_id` | `str` | Yes | — | Voice ID (serialized as `{"mode": "id", "id": "..."}`) |
-| `model_id` | `str` | No | `None` | Model ID |
+| `model_id` | `str` | Yes | — | Model ID |
 | `sample_rate` | `int` | No | `None` | Sample rate: 8000–48000 Hz |
 | `skip_patterns` | `List[int]` | No | `None` | Skip patterns |
 
@@ -213,6 +213,7 @@ Fixed sample rate: 24000 Hz.
 | `secret_key` | `str` | Yes | — | AWS secret key |
 | `region` | `str` | Yes | — | AWS region (e.g., `us-east-1`) |
 | `voice_id` | `str` | Yes | — | Amazon Polly voice ID |
+| `engine` | `str` | Yes | — | Amazon Polly engine type |
 | `skip_patterns` | `List[int]` | No | `None` | Skip patterns |
 
 ### `DeepgramTTS`
@@ -231,7 +232,12 @@ Fixed sample rate: 24000 Hz.
 | Parameter | Type | Required | Default | Description |
 |---|---|---|---|---|
 | `key` | `str` | Yes | — | Hume AI API key |
+| `voice_id` | `str` | Yes | — | Hume AI voice ID |
+| `provider` | `str` | Yes | — | Voice provider type, such as `CUSTOM_VOICE` or `HUME_AI` |
 | `config_id` | `str` | No | `None` | Configuration ID |
+| `base_url` | `str` | No | `None` | Base URL |
+| `speed` | `float` | No | `None` | Playback speed |
+| `trailing_silence` | `float` | No | `None` | Trailing silence in seconds |
 | `skip_patterns` | `List[int]` | No | `None` | Skip patterns |
 
 ### `RimeTTS`
@@ -240,10 +246,8 @@ Fixed sample rate: 24000 Hz.
 |---|---|---|---|---|
 | `key` | `str` | Yes | — | Rime API key |
 | `speaker` | `str` | Yes | — | Speaker ID |
-| `model_id` | `str` | No | `None` | Model ID |
-| `lang` | `str` | No | `None` | Language code |
-| `sampling_rate` | `int` | No | `None` | Sampling rate in Hz (serialized as `samplingRate`) |
-| `speed_alpha` | `float` | No | `None` | Speed multiplier (serialized as `speedAlpha`) |
+| `model_id` | `str` | Yes | — | Model ID |
+| `base_url` | `str` | No | `None` | WebSocket URL |
 | `skip_patterns` | `List[int]` | No | `None` | Skip patterns |
 
 ### `FishAudioTTS`
@@ -252,6 +256,7 @@ Fixed sample rate: 24000 Hz.
 |---|---|---|---|---|
 | `key` | `str` | Yes | — | Fish Audio API key |
 | `reference_id` | `str` | Yes | — | Reference ID |
+| `backend` | `str` | Yes | — | Backend model version |
 | `skip_patterns` | `List[int]` | No | `None` | Skip patterns |
 
 ### `MiniMaxTTS`
@@ -270,8 +275,14 @@ Fixed sample rate: 24000 Hz.
 | Parameter | Type | Required | Default | Description |
 |---|---|---|---|---|
 | `key` | `str` | Yes | — | Murf API key |
-| `voice_id` | `str` | Yes | — | Voice ID (e.g., `Ariana`, `Natalie`) |
+| `voice_id` | `str` | No | `None` | Voice ID (e.g., `Ariana`, `Natalie`) |
+| `base_url` | `str` | No | `None` | WebSocket endpoint |
 | `style` | `str` | No | `None` | Voice style (e.g., `Conversational`) |
+| `locale` | `str` | No | `None` | Voice locale |
+| `rate` | `float` | No | `None` | Speech rate |
+| `pitch` | `float` | No | `None` | Pitch adjustment |
+| `model` | `str` | No | `None` | TTS model |
+| `sample_rate` | `int` | No | `None` | Audio sample rate |
 | `skip_patterns` | `List[int]` | No | `None` | Skip patterns |
 
 ### `SarvamTTS`

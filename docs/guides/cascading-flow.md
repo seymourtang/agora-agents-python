@@ -32,7 +32,7 @@ agent = (
         model='gpt-4o-mini',
         system_messages=[{'role': 'system', 'content': 'You are a friendly customer support agent.'}],
     ))
-    .with_tts(ElevenLabsTTS(key='your-elevenlabs-key', model_id='eleven_flash_v2_5', voice_id='your-voice-id', sample_rate=24000))
+    .with_tts(ElevenLabsTTS(key='your-elevenlabs-key', model_id='eleven_flash_v2_5', voice_id='your-voice-id', base_url='wss://api.elevenlabs.io/v1', sample_rate=24000))
     .with_stt(DeepgramSTT(api_key='your-deepgram-key', language='en-US', model='nova-2'))
 )
 
@@ -63,7 +63,7 @@ async def main():
             model='gpt-4o-mini',
             system_messages=[{'role': 'system', 'content': 'You are a friendly customer support agent.'}],
         ))
-        .with_tts(ElevenLabsTTS(key='your-elevenlabs-key', model_id='eleven_flash_v2_5', voice_id='your-voice-id', sample_rate=24000))
+        .with_tts(ElevenLabsTTS(key='your-elevenlabs-key', model_id='eleven_flash_v2_5', voice_id='your-voice-id', base_url='wss://api.elevenlabs.io/v1', sample_rate=24000))
         .with_stt(DeepgramSTT(api_key='your-deepgram-key', language='en-US', model='nova-2'))
     )
 
