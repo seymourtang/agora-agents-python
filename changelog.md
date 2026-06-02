@@ -107,7 +107,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Added
 
-- **`OpenAITTS`** — New optional parameters: `response_format` (str, e.g. `"pcm"`) and `speed` (float).
+- **`OpenAITTS`** — New optional parameters: `instructions` (str) and `speed` (float).
 - **`CartesiaTTS`** — `voice_id` user-facing field is preserved; voice is serialized to the required nested object format automatically.
 - **`RimeTTS`** — New optional parameters: `lang` (str), `sampling_rate` (int, serialized as `samplingRate`), `speed_alpha` (float, serialized as `speedAlpha`).
 - **`OpenAIRealtime`** — New optional parameter: `failure_message` (str).

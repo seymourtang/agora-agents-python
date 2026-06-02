@@ -52,11 +52,12 @@ def test_tts_vendor_params_match_generated_core_shapes() -> None:
         "encoding": "linear16",
     }
 
-    assert OpenAITTS(api_key="openai-key", voice="coral", model="gpt-4o-mini-tts", base_url="https://api.openai.com/v1").to_config()["params"] == {
+    assert OpenAITTS(api_key="openai-key", voice="coral", model="gpt-4o-mini-tts", base_url="https://api.openai.com/v1", instructions="speak clearly").to_config()["params"] == {
         "voice": "coral",
         "api_key": "openai-key",
         "base_url": "https://api.openai.com/v1",
         "model": "gpt-4o-mini-tts",
+        "instructions": "speak clearly",
     }
 
     assert OpenAITTS(voice="coral").to_config()["params"] == {

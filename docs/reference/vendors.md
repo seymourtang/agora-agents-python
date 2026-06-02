@@ -190,6 +190,7 @@ The SDK also includes named helpers for the remaining Agora-supported LLM provid
 | `voice` | `str` | Yes | — | Voice: `alloy`, `echo`, `fable`, `onyx`, `nova`, `shimmer` |
 | `model` | `str` | BYOK only | `None` | Model: `tts-1` or `tts-1-hd` |
 | `base_url` | `str` | BYOK only | `None` | OpenAI TTS endpoint URL |
+| `instructions` | `str` | No | `None` | Custom instructions for voice style, accent, pace, and tone |
 | `speed` | `float` | No | `None` | Speech speed multiplier |
 | `skip_patterns` | `List[int]` | No | `None` | Skip patterns |
 
