@@ -51,6 +51,7 @@ llm = OpenAI(api_key='your-key', base_url='https://api.openai.com/v1/chat/comple
 | Parameter | Type | Required | Default | Description |
 |---|---|---|---|---|
 | `api_key` | `str` | Yes | — | Azure OpenAI API key |
+| `model` | `str` | Yes | — | Deployment's base model name. Emitted as `params.model`. |
 | `endpoint` | `str` | Yes | — | Azure endpoint URL |
 | `deployment_name` | `str` | Yes | — | Azure deployment name |
 | `api_version` | `str` | No | `2024-08-01-preview` | Azure API version |
@@ -73,6 +74,7 @@ from agora_agent import AzureOpenAI
 
 llm = AzureOpenAI(
     api_key='your-azure-key',
+    model='gpt-4o-mini',
     endpoint='https://your-resource.openai.azure.com',
     deployment_name='gpt-4o-mini',
 )
@@ -144,7 +146,7 @@ The SDK also includes named helpers for the remaining Agora-supported LLM provid
 
 | Class | Provider | Key parameters |
 |---|---|---|
-| `Groq` | Groq | `api_key`, `model`, `base_url?` |
+| `Groq` | Groq | `api_key`, `model`, `base_url` |
 | `VertexAILLM` | Google Vertex AI | `api_key`, `model`, `project_id`, `location`, `url?` |
 | `AmazonBedrock` | Amazon Bedrock | `access_key`, `secret_key`, `region`, `model` |
 | `Dify` | Dify | `api_key`, `url`, `model`, `user?`, `conversation_id?` |

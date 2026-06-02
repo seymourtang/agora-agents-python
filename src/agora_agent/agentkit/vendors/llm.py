@@ -5,6 +5,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 from .base import BaseLLM
 
 LlmGreetingConfigs = Dict[str, Any]
+_OPENAI_MANAGED_MODELS = {"gpt-4o-mini", "gpt-4.1-mini", "gpt-5-nano", "gpt-5-mini"}
 
 
 def _ensure_mcp_transport(servers: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -55,6 +56,10 @@ class OpenAIOptions(BaseModel):
             raise ValueError("OpenAI requires base_url when api_key is set")
         if self.api_key is None and self.base_url is not None:
             raise ValueError("OpenAI base_url is only valid when api_key is set")
+        if self.api_key is None and self.model.strip().lower() not in _OPENAI_MANAGED_MODELS:
+            raise ValueError("OpenAI requires api_key unless using a supported Agora-managed model")
+        if self.api_key is None and self.vendor is not None:
+            raise ValueError("OpenAI Agora-managed mode does not allow vendor")
         return self
 
 class OpenAI(BaseLLM):

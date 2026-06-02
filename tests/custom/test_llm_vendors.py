@@ -122,3 +122,13 @@ def test_llm_vendors_reject_missing_required_models() -> None:
 
     with pytest.raises(Exception, match="model"):
         AmazonBedrock(access_key="aws-access", secret_key="aws-secret", region="us-east-1")
+
+
+def test_openai_managed_mode_is_restricted_to_supported_models() -> None:
+    assert OpenAI(model="gpt-5-mini").to_config()["params"]["model"] == "gpt-5-mini"
+
+    with pytest.raises(Exception, match="api_key"):
+        OpenAI(model="gpt-4o")
+
+    with pytest.raises(Exception, match="does not allow vendor"):
+        OpenAI(model="gpt-5-mini", vendor="custom")

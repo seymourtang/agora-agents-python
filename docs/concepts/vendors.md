@@ -22,7 +22,7 @@ Used with `agent.with_llm()` for the cascading flow (ASR → LLM → TTS).
 | Class | Provider | Required Parameters |
 |---|---|---|
 | `OpenAI` | OpenAI | `model` for Agora-managed models; `api_key`, `base_url`, `model` for BYOK |
-| `AzureOpenAI` | Azure OpenAI | `api_key`, `endpoint`, `deployment_name` |
+| `AzureOpenAI` | Azure OpenAI | `api_key`, `model`, `endpoint`, `deployment_name` |
 | `Anthropic` | Anthropic | `api_key`, `model`, `url`, `headers`, `max_tokens` |
 | `Gemini` | Google Gemini | `api_key`, `model` |
 | `Groq` | Groq | `api_key`, `model`, `base_url` |
