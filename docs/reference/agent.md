@@ -60,7 +60,7 @@ Set the LLM vendor for cascading flow.
 <!-- snippet: fragment -->
 ```python
 from agora_agent import OpenAI
-agent = Agent().with_llm(OpenAI(api_key='your-key', model='gpt-4o-mini'))
+agent = Agent().with_llm(OpenAI(api_key='your-key', base_url='https://api.openai.com/v1/chat/completions', model='gpt-4o-mini'))
 ```
 
 ### `with_tts(vendor: BaseTTS) -> Agent`

@@ -140,6 +140,7 @@ agent = Agent().with_stt(
 ).with_llm(
     OpenAI(
         api_key=os.environ["OPENAI_API_KEY"],
+        base_url="https://api.openai.com/v1/chat/completions",
         model="gpt-4o-mini",
         system_messages=[{"role": "system", "content": AGENT_PROMPT}],
         greeting_message=GREETING,

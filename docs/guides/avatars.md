@@ -57,6 +57,7 @@ agent = (
     Agent(name='avatar-agent')
     .with_llm(OpenAI(
         api_key='your-openai-key',
+        base_url='https://api.openai.com/v1/chat/completions',
         model='gpt-4o-mini',
         system_messages=[{'role': 'system', 'content': 'You are a helpful assistant with a visual avatar.'}],
     ))
@@ -108,6 +109,7 @@ agent = (
     Agent(name='akool-agent')
     .with_llm(OpenAI(
         api_key='your-openai-key',
+        base_url='https://api.openai.com/v1/chat/completions',
         model='gpt-4o-mini',
         system_messages=[{'role': 'system', 'content': 'You are a helpful assistant.'}],
     ))
@@ -137,6 +139,7 @@ agent = (
     Agent(name='broken-agent')
     .with_llm(OpenAI(
         api_key='your-openai-key',
+        base_url='https://api.openai.com/v1/chat/completions',
         model='gpt-4o-mini',
         system_messages=[{'role': 'system', 'content': 'You are a helpful assistant.'}],
     ))

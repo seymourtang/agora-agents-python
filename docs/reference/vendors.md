@@ -43,7 +43,7 @@ from agora_agent import OpenAI, ElevenLabsTTS, DeepgramTTS, DeepgramSTT, OpenAIR
 ```python
 from agora_agent import OpenAI
 
-llm = OpenAI(api_key='your-key', model='gpt-4o-mini', temperature=0.7)
+llm = OpenAI(api_key='your-key', base_url='https://api.openai.com/v1/chat/completions', model='gpt-4o-mini', temperature=0.7)
 ```
 
 ### `AzureOpenAI`
@@ -84,7 +84,9 @@ llm = AzureOpenAI(
 |---|---|---|---|---|
 | `api_key` | `str` | Yes | — | Anthropic API key |
 | `model` | `str` | No | `claude-3-5-sonnet-20241022` | Model name |
-| `max_tokens` | `int` | No | `None` | Maximum tokens |
+| `url` | `str` | Yes | — | Anthropic messages endpoint URL |
+| `headers` | `Dict[str, str]` | Yes | — | Request headers, including Anthropic API version |
+| `max_tokens` | `int` | Yes | — | Maximum tokens |
 | `temperature` | `float` | No | `None` | Sampling temperature (0.0–1.0) |
 | `top_p` | `float` | No | `None` | Nucleus sampling (0.0–1.0) |
 | `system_messages` | `List[Dict]` | No | `None` | System messages |
@@ -93,7 +95,6 @@ llm = AzureOpenAI(
 | `input_modalities` | `List[str]` | No | `None` | Input modalities |
 | `output_modalities` | `List[str]` | No | `None` | Output modalities |
 | `params` | `Dict[str, Any]` | No | `None` | Additional model parameters |
-| `headers` | `Dict[str, str]` | No | `None` | Custom HTTP headers forwarded to the LLM provider |
 | `greeting_configs` | `Dict[str, Any]` | No | `None` | Greeting playback configuration |
 | `template_variables` | `Dict[str, str]` | No | `None` | Template variables for messages |
 
@@ -101,7 +102,13 @@ llm = AzureOpenAI(
 ```python
 from agora_agent import Anthropic
 
-llm = Anthropic(api_key='your-anthropic-key', model='claude-3-5-sonnet-20241022')
+llm = Anthropic(
+    api_key='your-anthropic-key',
+    url='https://api.anthropic.com/v1/messages',
+    headers={'anthropic-version': '2023-06-01'},
+    model='claude-3-5-sonnet-20241022',
+    max_tokens=1024,
+)
 ```
 
 ### `Gemini`
@@ -328,7 +335,7 @@ Use `agent.with_interaction_language()` for Agora `asr.language`; it defaults to
 |---|---|---|---|---|
 | `key` | `str` | Yes | — | Azure subscription key |
 | `region` | `str` | Yes | — | Azure region (e.g., `eastus`) |
-| `language` | `str` | No | `None` | Language code (e.g., `en-US`) |
+| `language` | `str` | Yes | — | Language code (e.g., `en-US`) |
 | `interaction_language` | `str` | No | `None` | Agora `asr.language` override |
 | `additional_params` | `Dict[str, Any]` | No | `None` | Additional parameters |
 
@@ -351,7 +358,7 @@ Use `agent.with_interaction_language()` for Agora `asr.language`; it defaults to
 | `project_id` | `str` | Yes | — | Google Cloud project ID |
 | `location` | `str` | Yes | — | Google Cloud region |
 | `adc_credentials_string` | `str` | Yes | — | Google service account credentials JSON string |
-| `language` | `str` | No | `None` | Language code (e.g., `en-US`) |
+| `language` | `str` | Yes | — | Language code (e.g., `en-US`) |
 | `interaction_language` | `str` | No | `None` | Agora `asr.language` override |
 | `model` | `str` | No | `None` | Recognition model |
 | `additional_params` | `Dict[str, Any]` | No | `None` | Additional parameters |
@@ -363,7 +370,7 @@ Use `agent.with_interaction_language()` for Agora `asr.language`; it defaults to
 | `access_key` | `str` | Yes | — | AWS Access Key ID |
 | `secret_key` | `str` | Yes | — | AWS Secret Access Key |
 | `region` | `str` | Yes | — | AWS region (e.g., `us-east-1`) |
-| `language` | `str` | No | `None` | Amazon `language_code` |
+| `language` | `str` | Yes | — | Amazon `language_code` |
 | `interaction_language` | `str` | No | `None` | Agora `asr.language` override |
 | `additional_params` | `Dict[str, Any]` | No | `None` | Additional parameters |
 
@@ -372,7 +379,7 @@ Use `agent.with_interaction_language()` for Agora `asr.language`; it defaults to
 | Parameter | Type | Required | Default | Description |
 |---|---|---|---|---|
 | `api_key` | `str` | Yes | — | AssemblyAI API key |
-| `language` | `str` | No | `None` | Language code |
+| `language` | `str` | Yes | — | Language code |
 | `interaction_language` | `str` | No | `None` | Agora `asr.language` override |
 | `uri` | `str` | No | `None` | AssemblyAI streaming WebSocket URL |
 | `additional_params` | `Dict[str, Any]` | No | `None` | Additional parameters |

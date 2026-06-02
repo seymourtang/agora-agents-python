@@ -43,6 +43,7 @@ agent = (
     Agent(name='my-agent')
     .with_llm(OpenAI(
         api_key='your-openai-key',
+        base_url='https://api.openai.com/v1/chat/completions',
         model='gpt-4o-mini',
         system_messages=[{'role': 'system', 'content': 'You are helpful.'}],
     ))

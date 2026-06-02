@@ -53,6 +53,7 @@ agent = (
     ))
     .with_llm(OpenAI(
         api_key='your-key',
+        base_url='https://api.openai.com/v1/chat/completions',
         model='gpt-4o-mini',
         system_messages=[{'role': 'system', 'content': 'You are a helpful assistant.'}],
     ))
@@ -108,7 +109,7 @@ agent = (
         ),
         data_channel=DataChannel.RTM,  # or DataChannel.DATASTREAM
     ))
-    .with_llm(OpenAI(api_key='...', model='gpt-4o-mini'))
+    .with_llm(OpenAI(api_key='...', base_url='https://api.openai.com/v1/chat/completions', model='gpt-4o-mini'))
     .with_tts(ElevenLabsTTS(key='...', model_id='...', voice_id='...', base_url='wss://api.elevenlabs.io/v1', sample_rate=24000))
     .with_stt(DeepgramSTT(api_key='...', model='nova-2'))
 )
@@ -121,6 +122,7 @@ agent = (
     Agent()
     .with_llm(OpenAI(
         api_key='...',
+        base_url='https://api.openai.com/v1/chat/completions',
         model='gpt-4o-mini',
         failure_message='Something went wrong.',
         max_history=15,
@@ -140,7 +142,7 @@ from agora_agent import Agent, GeofenceConfig, GeofenceArea, GeofenceExcludeArea
 agent = (
     Agent()
     .with_geofence(GeofenceConfig(area=GeofenceArea.NORTH_AMERICA))
-    .with_llm(OpenAI(api_key='...', model='gpt-4o-mini'))
+    .with_llm(OpenAI(api_key='...', base_url='https://api.openai.com/v1/chat/completions', model='gpt-4o-mini'))
     .with_tts(ElevenLabsTTS(key='...', model_id='...', voice_id='...', base_url='wss://api.elevenlabs.io/v1', sample_rate=24000))
     .with_stt(DeepgramSTT(api_key='...', model='nova-2'))
 )
@@ -149,7 +151,7 @@ agent = (
 agent = (
     Agent()
     .with_geofence(GeofenceConfig(area=GeofenceArea.GLOBAL, exclude_area=GeofenceExcludeArea.EUROPE))
-    .with_llm(OpenAI(api_key='...', model='gpt-4o-mini'))
+    .with_llm(OpenAI(api_key='...', base_url='https://api.openai.com/v1/chat/completions', model='gpt-4o-mini'))
     .with_tts(ElevenLabsTTS(key='...', model_id='...', voice_id='...', base_url='wss://api.elevenlabs.io/v1', sample_rate=24000))
     .with_stt(DeepgramSTT(api_key='...', model='nova-2'))
 )
@@ -169,7 +171,7 @@ agent = (
         'team': 'support',
         'version': '1.2.0',
     })
-    .with_llm(OpenAI(api_key='...', model='gpt-4o-mini'))
+    .with_llm(OpenAI(api_key='...', base_url='https://api.openai.com/v1/chat/completions', model='gpt-4o-mini'))
     .with_tts(ElevenLabsTTS(key='...', model_id='...', voice_id='...', base_url='wss://api.elevenlabs.io/v1', sample_rate=24000))
     .with_stt(DeepgramSTT(api_key='...', model='nova-2'))
 )
@@ -188,7 +190,7 @@ agent = (
         encryption_key='your-32-byte-key',
         encryption_mode=5,  # AES_128_GCM
     ))
-    .with_llm(OpenAI(api_key='...', model='gpt-4o-mini'))
+    .with_llm(OpenAI(api_key='...', base_url='https://api.openai.com/v1/chat/completions', model='gpt-4o-mini'))
     .with_tts(ElevenLabsTTS(key='...', model_id='...', voice_id='...', base_url='wss://api.elevenlabs.io/v1', sample_rate=24000))
     .with_stt(DeepgramSTT(api_key='...', model='nova-2'))
 )
@@ -225,7 +227,7 @@ agent = (
             ),
         ),
     ))
-    .with_llm(OpenAI(api_key='...', model='gpt-4o-mini'))
+    .with_llm(OpenAI(api_key='...', base_url='https://api.openai.com/v1/chat/completions', model='gpt-4o-mini'))
     .with_tts(ElevenLabsTTS(key='...', model_id='...', voice_id='...', base_url='wss://api.elevenlabs.io/v1', sample_rate=24000))
     .with_stt(DeepgramSTT(api_key='...', model='nova-2'))
 )
@@ -289,6 +291,7 @@ agent = (
     Agent(name='full-featured-assistant')
     .with_llm(OpenAI(
         api_key='your-key',
+        base_url='https://api.openai.com/v1/chat/completions',
         model='gpt-4o-mini',
         system_messages=[{'role': 'system', 'content': 'You are a helpful voice assistant.'}],
         greeting_message='Hello! How can I help?',

@@ -23,7 +23,7 @@ Used with `agent.with_llm()` for the cascading flow (ASR → LLM → TTS).
 |---|---|---|
 | `OpenAI` | OpenAI | `api_key` |
 | `AzureOpenAI` | Azure OpenAI | `api_key`, `endpoint`, `deployment_name` |
-| `Anthropic` | Anthropic | `api_key` |
+| `Anthropic` | Anthropic | `api_key`, `url`, `headers`, `max_tokens` |
 | `Gemini` | Google Gemini | `api_key` |
 | `Groq` | Groq | `api_key` |
 | `VertexAILLM` | Google Vertex AI | `api_key`, `project_id`, `location` |
@@ -35,7 +35,7 @@ Used with `agent.with_llm()` for the cascading flow (ASR → LLM → TTS).
 ```python
 from agora_agent import OpenAI
 
-llm = OpenAI(api_key='your-openai-key', model='gpt-4o-mini')
+llm = OpenAI(api_key='your-openai-key', base_url='https://api.openai.com/v1/chat/completions', model='gpt-4o-mini')
 ```
 
 ## TTS Vendors
@@ -81,11 +81,11 @@ Use `agent.with_interaction_language()` for Agora `asr.language`; it defaults to
 |---|---|---|
 | `SpeechmaticsSTT` | Speechmatics | `api_key`, `language` |
 | `DeepgramSTT` | Deepgram | — (all optional) |
-| `MicrosoftSTT` | Microsoft Azure | `key`, `region` |
+| `MicrosoftSTT` | Microsoft Azure | `key`, `region`, `language` |
 | `OpenAISTT` | OpenAI | `api_key` |
-| `GoogleSTT` | Google Cloud | `project_id`, `location`, `adc_credentials_string` |
-| `AmazonSTT` | Amazon Transcribe | `access_key`, `secret_key`, `region` |
-| `AssemblyAISTT` | AssemblyAI | `api_key` |
+| `GoogleSTT` | Google Cloud | `project_id`, `location`, `adc_credentials_string`, `language` |
+| `AmazonSTT` | Amazon Transcribe | `access_key`, `secret_key`, `region`, `language` |
+| `AssemblyAISTT` | AssemblyAI | `api_key`, `language` |
 | `AresSTT` | Ares | — (all optional) |
 | `SarvamSTT` | Sarvam | `api_key`, `language` |
 

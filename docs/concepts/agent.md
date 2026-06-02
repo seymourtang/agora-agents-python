@@ -17,6 +17,7 @@ from agora_agent import Agent, OpenAI
 agent = Agent(name='support-assistant').with_llm(
     OpenAI(
         api_key='your-openai-key',
+        base_url='https://api.openai.com/v1/chat/completions',
         model='gpt-4o-mini',
         system_messages=[{'role': 'system', 'content': 'You are a helpful voice assistant.'}],
         greeting_message='Hello! How can I help you?',
@@ -85,6 +86,7 @@ agent = (
     Agent(name='my-agent')
     .with_llm(OpenAI(
         api_key='your-openai-key',
+        base_url='https://api.openai.com/v1/chat/completions',
         model='gpt-4o-mini',
         system_messages=[{'role': 'system', 'content': 'You are a helpful assistant.'}],
     ))
@@ -107,6 +109,7 @@ base = (
     Agent()
     .with_llm(OpenAI(
         api_key='your-openai-key',
+        base_url='https://api.openai.com/v1/chat/completions',
         model='gpt-4o-mini',
         system_messages=[{'role': 'system', 'content': 'You are a helpful assistant.'}],
     ))

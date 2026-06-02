@@ -280,7 +280,7 @@ class Agent:
     >>> agent = Agent(instructions="You are a helpful voice assistant.")
     >>> agent = (
     ...     agent
-    ...     .with_llm(OpenAI(api_key="...", model="gpt-4"))
+    ...     .with_llm(OpenAI(api_key="...", base_url="https://api.openai.com/v1/chat/completions", model="gpt-4"))
     ...     .with_tts(ElevenLabsTTS(key="...", model_id="...", voice_id="...", base_url="wss://api.elevenlabs.io/v1", sample_rate=24000))
     ...     .with_stt(DeepgramSTT(api_key="...", model="nova-2"))
     ... )

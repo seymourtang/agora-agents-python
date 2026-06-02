@@ -416,7 +416,7 @@ class AgentSession(_AgentSessionBase):
     >>>
     >>> client = Agora(area=Area.US, app_id="...", app_certificate="...")
     >>> agent = Agent(name="assistant", instructions="You are a helpful voice assistant.")
-    >>> agent = agent.with_llm(OpenAI(api_key="...", model="gpt-4")).with_tts(ElevenLabsTTS(key="...", model_id="...", voice_id="...", base_url="wss://api.elevenlabs.io/v1"))
+    >>> agent = agent.with_llm(OpenAI(api_key="...", base_url="https://api.openai.com/v1/chat/completions", model="gpt-4")).with_tts(ElevenLabsTTS(key="...", model_id="...", voice_id="...", base_url="wss://api.elevenlabs.io/v1"))
     >>> session = agent.create_session(client, channel="room-123", agent_uid="1", remote_uids=["100"])
     >>> agent_id = session.start()
     >>> session.say("Hello!")
@@ -737,7 +737,7 @@ class AsyncAgentSession(_AgentSessionBase):
     >>>
     >>> client = AsyncAgora(area=Area.US, app_id="...", app_certificate="...")
     >>> agent = Agent(name="assistant", instructions="You are helpful.")
-    >>> agent = agent.with_llm(OpenAI(api_key="...", model="gpt-4")).with_tts(ElevenLabsTTS(key="...", model_id="...", voice_id="...", base_url="wss://api.elevenlabs.io/v1"))
+    >>> agent = agent.with_llm(OpenAI(api_key="...", base_url="https://api.openai.com/v1/chat/completions", model="gpt-4")).with_tts(ElevenLabsTTS(key="...", model_id="...", voice_id="...", base_url="wss://api.elevenlabs.io/v1"))
     >>> session = agent.create_async_session(client, channel="room-123", agent_uid="1", remote_uids=["100"])
     >>> agent_id = await session.start()
     >>> await session.say("Hello!")

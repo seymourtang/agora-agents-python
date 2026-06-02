@@ -29,6 +29,7 @@ agent = (
     Agent(name='assistant')
     .with_llm(OpenAI(
         api_key='your-openai-key',
+        base_url='https://api.openai.com/v1/chat/completions',
         model='gpt-4o-mini',
         system_messages=[{'role': 'system', 'content': 'You are a friendly customer support agent.'}],
     ))
@@ -60,6 +61,7 @@ async def main():
         Agent(name='assistant')
         .with_llm(OpenAI(
             api_key='your-openai-key',
+            base_url='https://api.openai.com/v1/chat/completions',
             model='gpt-4o-mini',
             system_messages=[{'role': 'system', 'content': 'You are a friendly customer support agent.'}],
         ))
@@ -125,6 +127,7 @@ from agora_agent import OpenAI
 
 llm = OpenAI(
     api_key='your-openai-key',
+    base_url='https://api.openai.com/v1/chat/completions',
     model='gpt-4o-mini',
     temperature=0.7,
     top_p=0.9,
@@ -139,6 +142,7 @@ Configure greetings on the LLM vendor so message ownership stays with the LLM co
 ```python
 agent = Agent(name='greeter').with_llm(OpenAI(
     api_key='your-openai-key',
+    base_url='https://api.openai.com/v1/chat/completions',
     model='gpt-4o-mini',
     system_messages=[{'role': 'system', 'content': 'You are a helpful assistant.'}],
     greeting_message='Hi there! What can I do for you?',

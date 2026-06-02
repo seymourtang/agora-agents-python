@@ -43,6 +43,7 @@ def main() -> None:
         .with_llm(
             OpenAI(
                 api_key=os.environ["OPENAI_API_KEY"],
+                base_url="https://api.openai.com/v1/chat/completions",
                 model="gpt-4o-mini",
                 system_messages=[{"role": "system", "content": "You are a concise support voice assistant."}],
                 greeting_message="Hello! How can I help you today?",
