@@ -247,7 +247,7 @@ TurnDetectionLanguage = typing_extensions.Literal[
     "vi-VN",
 ]
 
-DEFAULT_TURN_DETECTION_LANGUAGE: TurnDetectionLanguage = "en"
+DEFAULT_TURN_DETECTION_LANGUAGE: TurnDetectionLanguage = "en-US"
 TURN_DETECTION_LANGUAGE_VALUES: typing.Tuple[TurnDetectionLanguage, ...] = (
     "ar-EG",
     "ar-JO",
@@ -921,9 +921,10 @@ class Agent:
         allow_missing_llm = "llm" in allow_missing_categories
         allow_missing_tts = "tts" in allow_missing_categories
 
+        turn_detection_config = self._resolve_turn_detection_config()
         if not skip_asr_validation and (self._stt is not None or not allow_missing_asr):
-            base_kwargs["asr"] = self._resolve_asr_config()
-        base_kwargs["turn_detection"] = self._resolve_turn_detection_config()
+            base_kwargs["asr"] = self._resolve_asr_config(turn_detection_config)
+        base_kwargs["turn_detection"] = turn_detection_config
 
         if skip_vendor_validation:
             return StartAgentsRequestProperties(**base_kwargs)
@@ -957,11 +958,11 @@ class Agent:
             llm_config["max_history"] = self._max_history
         return llm_config
 
-    def _resolve_asr_config(self) -> typing.Dict[str, typing.Any]:
+    def _resolve_asr_config(self, turn_detection_config: TurnDetectionConfig) -> typing.Dict[str, typing.Any]:
         asr_config = dict(self._stt or {})
-        asr_config.pop("language", None)
         if not asr_config:
             asr_config["vendor"] = "ares"
+        asr_config["language"] = self._field_value(turn_detection_config, "language")
         return asr_config
 
     def _resolve_turn_detection_config(self) -> TurnDetectionConfig:

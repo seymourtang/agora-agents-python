@@ -318,7 +318,7 @@ The SDK also includes named helpers for the remaining Agora-supported LLM provid
 
 ## STT Vendors
 
-Use `turn_detection.language` for Agora interaction language; it defaults to `en`. Provider-specific language values remain under `asr.params` and may use a different format.
+Use `turn_detection.language` for Agora interaction language; it defaults to `en-US`. Provider-specific language values remain under `asr.params` and may use a different format. AgentKit populates REST `asr.language` from `turn_detection.language`.
 
 ### `SpeechmaticsSTT`
 
@@ -396,7 +396,6 @@ For `nova-2` and `nova-3`, omit `api_key` to use Agora-managed credentials. For 
 
 | Parameter | Type | Required | Default | Description |
 |---|---|---|---|---|
-| `language` | `str` | No | `None` | Language code |
 | `additional_params` | `Dict[str, Any]` | No | `None` | Additional parameters |
 
 ### `SarvamSTT`
