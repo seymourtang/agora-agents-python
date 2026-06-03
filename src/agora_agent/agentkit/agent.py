@@ -221,6 +221,7 @@ TurnDetectionLanguage = typing_extensions.Literal[
     "zh-HK",
     "zh-TW",
     "nl-NL",
+    "en",
     "en-IN",
     "en-US",
     "fil-PH",
@@ -246,7 +247,7 @@ TurnDetectionLanguage = typing_extensions.Literal[
     "vi-VN",
 ]
 
-DEFAULT_TURN_DETECTION_LANGUAGE: TurnDetectionLanguage = "en-US"
+DEFAULT_TURN_DETECTION_LANGUAGE: TurnDetectionLanguage = "en"
 TURN_DETECTION_LANGUAGE_VALUES: typing.Tuple[TurnDetectionLanguage, ...] = (
     "ar-EG",
     "ar-JO",
@@ -257,6 +258,7 @@ TURN_DETECTION_LANGUAGE_VALUES: typing.Tuple[TurnDetectionLanguage, ...] = (
     "zh-HK",
     "zh-TW",
     "nl-NL",
+    "en",
     "en-IN",
     "en-US",
     "fil-PH",
@@ -963,13 +965,10 @@ class Agent:
         return asr_config
 
     def _resolve_turn_detection_config(self) -> TurnDetectionConfig:
-        existing_stt_language = self._stt.get("language") if self._stt is not None else None
         existing_turn_detection_language = self._field_value(self._turn_detection, "language")
         language = (
             existing_turn_detection_language
             if existing_turn_detection_language is not None
-            else existing_stt_language
-            if _is_turn_detection_language(existing_stt_language)
             else DEFAULT_TURN_DETECTION_LANGUAGE
         )
         language = _validate_turn_detection_language(language)

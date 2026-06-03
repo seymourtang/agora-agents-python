@@ -39,13 +39,13 @@ def properties(agent: Agent) -> dict:
     )
 
 
-def test_bcp47_stt_language_sets_turn_detection_language_and_provider_param() -> None:
-    props = properties(base_agent().with_stt(SpeechmaticsSTT(api_key="stt-key", language="en-US")))
+def test_bcp47_stt_language_stays_in_asr_params_and_defaults_turn_detection() -> None:
+    props = properties(base_agent().with_stt(SpeechmaticsSTT(api_key="stt-key", language="en")))
 
     assert props["asr"]["vendor"] == "speechmatics"
     assert "language" not in props["asr"]
-    assert props["turn_detection"]["language"] == "en-US"
-    assert props["asr"]["params"]["language"] == "en-US"
+    assert props["turn_detection"]["language"] == "en"
+    assert props["asr"]["params"]["language"] == "en"
 
 
 def test_provider_language_defaults_turn_detection_language_when_not_supported_by_ares() -> None:
@@ -53,7 +53,7 @@ def test_provider_language_defaults_turn_detection_language_when_not_supported_b
 
     assert props["asr"]["vendor"] == "speechmatics"
     assert "language" not in props["asr"]
-    assert props["turn_detection"]["language"] == "en-US"
+    assert props["turn_detection"]["language"] == "en"
     assert props["asr"]["params"]["language"] == "en"
 
 
@@ -71,15 +71,15 @@ def test_turn_detection_language_can_differ_from_provider_language() -> None:
 
 
 def test_invalid_turn_detection_language_is_rejected() -> None:
-    with pytest.raises(ValueError, match="Invalid interaction language: en"):
-        properties(Agent(turn_detection=TurnDetectionConfig(language="en")))  # type: ignore[arg-type]
+    with pytest.raises(ValueError, match="Invalid interaction language: xx"):
+        properties(Agent(turn_detection=TurnDetectionConfig(language="xx")))  # type: ignore[arg-type]
 
 
 def test_default_turn_detection_language_is_sent_without_stt() -> None:
     props = properties(base_agent())
 
     assert props["asr"] == {"vendor": "ares"}
-    assert props["turn_detection"] == {"language": "en-US"}
+    assert props["turn_detection"] == {"language": "en"}
 
 
 def test_stt_vendor_params_match_documented_shapes() -> None:

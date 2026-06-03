@@ -318,7 +318,7 @@ The SDK also includes named helpers for the remaining Agora-supported LLM provid
 
 ## STT Vendors
 
-Use `turn_detection.language` for Agora interaction language; it defaults to `en-US`. Provider-specific language values remain under `asr.params` and may use a different format.
+Use `turn_detection.language` for Agora interaction language; it defaults to `en`. Provider-specific language values remain under `asr.params` and may use a different format.
 
 ### `SpeechmaticsSTT`
 
