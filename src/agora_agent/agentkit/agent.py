@@ -221,7 +221,6 @@ TurnDetectionLanguage = typing_extensions.Literal[
     "zh-HK",
     "zh-TW",
     "nl-NL",
-    "en",
     "en-IN",
     "en-US",
     "fil-PH",
@@ -258,7 +257,6 @@ TURN_DETECTION_LANGUAGE_VALUES: typing.Tuple[TurnDetectionLanguage, ...] = (
     "zh-HK",
     "zh-TW",
     "nl-NL",
-    "en",
     "en-IN",
     "en-US",
     "fil-PH",
@@ -944,17 +942,15 @@ class Agent:
 
     def _resolve_llm_config(self) -> typing.Dict[str, typing.Any]:
         llm_config = dict(self._llm or {})
-        # Agent-level fields take priority over the vendor's defaults.
-        # This matches the TS SDK where agent-level values override vendor config.
-        if self._instructions is not None:
+        if self._instructions is not None and "system_messages" not in llm_config:
             llm_config["system_messages"] = [{"role": "system", "content": self._instructions}]
-        if self._greeting is not None:
+        if self._greeting is not None and "greeting_message" not in llm_config:
             llm_config["greeting_message"] = self._greeting
-        if self._greeting_configs is not None:
+        if self._greeting_configs is not None and "greeting_configs" not in llm_config:
             llm_config["greeting_configs"] = _dump_optional_model(self._greeting_configs)
-        if self._failure_message is not None:
+        if self._failure_message is not None and "failure_message" not in llm_config:
             llm_config["failure_message"] = self._failure_message
-        if self._max_history is not None:
+        if self._max_history is not None and "max_history" not in llm_config:
             llm_config["max_history"] = self._max_history
         return llm_config
 

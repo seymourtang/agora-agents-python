@@ -44,6 +44,7 @@ class DeepgramSTTOptions(BaseModel):
     api_key: Optional[str] = Field(default=None, description="Deepgram API key")
     model: Optional[str] = Field(default=None, description="Model (e.g., nova-2, enhanced, base)")
     language: Optional[str] = Field(default=None, description="Language code (e.g., en-US)")
+    keyterm: Optional[str] = Field(default=None, description="Boost specialized terms and brands for Deepgram")
     smart_format: Optional[bool] = Field(default=None, description="Enable smart formatting")
     punctuation: Optional[bool] = Field(default=None, description="Enable punctuation")
     additional_params: Optional[Dict[str, Any]] = Field(default=None)
@@ -71,6 +72,8 @@ class DeepgramSTT(BaseSTT):
             params["smart_format"] = self.options.smart_format
         if self.options.punctuation is not None:
             params["punctuation"] = self.options.punctuation
+        if self.options.keyterm is not None:
+            params["keyterm"] = self.options.keyterm
         config: Dict[str, Any] = {
             "vendor": "deepgram",
             "params": params,
@@ -124,13 +127,20 @@ class OpenAISTT(BaseSTT):
         params: Dict[str, Any] = dict(self.options.additional_params or {})
         params["api_key"] = self.options.api_key
 
-        transcription = {"model": "whisper-1", **(self.options.input_audio_transcription or {})}
+        transcription: Dict[str, Any] = {"model": "gpt-4o-mini-transcribe"}
+        transcription.update(self.options.input_audio_transcription or {})
         if self.options.model is not None:
             transcription["model"] = self.options.model
         if self.options.prompt is not None:
             transcription["prompt"] = self.options.prompt
         if self.options.language is not None:
             transcription["language"] = self.options.language
+        if not transcription.get("model"):
+            raise ValueError("OpenAISTT: input_audio_transcription.model is required")
+        if not transcription.get("prompt"):
+            raise ValueError("OpenAISTT: input_audio_transcription.prompt is required")
+        if not transcription.get("language"):
+            raise ValueError("OpenAISTT: input_audio_transcription.language is required")
         params["input_audio_transcription"] = transcription
 
         config: Dict[str, Any] = {

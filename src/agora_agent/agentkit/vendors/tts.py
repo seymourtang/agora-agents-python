@@ -114,7 +114,7 @@ class OpenAITTSOptions(BaseModel):
                     ("model", self.model),
                     ("base_url", self.base_url),
                 )
-                if value is None
+                if not value
             ]
             if missing:
                 raise ValueError(f"OpenAITTS requires {', '.join(missing)} when api_key is set")
