@@ -306,7 +306,7 @@ def _is_turn_detection_language(value: typing.Any) -> bool:
 
 def _validate_turn_detection_language(value: typing.Any) -> TurnDetectionLanguage:
     if not _is_turn_detection_language(value):
-        raise ValueError(f"Invalid interaction language: {value}")
+        raise ValueError(f"Invalid turn_detection.language: {value}")
     return value  # type: ignore[return-value]
 
 

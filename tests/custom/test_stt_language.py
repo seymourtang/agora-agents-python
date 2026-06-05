@@ -73,7 +73,7 @@ def test_turn_detection_language_can_differ_from_provider_language() -> None:
 
 
 def test_invalid_turn_detection_language_is_rejected() -> None:
-    with pytest.raises(ValueError, match="Invalid interaction language: xx"):
+    with pytest.raises(ValueError, match="Invalid turn_detection.language: xx"):
         properties(Agent(turn_detection=TurnDetectionConfig(language="xx")))  # type: ignore[arg-type]
 
 
