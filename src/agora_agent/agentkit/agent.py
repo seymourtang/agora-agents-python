@@ -76,6 +76,7 @@ from ..agent_management.types.agent_think_agent_management_request_on_speaking_a
 from ..agent_management.types.agent_think_agent_management_response import (
     AgentThinkAgentManagementResponse,
 )
+from ..core.pydantic_utilities import parse_obj_as
 from .vendors.base import BaseAvatar, BaseLLM, BaseMLLM, BaseSTT, BaseTTS
 
 # Top-level aliases
@@ -187,6 +188,13 @@ class SessionOptions(typing_extensions.TypedDict, total=False):
     expires_in: int
     debug: bool
     warn: typing.Callable[[str], None]
+
+
+def _start_properties_from_mapping(
+    properties: typing.Mapping[str, typing.Any],
+) -> StartAgentsRequestProperties:
+    return parse_obj_as(StartAgentsRequestProperties, dict(properties))
+
 
 # LLM sub-type aliases
 LlmGreetingConfigs = typing.Dict[str, typing.Any]
@@ -896,7 +904,7 @@ class Agent:
                 if self._failure_message is not None:
                     mllm_config.setdefault("failure_message", self._failure_message)
                 base_kwargs["mllm"] = mllm_config
-            return StartAgentsRequestProperties(**base_kwargs)
+            return _start_properties_from_mapping(base_kwargs)
 
         if skip_vendor_validation:
             warnings.warn(
@@ -925,7 +933,7 @@ class Agent:
         base_kwargs["turn_detection"] = turn_detection_config
 
         if skip_vendor_validation:
-            return StartAgentsRequestProperties(**base_kwargs)
+            return _start_properties_from_mapping(base_kwargs)
 
         if self._tts is None and not (skip_tts_validation or allow_missing_tts):
             raise ValueError("TTS configuration is required. Use with_tts() to set it.")
@@ -938,7 +946,7 @@ class Agent:
         if self._tts is not None and not skip_tts_validation:
             base_kwargs["tts"] = self._tts
 
-        return StartAgentsRequestProperties(**base_kwargs)
+        return _start_properties_from_mapping(base_kwargs)
 
     def _resolve_llm_config(self) -> typing.Dict[str, typing.Any]:
         llm_config = dict(self._llm or {})

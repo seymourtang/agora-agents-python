@@ -1,10 +1,18 @@
 import pytest
 
-from agora_agent import AmazonTTS, CartesiaTTS, DeepgramTTS, ElevenLabsTTS, FishAudioTTS, GoogleTTS, HumeAITTS, MiniMaxTTS, MurfTTS, OpenAITTS, RimeTTS, SarvamTTS
+from agora_agent import AmazonTTS, CartesiaTTS, DeepgramTTS, ElevenLabsTTS, FishAudioTTS, GoogleTTS, HumeAITTS, MicrosoftTTS, MiniMaxTTS, MurfTTS, OpenAITTS, RimeTTS, SarvamTTS
 from agora_agent.agents.types.start_agents_request_properties import StartAgentsRequestProperties
+from agora_agent.core.jsonable_encoder import jsonable_encoder
+from agora_agent.core.pydantic_utilities import parse_obj_as
 
 
 def test_tts_vendor_params_match_generated_core_shapes() -> None:
+    assert MicrosoftTTS(key="ms-key", region="eastus", voice_name="en-US-JennyNeural").to_config()["params"] == {
+        "key": "ms-key",
+        "region": "eastus",
+        "voice_name": "en-US-JennyNeural",
+    }
+
     assert AmazonTTS(access_key="access", secret_key="secret", region="us-east-1", voice_id="Joanna", engine="neural").to_config()["params"] == {
         "aws_access_key_id": "access",
         "aws_secret_access_key": "secret",
@@ -15,8 +23,8 @@ def test_tts_vendor_params_match_generated_core_shapes() -> None:
 
     assert GoogleTTS(key="{}", voice_name="en-US-JennyNeural", language_code="en-US", sample_rate_hertz=24000).to_config()["params"] == {
         "credentials": "{}",
-        "voice_selection_params": {"name": "en-US-JennyNeural", "language_code": "en-US"},
-        "audio_config": {"sample_rate_hertz": 24000},
+        "VoiceSelectionParams": {"name": "en-US-JennyNeural", "language_code": "en-US"},
+        "AudioConfig": {"sample_rate_hertz": 24000},
     }
 
     assert CartesiaTTS(api_key="cartesia-key", voice_id="voice", model_id="sonic-2", sample_rate=24000).to_config()["params"] == {
@@ -29,7 +37,7 @@ def test_tts_vendor_params_match_generated_core_shapes() -> None:
     assert RimeTTS(key="rime-key", speaker="speaker", model_id="mist").to_config()["params"] == {
         "api_key": "rime-key",
         "speaker": "speaker",
-        "model_id": "mist",
+        "modelId": "mist",
     }
 
     assert FishAudioTTS(key="fish-key", reference_id="ref", backend="speech-1.5").to_config()["params"] == {
@@ -120,40 +128,30 @@ def test_tts_managed_mode_validation_matches_core_shapes() -> None:
 
 
 def test_tts_wire_serialization_applies_fern_aliases() -> None:
-    """Verify alias-sensitive TTS params reach the wire with the correct Fern aliases.
-
-    The intermediate to_config() / build_properties() helpers return snake_case
-    field names.  The real POST body goes through StartAgentsRequestProperties →
-    .dict(by_alias=True) → convert_and_respect_annotation_metadata(direction='write'),
-    which is what jsonable_encoder calls in the live HTTP client.  These tests
-    exercise that full chain so a Fern alias regression would be caught.
-    """
+    """Verify alias-sensitive TTS params keep the exact provider wire keys."""
     _BASE = dict(channel="ch", token="tok", agent_rtc_uid="1", remote_rtc_uids=["100"])
 
-    # Google TTS: voice_selection_params and audio_config must arrive as PascalCase aliases
     google_config = GoogleTTS(
         key="{}", voice_name="en-US-JennyNeural", language_code="en-US", sample_rate_hertz=24000
     ).to_config()
-    assert "voice_selection_params" in google_config["params"]  # pre-condition: to_config emits snake_case
-    google_wire = StartAgentsRequestProperties(**_BASE, tts=google_config).dict(by_alias=True)
+    assert "VoiceSelectionParams" in google_config["params"]
+    google_wire = jsonable_encoder(parse_obj_as(StartAgentsRequestProperties, {**_BASE, "tts": google_config}))
     google_params = google_wire["tts"]["params"]
     assert "VoiceSelectionParams" in google_params, f"wire missing VoiceSelectionParams, got: {list(google_params)}"
     assert "voice_selection_params" not in google_params
     assert "AudioConfig" in google_params
     assert "audio_config" not in google_params
 
-    # Rime TTS: model_id must arrive as modelId alias
     rime_config = RimeTTS(key="rime-key", speaker="speaker", model_id="mist").to_config()
-    assert "model_id" in rime_config["params"]  # pre-condition: to_config emits snake_case
-    rime_wire = StartAgentsRequestProperties(**_BASE, tts=rime_config).dict(by_alias=True)
+    assert "modelId" in rime_config["params"]
+    rime_wire = jsonable_encoder(parse_obj_as(StartAgentsRequestProperties, {**_BASE, "tts": rime_config}))
     rime_params = rime_wire["tts"]["params"]
     assert "modelId" in rime_params, f"wire missing modelId, got: {list(rime_params)}"
     assert "model_id" not in rime_params
 
-    # Murf TTS: voiceId (emitted by to_config as alias) must survive through wire serialization
     murf_config = MurfTTS(key="murf-key", voice_id="Ariana").to_config()
-    assert "voiceId" in murf_config["params"]  # to_config currently emits alias directly
-    murf_wire = StartAgentsRequestProperties(**_BASE, tts=murf_config).dict(by_alias=True)
+    assert "voiceId" in murf_config["params"]
+    murf_wire = jsonable_encoder(parse_obj_as(StartAgentsRequestProperties, {**_BASE, "tts": murf_config}))
     murf_params = murf_wire["tts"]["params"]
     assert "voiceId" in murf_params, f"wire missing voiceId, got: {list(murf_params)}"
     assert murf_params["voiceId"] == "Ariana"

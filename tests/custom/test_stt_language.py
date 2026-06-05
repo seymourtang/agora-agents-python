@@ -7,8 +7,10 @@ from agora_agent import (
     DeepgramSTT,
     ElevenLabsTTS,
     GoogleSTT,
+    MicrosoftSTT,
     OpenAI,
     OpenAISTT,
+    SarvamSTT,
     SpeechmaticsSTT,
     TurnDetectionConfig,
 )
@@ -98,6 +100,14 @@ def test_stt_vendor_params_match_documented_shapes() -> None:
         "language": "en",
     }
 
+    # api_key → wire key "key"; keyterm passes through unchanged
+    assert DeepgramSTT(api_key="dg-key", model="nova-3", language="en", keyterm="term").to_config()["params"] == {
+        "key": "dg-key",
+        "model": "nova-3",
+        "language": "en",
+        "keyterm": "term",
+    }
+
     assert OpenAISTT(
         api_key="openai-key",
         model="gpt-4o-mini-transcribe",
@@ -145,6 +155,22 @@ def test_stt_vendor_params_match_documented_shapes() -> None:
         "api_key": "assembly-key",
         "language": "en-US",
         "uri": "wss://example.test/ws",
+    }
+
+    assert MicrosoftSTT(key="ms-key", region="eastus", language="en-US").to_config()["params"] == {
+        "key": "ms-key",
+        "region": "eastus",
+        "language": "en-US",
+    }
+
+    assert SpeechmaticsSTT(api_key="sm-key", language="en").to_config()["params"] == {
+        "api_key": "sm-key",
+        "language": "en",
+    }
+
+    assert SarvamSTT(api_key="sarvam-key", language="en-IN").to_config()["params"] == {
+        "api_key": "sarvam-key",
+        "language": "en-IN",
     }
 
 

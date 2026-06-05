@@ -78,6 +78,12 @@ def dump(value):
     return value
 
 
+def dump_wire(value):
+    if hasattr(value, "dict"):
+        return value.dict(by_alias=True)
+    return dump(value)
+
+
 # ---------------------------------------------------------------------------
 # Pattern 1: FakeAgentsClient — captures the full start() call
 # ---------------------------------------------------------------------------
@@ -92,6 +98,15 @@ class FakeAgentsClient:
         self.calls = []
 
     def start(self, appid, **kwargs):
+        self.calls.append({"appid": appid, **kwargs})
+        return StartResponse()
+
+
+class FakeAsyncAgentsClient:
+    def __init__(self):
+        self.calls = []
+
+    async def start(self, appid, **kwargs):
         self.calls.append({"appid": appid, **kwargs})
         return StartResponse()
 
@@ -117,6 +132,51 @@ def start_session(agent, **session_kwargs):
         **session_kwargs,
     ).start()
     return agents.calls[0]
+
+
+async def start_async_session(agent, **session_kwargs):
+    """Start async agent session via FakeAsyncAgentsClient and return the captured call dict."""
+    agents = FakeAsyncAgentsClient()
+    client = FakeClient(agents)
+    await agent.create_async_session(
+        client=client,
+        channel="channel",
+        token="test-token",
+        agent_uid="1",
+        remote_uids=["100"],
+        **session_kwargs,
+    ).start()
+    return agents.calls[0]
+
+
+def full_agent_with_tts(tts):
+    return (
+        Agent(name="support")
+        .with_stt(DeepgramSTT(api_key="dg-key", model="nova-2", language="en"))
+        .with_llm(
+            OpenAI(
+                api_key="openai-key",
+                base_url="https://api.openai.com/v1/chat/completions",
+                model="gpt-4o",
+            )
+        )
+        .with_tts(tts)
+    )
+
+
+def invalid_google_tts_properties():
+    return {
+        "channel": "channel",
+        "token": "test-token",
+        "agent_rtc_uid": "1",
+        "remote_rtc_uids": ["100"],
+        "tts": {
+            "vendor": "google",
+            "params": {
+                "credentials": "{}",
+            },
+        },
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -155,6 +215,48 @@ def build_properties(agent, allow_missing=None):
         skip_vendor_validation_categories=set(),
         allow_missing_vendor_categories=allow_missing or set(),
     )
+
+
+def test_request_properties_validation_raises_without_preset_or_pipeline() -> None:
+    with pytest.raises(Exception):
+        AgentSession._request_properties_for_start(  # noqa: SLF001
+            invalid_google_tts_properties(),
+            resolved_preset=None,
+            pipeline_id=None,
+        )
+
+
+def test_request_properties_validation_fallback_allows_preset_partial_config() -> None:
+    properties = invalid_google_tts_properties()
+
+    request_properties = AgentSession._request_properties_for_start(  # noqa: SLF001
+        properties,
+        resolved_preset="openai_tts_1",
+        pipeline_id=None,
+    )
+
+    assert request_properties is properties
+
+
+def test_request_properties_validation_fallback_is_limited_to_preset_category() -> None:
+    with pytest.raises(Exception):
+        AgentSession._request_properties_for_start(  # noqa: SLF001
+            invalid_google_tts_properties(),
+            resolved_preset="openai_gpt_4o_mini",
+            pipeline_id=None,
+        )
+
+
+def test_request_properties_validation_fallback_allows_pipeline_partial_config() -> None:
+    properties = invalid_google_tts_properties()
+
+    request_properties = AgentSession._request_properties_for_start(  # noqa: SLF001
+        properties,
+        resolved_preset=None,
+        pipeline_id="pipeline-id",
+    )
+
+    assert request_properties is properties
 
 
 # ===========================================================================
@@ -268,7 +370,7 @@ def test_llm_config_greeting_wins_over_agent_level_greeting() -> None:
 
 
 def test_vertex_ai_llm_constructs_correct_url_and_params() -> None:
-    """VertexAILLM auto-constructs the aiplatform URL and injects project_id/location into params."""
+    """VertexAILLM auto-constructs the aiplatform URL; project_id/location are URL-encoded, not in params."""
     agent = Agent(name="support").with_llm(
         VertexAILLM(
             api_key="vertex-token",
@@ -285,9 +387,9 @@ def test_vertex_ai_llm_constructs_correct_url_and_params() -> None:
     assert expected_url_fragment in llm["url"]
     assert "my-project" in llm["url"]
     assert llm["style"] == "gemini"
-    assert llm["params"]["project_id"] == "my-project"
-    assert llm["params"]["location"] == "us-central1"
     assert llm["params"]["model"] == "gemini-2.0-flash"
+    assert "project_id" not in llm["params"]
+    assert "location" not in llm["params"]
 
 
 # ===========================================================================
@@ -835,8 +937,8 @@ def test_byok_google_tts_params() -> None:
     assert config["vendor"] == "google"
     p = config["params"]
     assert p["credentials"] == "{}"
-    assert p["voice_selection_params"]["name"] == "en-US-JennyNeural"
-    assert p["voice_selection_params"]["language_code"] == "en-US"
+    assert p["VoiceSelectionParams"]["name"] == "en-US-JennyNeural"
+    assert p["VoiceSelectionParams"]["language_code"] == "en-US"
 
 
 def test_byok_amazon_tts_params() -> None:
@@ -876,7 +978,7 @@ def test_byok_rime_tts_params() -> None:
     assert config["vendor"] == "rime"
     assert config["params"]["api_key"] == "rime-key"
     assert config["params"]["speaker"] == "speaker"
-    assert config["params"]["model_id"] == "mist"
+    assert config["params"]["modelId"] == "mist"
 
 
 def test_byok_fishaudio_tts_params() -> None:
@@ -920,6 +1022,88 @@ def test_byok_murf_tts_params() -> None:
     assert props["tts"]["vendor"] == "murf"
     assert props["tts"]["params"]["api_key"] == "murf-key"
     assert props["tts"]["params"]["voiceId"] == "Ariana"
+
+
+def test_start_session_google_tts_preserves_wire_aliases() -> None:
+    agent = full_agent_with_tts(
+        GoogleTTS(
+            key="{}",
+            voice_name="en-US-JennyNeural",
+            language_code="en-US",
+            sample_rate_hertz=24000,
+        )
+    )
+
+    call = start_session(agent)
+    properties = dump_wire(call["properties"])
+    params = properties["tts"]["params"]
+
+    assert params["VoiceSelectionParams"]["name"] == "en-US-JennyNeural"
+    assert params["VoiceSelectionParams"]["language_code"] == "en-US"
+    assert params["AudioConfig"]["sample_rate_hertz"] == 24000
+    assert "voice_selection_params" not in params
+    assert "audio_config" not in params
+
+
+def test_start_session_rime_tts_preserves_wire_aliases() -> None:
+    agent = full_agent_with_tts(RimeTTS(key="rime-key", speaker="speaker", model_id="mist"))
+
+    call = start_session(agent)
+    properties = dump_wire(call["properties"])
+    params = properties["tts"]["params"]
+
+    assert params["modelId"] == "mist"
+    assert "model_id" not in params
+
+
+def test_start_session_murf_tts_preserves_wire_aliases() -> None:
+    agent = full_agent_with_tts(MurfTTS(key="murf-key", voice_id="Ariana"))
+
+    call = start_session(agent)
+    properties = dump_wire(call["properties"])
+    params = properties["tts"]["params"]
+
+    assert params["voiceId"] == "Ariana"
+    assert "voice_id" not in params
+
+
+@pytest.mark.asyncio
+async def test_async_start_session_google_tts_preserves_wire_aliases() -> None:
+    agent = full_agent_with_tts(
+        GoogleTTS(
+            key="{}",
+            voice_name="en-US-JennyNeural",
+            language_code="en-US",
+            sample_rate_hertz=24000,
+        )
+    )
+
+    call = await start_async_session(agent)
+    properties = dump_wire(call["properties"])
+    params = properties["tts"]["params"]
+
+    assert params["VoiceSelectionParams"]["name"] == "en-US-JennyNeural"
+    assert params["VoiceSelectionParams"]["language_code"] == "en-US"
+    assert params["AudioConfig"]["sample_rate_hertz"] == 24000
+    assert "voice_selection_params" not in params
+    assert "audio_config" not in params
+
+
+def test_start_session_managed_minimax_tts_keeps_partial_preset_config() -> None:
+    agent = (
+        Agent(name="support")
+        .with_llm(OpenAI(model="gpt-4o-mini"))
+        .with_tts(MiniMaxTTS(model="speech_2_8_turbo", voice_id="English_captivating_female1"))
+    )
+
+    call = start_session(agent)
+    properties = dump_wire(call["properties"])
+
+    assert "minimax_speech_2_8_turbo" in (call["preset"] or "")
+    assert properties["tts"]["vendor"] == "minimax"
+    assert properties["tts"]["params"] == {
+        "voice_setting": {"voice_id": "English_captivating_female1"},
+    }
 
 
 # ---------------------------------------------------------------------------

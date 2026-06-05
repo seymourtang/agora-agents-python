@@ -15,8 +15,7 @@ from ..agent_management.types.agent_think_agent_management_response import (
     AgentThinkAgentManagementResponse as AgentThinkResponse,
 )
 from ..agents.types.get_turns_agents_response import GetTurnsAgentsResponse
-from ..agents.types.start_agents_request_properties import StartAgentsRequestProperties
-from .agent import Agent, GetTurnsOptions, SayOptions, ThinkOptions
+from .agent import Agent, GetTurnsOptions, SayOptions, ThinkOptions, _start_properties_from_mapping
 from .avatar_types import (
     is_akool_avatar,
     is_anam_avatar,
@@ -350,6 +349,44 @@ class _AgentSessionBase:
 
         return properties
 
+    @staticmethod
+    def _request_properties_for_start(
+        resolved_properties: typing.Dict[str, typing.Any],
+        *,
+        resolved_preset: typing.Optional[str],
+        pipeline_id: typing.Optional[str],
+    ) -> typing.Any:
+        try:
+            return _start_properties_from_mapping(resolved_properties)
+        except Exception as exc:
+            if pipeline_id:
+                return resolved_properties
+            if resolved_preset:
+                preset_categories = {
+                    category
+                    for item in normalize_preset_input(resolved_preset).split(",")
+                    for category in [get_preset_category(item)]
+                    if category is not None
+                }
+                error_categories = _AgentSessionBase._validation_error_categories(exc)
+                if error_categories and error_categories.issubset(preset_categories):
+                    return resolved_properties
+            raise
+
+    @staticmethod
+    def _validation_error_categories(exc: Exception) -> typing.Set[str]:
+        errors = getattr(exc, "errors", None)
+        if not callable(errors):
+            return set()
+        categories: typing.Set[str] = set()
+        for error in errors():
+            loc = error.get("loc") if isinstance(error, dict) else None
+            if isinstance(loc, tuple) and loc:
+                field = loc[0]
+                if field in {"asr", "llm", "tts"}:
+                    categories.add(typing.cast(str, field))
+        return categories
+
     def _vendor_validation_categories(
         self,
         pipeline_id: typing.Optional[str],
@@ -514,10 +551,11 @@ class AgentSession(_AgentSessionBase):
                     "properties": resolved_properties,
                 })
 
-            try:
-                request_properties: typing.Any = StartAgentsRequestProperties(**resolved_properties)
-            except Exception:
-                request_properties = resolved_properties
+            request_properties = self._request_properties_for_start(
+                resolved_properties,
+                resolved_preset=resolved_preset,
+                pipeline_id=pipeline_id,
+            )
 
             response = self._client.agents.start(
                 self._app_id,
@@ -841,10 +879,11 @@ class AsyncAgentSession(_AgentSessionBase):
                     "properties": resolved_properties,
                 })
 
-            try:
-                request_properties: typing.Any = StartAgentsRequestProperties(**resolved_properties)
-            except Exception:
-                request_properties = resolved_properties
+            request_properties = self._request_properties_for_start(
+                resolved_properties,
+                resolved_preset=resolved_preset,
+                pipeline_id=pipeline_id,
+            )
 
             response = await self._client.agents.start(
                 self._app_id,
