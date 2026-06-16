@@ -54,7 +54,7 @@ client = Agora(
 )
 
 agent = (
-    Agent(name='avatar-agent')
+    Agent(client=client, name='avatar-agent')
     .with_llm(OpenAI(
         api_key='your-openai-key',
         base_url='https://api.openai.com/v1/chat/completions',
@@ -77,7 +77,7 @@ agent = (
     ))
 )
 
-session = agent.create_session(client, channel='avatar-room', agent_uid='1', remote_uids=['100'])
+session = agent.create_session(channel='avatar-room', agent_uid='1', remote_uids=['100'])
 agent_id = session.start()
 session.say('Hello! I am your visual assistant.')
 session.stop()

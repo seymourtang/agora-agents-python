@@ -7,7 +7,12 @@ import logging
 import typing
 
 import httpx
+import typing_extensions
 
+from .agentkit.regional_agent import CNAgent, GlobalAgent, RegionalAgent
+from .agentkit.region_validation import validate_agent_region_compatibility
+from .agentkit.vendors.namespaces import CNVendors, GlobalVendors
+from .agentkit.vendors.region import AreaScope, area_to_scope
 from .client import Agora as BaseAgora
 from .client import AsyncAgora as BaseAsyncAgora
 from .core.api_error import ApiError
@@ -16,6 +21,10 @@ from .agentkit.token import generate_convo_ai_token
 
 _AUTH_MODE = typing.Literal["app-credentials", "basic", "token"]
 _DEBUG_LOGGER = logging.getLogger("agora_agent")
+_AreaT = typing.TypeVar("_AreaT", bound=Area)
+_GlobalArea = typing_extensions.Literal[Area.US, Area.EU, Area.AP]
+_GLOBAL_VENDORS = GlobalVendors()
+_CN_VENDORS = CNVendors()
 
 
 def _redact_headers(headers: typing.Mapping[str, str]) -> typing.Dict[str, str]:
@@ -108,7 +117,7 @@ def _basic_auth_header(customer_id: str, customer_secret: str) -> str:
     return f"Basic {encoded}"
 
 
-class Agora(BaseAgora):
+class Agora(BaseAgora, typing.Generic[_AreaT]):
     """
     Agora extends the base client with domain pool support for
     regional URL cycling and automatic domain selection.
@@ -204,10 +213,123 @@ class Agora(BaseAgora):
     )
     """
 
+    if typing.TYPE_CHECKING:
+
+        @typing.overload
+        def __new__(
+            cls,
+            *,
+            area: typing_extensions.Literal[Area.CN],
+            app_id: str,
+            app_certificate: str,
+            customer_id: typing.Optional[str] = None,
+            customer_secret: typing.Optional[str] = None,
+            auth_token: typing.Optional[str] = None,
+            headers: typing.Optional[typing.Dict[str, str]] = None,
+            timeout: typing.Optional[float] = None,
+            follow_redirects: typing.Optional[bool] = True,
+            httpx_client: typing.Optional[httpx.Client] = None,
+            debug: bool = False,
+        ) -> "CNAgora": ...
+
+        @typing.overload
+        def __new__(
+            cls,
+            *,
+            area: _GlobalArea,
+            app_id: str,
+            app_certificate: str,
+            customer_id: typing.Optional[str] = None,
+            customer_secret: typing.Optional[str] = None,
+            auth_token: typing.Optional[str] = None,
+            headers: typing.Optional[typing.Dict[str, str]] = None,
+            timeout: typing.Optional[float] = None,
+            follow_redirects: typing.Optional[bool] = True,
+            httpx_client: typing.Optional[httpx.Client] = None,
+            debug: bool = False,
+        ) -> "GlobalAgoraClient": ...
+
+        @typing.overload
+        def __new__(
+            cls,
+            *,
+            area: _AreaT,
+            app_id: str,
+            app_certificate: str,
+            customer_id: typing.Optional[str] = None,
+            customer_secret: typing.Optional[str] = None,
+            auth_token: typing.Optional[str] = None,
+            headers: typing.Optional[typing.Dict[str, str]] = None,
+            timeout: typing.Optional[float] = None,
+            follow_redirects: typing.Optional[bool] = True,
+            httpx_client: typing.Optional[httpx.Client] = None,
+            debug: bool = False,
+        ) -> "Agora[_AreaT]": ...
+
+        @typing.overload
+        def __init__(
+            self: "Agora[typing_extensions.Literal[Area.CN]]",
+            *,
+            area: typing_extensions.Literal[Area.CN],
+            app_id: str,
+            app_certificate: str,
+            customer_id: typing.Optional[str] = None,
+            customer_secret: typing.Optional[str] = None,
+            auth_token: typing.Optional[str] = None,
+            headers: typing.Optional[typing.Dict[str, str]] = None,
+            timeout: typing.Optional[float] = None,
+            follow_redirects: typing.Optional[bool] = True,
+            httpx_client: typing.Optional[httpx.Client] = None,
+            debug: bool = False,
+        ) -> None: ...
+
+        @typing.overload
+        def __init__(
+            self: "Agora[_GlobalArea]",
+            *,
+            area: _GlobalArea,
+            app_id: str,
+            app_certificate: str,
+            customer_id: typing.Optional[str] = None,
+            customer_secret: typing.Optional[str] = None,
+            auth_token: typing.Optional[str] = None,
+            headers: typing.Optional[typing.Dict[str, str]] = None,
+            timeout: typing.Optional[float] = None,
+            follow_redirects: typing.Optional[bool] = True,
+            httpx_client: typing.Optional[httpx.Client] = None,
+            debug: bool = False,
+        ) -> None: ...
+
+        @typing.overload
+        def __init__(
+            self,
+            *,
+            area: _AreaT,
+            app_id: str,
+            app_certificate: str,
+            customer_id: typing.Optional[str] = None,
+            customer_secret: typing.Optional[str] = None,
+            auth_token: typing.Optional[str] = None,
+            headers: typing.Optional[typing.Dict[str, str]] = None,
+            timeout: typing.Optional[float] = None,
+            follow_redirects: typing.Optional[bool] = True,
+            httpx_client: typing.Optional[httpx.Client] = None,
+            debug: bool = False,
+        ) -> None: ...
+
+    def __new__(cls, **kwargs: typing.Any) -> typing.Any:
+        if cls is Agora:
+            area = kwargs.get("area")
+            if area is not None:
+                if area_to_scope(area) == "cn":
+                    return object.__new__(CNAgora)
+                return object.__new__(GlobalAgoraClient)
+        return object.__new__(cls)
+
     def __init__(
         self,
         *,
-        area: Area,
+        area: _AreaT,
         app_id: str,
         app_certificate: str,
         customer_id: typing.Optional[str] = None,
@@ -220,6 +342,7 @@ class Agora(BaseAgora):
         debug: bool = False,
     ):
         self._pool = Pool(area)
+        self._area = area
         self.app_id = app_id
         self.app_certificate = app_certificate
 
@@ -266,6 +389,45 @@ class Agora(BaseAgora):
         You can use this to manually cycle regions or select the best domain.
         """
         return self._pool
+
+    @property
+    def area(self) -> _AreaT:
+        """Get the configured API area."""
+        return self._area
+
+    @property
+    def area_scope(self) -> AreaScope:
+        """Return the vendor scope implied by the configured area."""
+        return area_to_scope(self._area)
+
+    @property
+    def vendors(self) -> typing.Union[CNVendors, GlobalVendors]:
+        """Return the vendor catalog for the configured area."""
+        if area_to_scope(self._area) == "cn":
+            return _CN_VENDORS
+        return _GLOBAL_VENDORS
+
+    @typing.overload
+    def create_agent(self: "Agora[typing_extensions.Literal[Area.CN]]", *args: typing.Any, **kwargs: typing.Any) -> CNAgent:
+        ...
+
+    @typing.overload
+    def create_agent(self: "Agora[_GlobalArea]", *args: typing.Any, **kwargs: typing.Any) -> GlobalAgent:
+        ...
+
+    @typing.overload
+    def create_agent(self, *args: typing.Any, **kwargs: typing.Any) -> RegionalAgent:
+        ...
+
+    def create_agent(self, *args: typing.Any, **kwargs: typing.Any) -> RegionalAgent:
+        """Create an area-aware agent for IDE-friendly vendor suggestions."""
+        agent_cls = CNAgent if self.area_scope == "cn" else GlobalAgent
+        kwargs.setdefault("client", self)
+        return agent_cls(*args, **kwargs)
+
+    def validate_agent_region(self, agent: RegionalAgent) -> None:
+        """Validate that the agent only uses vendors available in this area."""
+        validate_agent_region_compatibility(agent, self._area)
 
     def next_region(self) -> None:
         """
@@ -335,7 +497,7 @@ class Agora(BaseAgora):
             raise
 
 
-class AsyncAgora(BaseAsyncAgora):
+class AsyncAgora(BaseAsyncAgora, typing.Generic[_AreaT]):
     """
     AsyncAgora extends the base async client with domain pool support for
     regional URL cycling and automatic domain selection.
@@ -415,10 +577,123 @@ class AsyncAgora(BaseAsyncAgora):
     )
     """
 
+    if typing.TYPE_CHECKING:
+
+        @typing.overload
+        def __new__(
+            cls,
+            *,
+            area: typing_extensions.Literal[Area.CN],
+            app_id: str,
+            app_certificate: str,
+            customer_id: typing.Optional[str] = None,
+            customer_secret: typing.Optional[str] = None,
+            auth_token: typing.Optional[str] = None,
+            headers: typing.Optional[typing.Dict[str, str]] = None,
+            timeout: typing.Optional[float] = None,
+            follow_redirects: typing.Optional[bool] = True,
+            httpx_client: typing.Optional[httpx.AsyncClient] = None,
+            debug: bool = False,
+        ) -> "CNAsyncAgora": ...
+
+        @typing.overload
+        def __new__(
+            cls,
+            *,
+            area: _GlobalArea,
+            app_id: str,
+            app_certificate: str,
+            customer_id: typing.Optional[str] = None,
+            customer_secret: typing.Optional[str] = None,
+            auth_token: typing.Optional[str] = None,
+            headers: typing.Optional[typing.Dict[str, str]] = None,
+            timeout: typing.Optional[float] = None,
+            follow_redirects: typing.Optional[bool] = True,
+            httpx_client: typing.Optional[httpx.AsyncClient] = None,
+            debug: bool = False,
+        ) -> "GlobalAsyncAgoraClient": ...
+
+        @typing.overload
+        def __new__(
+            cls,
+            *,
+            area: _AreaT,
+            app_id: str,
+            app_certificate: str,
+            customer_id: typing.Optional[str] = None,
+            customer_secret: typing.Optional[str] = None,
+            auth_token: typing.Optional[str] = None,
+            headers: typing.Optional[typing.Dict[str, str]] = None,
+            timeout: typing.Optional[float] = None,
+            follow_redirects: typing.Optional[bool] = True,
+            httpx_client: typing.Optional[httpx.AsyncClient] = None,
+            debug: bool = False,
+        ) -> "AsyncAgora[_AreaT]": ...
+
+        @typing.overload
+        def __init__(
+            self: "AsyncAgora[typing_extensions.Literal[Area.CN]]",
+            *,
+            area: typing_extensions.Literal[Area.CN],
+            app_id: str,
+            app_certificate: str,
+            customer_id: typing.Optional[str] = None,
+            customer_secret: typing.Optional[str] = None,
+            auth_token: typing.Optional[str] = None,
+            headers: typing.Optional[typing.Dict[str, str]] = None,
+            timeout: typing.Optional[float] = None,
+            follow_redirects: typing.Optional[bool] = True,
+            httpx_client: typing.Optional[httpx.AsyncClient] = None,
+            debug: bool = False,
+        ) -> None: ...
+
+        @typing.overload
+        def __init__(
+            self: "AsyncAgora[_GlobalArea]",
+            *,
+            area: _GlobalArea,
+            app_id: str,
+            app_certificate: str,
+            customer_id: typing.Optional[str] = None,
+            customer_secret: typing.Optional[str] = None,
+            auth_token: typing.Optional[str] = None,
+            headers: typing.Optional[typing.Dict[str, str]] = None,
+            timeout: typing.Optional[float] = None,
+            follow_redirects: typing.Optional[bool] = True,
+            httpx_client: typing.Optional[httpx.AsyncClient] = None,
+            debug: bool = False,
+        ) -> None: ...
+
+        @typing.overload
+        def __init__(
+            self,
+            *,
+            area: _AreaT,
+            app_id: str,
+            app_certificate: str,
+            customer_id: typing.Optional[str] = None,
+            customer_secret: typing.Optional[str] = None,
+            auth_token: typing.Optional[str] = None,
+            headers: typing.Optional[typing.Dict[str, str]] = None,
+            timeout: typing.Optional[float] = None,
+            follow_redirects: typing.Optional[bool] = True,
+            httpx_client: typing.Optional[httpx.AsyncClient] = None,
+            debug: bool = False,
+        ) -> None: ...
+
+    def __new__(cls, **kwargs: typing.Any) -> typing.Any:
+        if cls is AsyncAgora:
+            area = kwargs.get("area")
+            if area is not None:
+                if area_to_scope(area) == "cn":
+                    return object.__new__(CNAsyncAgora)
+                return object.__new__(GlobalAsyncAgoraClient)
+        return object.__new__(cls)
+
     def __init__(
         self,
         *,
-        area: Area,
+        area: _AreaT,
         app_id: str,
         app_certificate: str,
         customer_id: typing.Optional[str] = None,
@@ -431,6 +706,7 @@ class AsyncAgora(BaseAsyncAgora):
         debug: bool = False,
     ):
         self._pool = Pool(area)
+        self._area = area
         self.app_id = app_id
         self.app_certificate = app_certificate
 
@@ -477,6 +753,45 @@ class AsyncAgora(BaseAsyncAgora):
         You can use this to manually cycle regions or select the best domain.
         """
         return self._pool
+
+    @property
+    def area(self) -> _AreaT:
+        """Get the configured API area."""
+        return self._area
+
+    @property
+    def area_scope(self) -> AreaScope:
+        """Return the vendor scope implied by the configured area."""
+        return area_to_scope(self._area)
+
+    @property
+    def vendors(self) -> typing.Union[CNVendors, GlobalVendors]:
+        """Return the vendor catalog for the configured area."""
+        if area_to_scope(self._area) == "cn":
+            return _CN_VENDORS
+        return _GLOBAL_VENDORS
+
+    @typing.overload
+    def create_agent(self: "AsyncAgora[typing_extensions.Literal[Area.CN]]", *args: typing.Any, **kwargs: typing.Any) -> CNAgent:
+        ...
+
+    @typing.overload
+    def create_agent(self: "AsyncAgora[_GlobalArea]", *args: typing.Any, **kwargs: typing.Any) -> GlobalAgent:
+        ...
+
+    @typing.overload
+    def create_agent(self, *args: typing.Any, **kwargs: typing.Any) -> RegionalAgent:
+        ...
+
+    def create_agent(self, *args: typing.Any, **kwargs: typing.Any) -> RegionalAgent:
+        """Create an area-aware agent for IDE-friendly vendor suggestions."""
+        agent_cls = CNAgent if self.area_scope == "cn" else GlobalAgent
+        kwargs.setdefault("client", self)
+        return agent_cls(*args, **kwargs)
+
+    def validate_agent_region(self, agent: RegionalAgent) -> None:
+        """Validate that the agent only uses vendors available in this area."""
+        validate_agent_region_compatibility(agent, self._area)
 
     def next_region(self) -> None:
         """
@@ -544,3 +859,31 @@ class AsyncAgora(BaseAsyncAgora):
             if e.status_code == 404:
                 return  # Agent already stopped — treat as success
             raise
+
+
+class CNAgora(Agora[typing_extensions.Literal[Area.CN]]):
+    @property
+    def vendors(self) -> CNVendors:
+        return _CN_VENDORS
+
+
+class GlobalAgoraClient(Agora[_GlobalArea]):
+    @property
+    def vendors(self) -> GlobalVendors:
+        return _GLOBAL_VENDORS
+
+
+class CNAsyncAgora(AsyncAgora[typing_extensions.Literal[Area.CN]]):
+    @property
+    def vendors(self) -> CNVendors:
+        return _CN_VENDORS
+
+
+class GlobalAsyncAgoraClient(AsyncAgora[_GlobalArea]):
+    @property
+    def vendors(self) -> GlobalVendors:
+        return _GLOBAL_VENDORS
+
+
+AgentClient = Agora
+AsyncAgentClient = AsyncAgora

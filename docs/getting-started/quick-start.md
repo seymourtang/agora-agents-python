@@ -11,12 +11,12 @@ This guide starts with the standard AgentKit path:
 - `app_id`, `app_certificate`, and `area` on `Agora` or `AsyncAgora`
 - the `Agent` builder with `.with_stt()`, `.with_llm()`, and `.with_tts()`
 - automatic ConvoAI REST auth and RTC join token generation
-- no vendor API keys when using supported Agora-managed models
+- no vendor API keys when using supported Agora-managed global models
 
 ## Sync example
 
 ```python
-from agora_agent import Agent, Agora, Area, DeepgramSTT, OpenAI, MiniMaxTTS
+from agora_agent import Agent, Agora, Area
 
 
 def main() -> None:
@@ -27,19 +27,18 @@ def main() -> None:
     )
 
     agent = (
-        Agent(name="support-assistant")
-        .with_stt(DeepgramSTT(model="nova-3", language="en"))
-        .with_llm(OpenAI(
+        Agent(client=client, name="support-assistant")
+        .with_stt(client.vendors.stt.deepgram(model="nova-3", language="en"))
+        .with_llm(client.vendors.llm.openai(
             model="gpt-4o-mini",
             system_messages=[{"role": "system", "content": "You are a concise support voice assistant."}],
             greeting_message="Hello! How can I help you today?",
             max_history=10,
         ))
-        .with_tts(MiniMaxTTS(model="speech_2_6_turbo", voice_id="English_captivating_female1"))
+        .with_tts(client.vendors.tts.minimax(model="speech_2_6_turbo", voice_id="English_captivating_female1"))
     )
 
     session = agent.create_session(
-        client,
         channel="support-room-123",
         agent_uid="1",
         remote_uids=["100"],
@@ -60,8 +59,8 @@ if __name__ == "__main__":
 ## What this does
 
 1. `Agora` runs in app-credentials mode when you pass `app_id` and `app_certificate` only.
-2. `Agent` holds reusable behavior such as instructions, greeting, and history settings.
-3. Vendor classes on the builder select the ASR, LLM, and TTS stack. Leave vendor credentials unset for supported Agora-managed models, or provide keys when you want BYOK.
+2. `Agent(client=client, ...)` binds the authenticated client once and reuses it when you later create sessions.
+3. `client.vendors.*` selects the ASR, LLM, and TTS stack. Leave vendor credentials unset for supported Agora-managed global models, or provide keys when you want BYOK. CN MiniMax TTS typically includes `key`.
 4. `session.start()` generates the required auth tokens and returns the unique agent session ID.
 
 ## Async applications
@@ -70,7 +69,7 @@ For `asyncio` services, switch to `AsyncAgora` and `await` the session methods. 
 
 ## When to use BYOK instead
 
-Use the builder without vendor API keys when you are using supported Agora-managed models.
+Use the builder without vendor API keys when you are using supported Agora-managed global models.
 
 Use BYOK when you need to:
 

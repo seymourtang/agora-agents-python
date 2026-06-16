@@ -20,7 +20,7 @@ Typical reasons:
 ```python
 import os
 
-from agora_agent import Agent, Agora, Area, DeepgramSTT, ElevenLabsTTS, OpenAI
+from agora_agent import Agent, Agora, Area
 
 
 def main() -> None:
@@ -32,16 +32,16 @@ def main() -> None:
 
     # In BYOK mode, each vendor carries its own credentials.
     agent = (
-        Agent(name="support-assistant")
+        Agent(client=client, name="support-assistant")
         .with_stt(
-            DeepgramSTT(
+            client.vendors.stt.deepgram(
                 api_key=os.environ["DEEPGRAM_API_KEY"],
                 model="nova-3",
                 language="en-US",
             )
         )
         .with_llm(
-            OpenAI(
+            client.vendors.llm.openai(
                 api_key=os.environ["OPENAI_API_KEY"],
                 base_url="https://api.openai.com/v1/chat/completions",
                 model="gpt-4o-mini",
@@ -51,7 +51,7 @@ def main() -> None:
             )
         )
         .with_tts(
-            ElevenLabsTTS(
+            client.vendors.tts.elevenlabs(
                 key=os.environ["ELEVENLABS_API_KEY"],
                 model_id="eleven_flash_v2_5",
                 voice_id=os.environ["ELEVENLABS_VOICE_ID"],
@@ -62,7 +62,6 @@ def main() -> None:
     )
 
     session = agent.create_session(
-        client,
         channel="support-room-123",
         agent_uid="1",
         remote_uids=["100"],
@@ -81,5 +80,5 @@ if __name__ == "__main__":
 
 ## Builder-managed vs BYOK
 
-- Builder without vendor keys: supported Agora-managed models
+- Builder without vendor keys: supported Agora-managed global models
 - BYOK: your keys and full vendor control

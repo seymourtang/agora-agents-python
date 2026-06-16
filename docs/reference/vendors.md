@@ -13,6 +13,60 @@ All vendor classes are available from `agora_agent`:
 from agora_agent import OpenAI, ElevenLabsTTS, DeepgramTTS, DeepgramSTT, OpenAIRealtime, XaiGrok, GenericAvatar
 ```
 
+## Area-aware vendor factories
+
+If you want IDE completion and runtime validation to narrow vendor availability after selecting `area`, construct vendors from `client.vendors.*` instead of importing vendor classes directly.
+
+| Area | `client.vendors.stt` | `client.vendors.llm` | `client.vendors.tts` | `client.vendors.avatar` |
+|---|---|---|---|---|
+| `Area.US`, `Area.EU`, `Area.AP` | `deepgram`, `speechmatics`, `microsoft`, `openai`, `google`, `amazon`, `assemblyai`, `ares`, `sarvam` | `openai`, `azure`, `anthropic`, `gemini`, `groq`, `vertexai`, `bedrock`, `dify`, `custom` | `elevenlabs`, `microsoft`, `openai`, `cartesia`, `google`, `amazon`, `deepgram`, `humeai`, `rime`, `fishaudio`, `minimax`, `murf`, `sarvam` | `liveavatar`, `heygen`, `akool`, `anam`, `generic` |
+| `Area.CN` | `fengming`, `tencent`, `microsoft`, `xfyun`, `xfyun_bigmodel`, `xfyun_dialect` | `aliyun`, `bytedance`, `deepseek`, `tencent` | `minimax`, `tencent`, `bytedance`, `microsoft`, `cosyvoice`, `bytedance_duplex`, `stepfun` | `sensetime` |
+
+Global example:
+
+```python
+from agora_agent import Agora, Area
+
+client = Agora(
+    area=Area.US,
+    app_id="your-app-id",
+    app_certificate="your-app-certificate",
+)
+
+stt = client.vendors.stt.deepgram(model="nova-3", language="en-US")
+llm = client.vendors.llm.openai(model="gpt-4o-mini")
+tts = client.vendors.tts.minimax(
+    model="speech_2_6_turbo",
+    voice_id="English_captivating_female1",
+)
+```
+
+CN example:
+
+```python
+import os
+
+from agora_agent import Agora, Area
+
+client = Agora(
+    area=Area.CN,
+    app_id="your-app-id",
+    app_certificate="your-app-certificate",
+)
+
+stt = client.vendors.stt.fengming()
+llm = client.vendors.llm.aliyun(
+    base_url="https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
+    model="qwen-plus",
+    api_key=os.environ["ALIYUN_API_KEY"],
+)
+tts = client.vendors.tts.minimax(
+    key=os.environ["MINIMAX_API_KEY"],
+    model="speech-01-turbo",
+    voice_id="female-shaonv",
+)
+```
+
 ---
 
 ## LLM Vendors
@@ -281,11 +335,21 @@ The SDK also includes named helpers for the remaining Agora-supported LLM provid
 | `key` | `str` | BYOK only | `None` | MiniMax API key. Optional for supported Agora-managed MiniMax models |
 | `group_id` | `str` | BYOK only | `None` | MiniMax group ID |
 | `model` | `str` | Yes | — | Model name (e.g., `speech-02-turbo`) |
-| `voice_id` | `str` | BYOK only | `None` | Voice style identifier |
-| `url` | `str` | BYOK only | `None` | WebSocket endpoint |
+| `voice_id` | `str` | Conditional | `None` | Voice style identifier. Exactly one of `voice_id` or `timber_weights` is required. |
+| `timber_weights` | `List[Dict[str, Any]]` | Conditional | `None` | Voice mixing configuration. Exactly one of `voice_id` or `timber_weights` is required. |
+| `speed` | `float` | No | `None` | Speaking speed |
+| `vol` | `float` | No | `None` | Volume gain |
+| `pitch` | `float` | No | `None` | Pitch adjustment |
+| `emotion` | `str` | No | `None` | Emotion style |
+| `latex_read` | `bool` | No | `None` | Whether to read LaTeX expressions |
+| `english_normalization` | `bool` | No | `None` | Whether to normalize English text |
+| `sample_rate` | `int` | No | `None` | Output sample rate in Hz. Serialized as `params.audio_setting.sample_rate`. |
+| `pronunciation_dict` | `Dict[str, Any]` | No | `None` | Pronunciation replacement dictionary |
+| `language_boost` | `str` | No | `None` | Language boost strategy |
+| `url` | `str` | No | `None` | Optional endpoint override |
 | `skip_patterns` | `List[int]` | No | `None` | Skip patterns |
 
-`key`, `group_id`, `voice_id`, and `url` are required together for BYOK. Without `key`, `model` must be one of the supported Agora-managed MiniMax models.
+`key` and `group_id` are required together for BYOK. `url` is optional. In both BYOK and managed modes, exactly one of `voice_id` or `timber_weights` must be provided. Without `key`, `model` must be one of the supported Agora-managed MiniMax models.
 
 ### `MurfTTS`
 
@@ -408,6 +472,191 @@ For `nova-2` and `nova-3`, omit `api_key` to use Agora-managed credentials. For 
 | `additional_params` | `Dict[str, Any]` | No | `None` | Additional parameters |
 
 ---
+
+## CN Vendors
+
+### CN LLM Vendors
+
+All CN LLM helpers reuse the `OpenAI`-compatible shape and set a different vendor internally.
+
+| Class | Key parameters |
+|---|---|
+| `AliyunLLM` | `base_url`, `model`, `api_key?`, `system_messages?`, `greeting_message?`, `failure_message?`, `max_history?`, `params?`, `headers?` |
+| `BytedanceLLM` | `base_url`, `model`, `api_key?`, `system_messages?`, `greeting_message?`, `failure_message?`, `max_history?`, `params?`, `headers?` |
+| `DeepSeekLLM` | `base_url`, `model`, `api_key?`, `system_messages?`, `greeting_message?`, `failure_message?`, `max_history?`, `params?`, `headers?` |
+| `TencentLLM` | `base_url`, `model`, `api_key?`, `system_messages?`, `greeting_message?`, `failure_message?`, `max_history?`, `params?`, `headers?` |
+
+### CN TTS Vendors
+
+CN TTS helpers reuse shared vendor names where possible. `client.vendors.tts.minimax(...)` and `client.vendors.tts.microsoft(...)` resolve to the CN-specific implementations when `area=Area.CN`.
+
+All CN TTS vendor classes support `skip_patterns` and `additional_params`.
+
+#### `MiniMaxTTS` (CN)
+
+| Parameter | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `key` | `str` | No | `None` | MiniMax API key |
+| `model` | `str` | Yes | — | MiniMax TTS model |
+| `voice_id` | `str` | Conditional | `None` | Voice style identifier. Exactly one of `voice_id` or `timber_weights` is required. |
+| `timber_weights` | `List[Dict[str, Any]]` | Conditional | `None` | Timbre mix configuration. Exactly one of `voice_id` or `timber_weights` is required. |
+| `speed` | `float` | No | `None` | Speaking speed |
+| `vol` | `float` | No | `None` | Volume gain |
+| `pitch` | `float` | No | `None` | Pitch adjustment |
+| `emotion` | `str` | No | `None` | Emotion style |
+| `latex_read` | `bool` | No | `None` | Whether to read LaTeX expressions |
+| `english_normalization` | `bool` | No | `None` | Whether to normalize English text |
+| `sample_rate` | `int` | No | `None` | Output sample rate in Hz |
+| `pronunciation_dict` | `Dict[str, Any]` | No | `None` | Pronunciation replacement dictionary |
+| `language_boost` | `str` | No | `None` | Language boost strategy |
+| `additional_params` | `Dict[str, Any]` | No | `None` | Additional MiniMax TTS parameters |
+| `skip_patterns` | `List[int]` | No | `None` | Skip patterns |
+
+#### `TencentTTS`
+
+| Parameter | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `app_id` | `str` | Yes | — | Tencent TTS app id |
+| `secret_id` | `str` | Yes | — | Tencent TTS secret id |
+| `secret_key` | `str` | Yes | — | Tencent TTS secret key |
+| `voice_type` | `int` | Yes | — | Tencent TTS voice type |
+| `volume` | `int` | No | `None` | Tencent TTS volume |
+| `speed` | `int` | No | `None` | Tencent TTS speed |
+| `emotion_category` | `str` | No | `None` | Tencent TTS emotion category |
+| `emotion_intensity` | `int` | No | `None` | Tencent TTS emotion intensity |
+| `additional_params` | `Dict[str, Any]` | No | `None` | Additional Tencent TTS parameters |
+| `skip_patterns` | `List[int]` | No | `None` | Skip patterns |
+
+#### `BytedanceTTS`
+
+| Parameter | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `token` | `str` | Yes | — | Bytedance TTS token |
+| `app_id` | `str` | Yes | — | Bytedance TTS app id |
+| `cluster` | `str` | Yes | — | Bytedance TTS cluster |
+| `voice_type` | `str` | Yes | — | Bytedance TTS voice type |
+| `speed_ratio` | `float` | No | `None` | Speed ratio |
+| `volume_ratio` | `float` | No | `None` | Volume ratio |
+| `pitch_ratio` | `float` | No | `None` | Pitch ratio |
+| `emotion` | `str` | No | `None` | Emotion |
+| `additional_params` | `Dict[str, Any]` | No | `None` | Additional Bytedance TTS parameters |
+| `skip_patterns` | `List[int]` | No | `None` | Skip patterns |
+
+#### `MicrosoftTTS` (CN)
+
+| Parameter | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `key` | `str` | Yes | — | Microsoft Azure subscription key |
+| `region` | `str` | Yes | — | Azure region |
+| `voice_name` | `str` | Yes | — | Voice name |
+| `sample_rate` | `int` | No | `None` | Sample rate in Hz |
+| `speed` | `float` | No | `None` | Speaking rate multiplier |
+| `volume` | `float` | No | `None` | Volume |
+| `additional_params` | `Dict[str, Any]` | No | `None` | Additional Microsoft TTS parameters |
+| `skip_patterns` | `List[int]` | No | `None` | Skip patterns |
+
+#### `CosyVoiceTTS`
+
+| Parameter | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `api_key` | `str` | No | `None` | CosyVoice API key |
+| `model` | `str` | No | `None` | CosyVoice model |
+| `sample_rate` | `int` | No | `None` | Sample rate in Hz |
+| `voice` | `str` | No | `None` | CosyVoice voice |
+| `additional_params` | `Dict[str, Any]` | No | `None` | Additional CosyVoice TTS parameters |
+| `skip_patterns` | `List[int]` | No | `None` | Skip patterns |
+
+#### `BytedanceDuplexTTS`
+
+| Parameter | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `app_id` | `str` | Yes | — | Bytedance Duplex TTS app id |
+| `token` | `str` | Yes | — | Bytedance Duplex TTS token |
+| `speaker` | `str` | Yes | — | Bytedance Duplex TTS speaker |
+| `additional_params` | `Dict[str, Any]` | No | `None` | Additional Bytedance Duplex TTS parameters |
+| `skip_patterns` | `List[int]` | No | `None` | Skip patterns |
+
+#### `StepFunTTS`
+
+| Parameter | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `api_key` | `str` | No | `None` | StepFun TTS API key |
+| `model` | `str` | No | `None` | StepFun TTS model |
+| `voice_id` | `str` | No | `None` | StepFun TTS voice id |
+| `additional_params` | `Dict[str, Any]` | No | `None` | Additional StepFun TTS parameters |
+| `skip_patterns` | `List[int]` | No | `None` | Skip patterns |
+
+### CN STT Vendors
+
+#### `TencentSTT`
+
+| Parameter | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `key` | `str` | Yes | — | Tencent ASR secret key |
+| `app_id` | `str` | Yes | — | Tencent ASR app id |
+| `secret` | `str` | Yes | — | Tencent ASR secret |
+| `engine_model_type` | `str` | Yes | — | Tencent ASR engine model type |
+| `voice_id` | `str` | Yes | — | Tencent ASR voice id |
+| `additional_params` | `Dict[str, Any]` | No | `None` | Additional Tencent ASR parameters |
+
+#### `FengmingSTT`
+
+No constructor parameters. Use `FengmingSTT()`.
+
+#### `XfyunSTT`
+
+| Parameter | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `api_key` | `str` | No | `None` | Xfyun ASR API key |
+| `app_id` | `str` | No | `None` | Xfyun ASR app id |
+| `api_secret` | `str` | No | `None` | Xfyun ASR API secret |
+| `language` | `str` | No | `None` | Xfyun ASR language |
+| `additional_params` | `Dict[str, Any]` | No | `None` | Additional Xfyun ASR parameters |
+
+#### `XfyunBigModelSTT`
+
+| Parameter | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `api_key` | `str` | No | `None` | Xfyun BigModel ASR API key |
+| `app_id` | `str` | No | `None` | Xfyun BigModel ASR app id |
+| `api_secret` | `str` | No | `None` | Xfyun BigModel ASR API secret |
+| `language_name` | `str` | No | `None` | Xfyun BigModel ASR language name |
+| `language` | `str` | No | `None` | Xfyun BigModel ASR language |
+| `additional_params` | `Dict[str, Any]` | No | `None` | Additional Xfyun BigModel ASR parameters |
+
+#### `XfyunDialectSTT`
+
+| Parameter | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `app_id` | `str` | No | `None` | Xfyun Dialect ASR app id |
+| `access_key_id` | `str` | No | `None` | Xfyun Dialect ASR access key id |
+| `access_key_secret` | `str` | No | `None` | Xfyun Dialect ASR access key secret |
+| `language` | `str` | No | `None` | Xfyun Dialect ASR language |
+| `additional_params` | `Dict[str, Any]` | No | `None` | Additional Xfyun Dialect ASR parameters |
+
+#### `MicrosoftSTT` (CN)
+
+| Parameter | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `key` | `str` | Yes | — | Microsoft Azure subscription key |
+| `region` | `str` | Yes | — | Azure region (for example, `chinaeast2`) |
+| `language` | `str` | Yes | — | Language code (for example, `zh-CN`) |
+| `phrase_list` | `List[str]` | No | `None` | Phrase hints |
+| `additional_params` | `Dict[str, Any]` | No | `None` | Additional Microsoft ASR parameters |
+
+### CN Avatar Vendors
+
+#### `SenseTimeAvatar`
+
+| Parameter | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `agora_token` | `str` | Yes | — | RTC token for avatar publisher |
+| `agora_uid` | `str` | Yes | — | Avatar RTC publisher uid |
+| `appId` | `str` | No | `None` | SenseTime app id |
+| `app_key` | `str` | Yes | — | SenseTime app key |
+| `sceneList` | `List[Dict[str, Any]]` | Yes | — | SenseTime scene list |
+| `enable` | `bool` | No | `None` | Whether to enable the avatar |
+| `additional_params` | `Dict[str, Any]` | No | `None` | Additional SenseTime avatar parameters |
 
 ## MLLM Vendors
 

@@ -123,8 +123,9 @@ def start_session(agent, **session_kwargs):
     """Start agent session via FakeAgentsClient and return the captured call dict."""
     agents = FakeAgentsClient()
     client = FakeClient(agents)
+    agent = agent._clone()  # noqa: SLF001
+    agent._client = client  # noqa: SLF001
     agent.create_session(
-        client=client,
         channel="channel",
         token="test-token",
         agent_uid="1",
@@ -138,8 +139,9 @@ async def start_async_session(agent, **session_kwargs):
     """Start async agent session via FakeAsyncAgentsClient and return the captured call dict."""
     agents = FakeAsyncAgentsClient()
     client = FakeClient(agents)
+    agent = agent._clone()  # noqa: SLF001
+    agent._client = client  # noqa: SLF001
     await agent.create_async_session(
-        client=client,
         channel="channel",
         token="test-token",
         agent_uid="1",

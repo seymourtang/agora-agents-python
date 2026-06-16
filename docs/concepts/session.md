@@ -8,6 +8,8 @@ description: Manage the full lifecycle of a running Agora Conversational AI agen
 
 `AgentSession` (sync) and `AsyncAgentSession` (async) manage the lifecycle of a running AI agent. They handle starting, stopping, sending speech, interrupting, updating configuration, and retrieving history.
 
+Presets are configured at session creation time when you use them explicitly. Most applications should configure vendors on the `Agent` builder instead — see [Quick Start](../getting-started/quick-start.md).
+
 ## State Machine
 
 An agent session moves through these states:
@@ -35,23 +37,23 @@ Use `Agent.create_session()` to create a session:
 
 <!-- snippet: executable -->
 ```python
-from agora_agent import Agent, Agora, Area, OpenAI, ElevenLabsTTS, DeepgramSTT
+from agora_agent import Agent, Agora, Area
 
 client = Agora(area=Area.US, app_id='your-app-id', app_certificate='your-app-certificate')
 
 agent = (
-    Agent(name='my-agent')
-    .with_llm(OpenAI(
+    Agent(client=client, name='my-agent')
+    .with_llm(client.vendors.llm.openai(
         api_key='your-openai-key',
         base_url='https://api.openai.com/v1/chat/completions',
         model='gpt-4o-mini',
         system_messages=[{'role': 'system', 'content': 'You are helpful.'}],
     ))
-    .with_tts(ElevenLabsTTS(key='your-elevenlabs-key', model_id='eleven_flash_v2_5', voice_id='your-voice-id', base_url='wss://api.elevenlabs.io/v1'))
-    .with_stt(DeepgramSTT(api_key='your-deepgram-key', language='en-US'))
+    .with_tts(client.vendors.tts.elevenlabs(key='your-elevenlabs-key', model_id='eleven_flash_v2_5', voice_id='your-voice-id', base_url='wss://api.elevenlabs.io/v1'))
+    .with_stt(client.vendors.stt.deepgram(api_key='your-deepgram-key', language='en-US'))
 )
 
-session = agent.create_session(client, channel='my-channel', agent_uid='1', remote_uids=['100'])
+session = agent.create_session(channel='my-channel', agent_uid='1', remote_uids=['100'])
 ```
 
 ## Sync Methods
@@ -111,6 +113,27 @@ await session.stop()
 | History | `session.get_history()` → response | `await session.get_history()` → response |
 | Info | `session.get_info()` → response | `await session.get_info()` → response |
 
+## Agora-managed models and BYOK
+
+When you omit credentials for supported Agora-managed global models on the builder, AgentKit sends the matching Agora-managed configuration at session start. Pass your own vendor API keys when you need BYOK. CN MiniMax TTS is not Agora-managed in the same way and typically includes `key`.
+
+<!-- snippet: fragment -->
+```python
+from agora_agent import Agent, DeepgramSTT, OpenAI, OpenAITTS
+
+agent = (
+    Agent()
+    .with_stt(DeepgramSTT(model="nova-3", language="en-US"))
+    .with_llm(OpenAI(
+        model="gpt-4o-mini",
+        system_messages=[{"role": "system", "content": "Be concise."}],
+    ))
+    .with_tts(OpenAITTS(voice="alloy"))
+)
+```
+
+For explicit project-specific preset values and the full list of Agora-managed models, see [AgentSession Reference](../reference/session.md).
+
 ## Events
 
 Both `AgentSession` and `AsyncAgentSession` support event handlers via `on()` and `off()`:
@@ -166,7 +189,7 @@ Session methods raise `RuntimeError` if called in an invalid state:
 
 <!-- snippet: fragment -->
 ```python
-session = agent.create_session(client, channel='my-channel', agent_uid='1', remote_uids=['100'])
+session = agent.create_session(channel='my-channel', agent_uid='1', remote_uids=['100'])
 
 # This raises RuntimeError — session hasn't started yet
 session.say('Hello!')  # RuntimeError: Cannot say in idle state

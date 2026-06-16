@@ -21,7 +21,7 @@ Used with `agent.with_llm()` for the cascading flow (ASR → LLM → TTS).
 
 | Class | Provider | Required Parameters |
 |---|---|---|
-| `OpenAI` | OpenAI | `model` for Agora-managed models; `api_key`, `base_url`, `model` for BYOK |
+| `OpenAI` | OpenAI | `model` for Agora-managed global models; `api_key`, `base_url`, `model` for BYOK |
 | `AzureOpenAI` | Azure OpenAI | `api_key`, `model`, `endpoint`, `deployment_name` |
 | `Anthropic` | Anthropic | `api_key`, `model`, `url`, `headers`, `max_tokens` |
 | `Gemini` | Google Gemini | `api_key`, `model` |
@@ -46,7 +46,7 @@ Used with `agent.with_tts()`. Each TTS vendor produces audio at a specific sampl
 |---|---|---|---|
 | `ElevenLabsTTS` | ElevenLabs | `key`, `model_id`, `voice_id`, `base_url` | 16000, 22050, 24000, or 44100 Hz |
 | `MicrosoftTTS` | Microsoft Azure | `key`, `region`, `voice_name` | 8000, 16000, 24000, or 48000 Hz |
-| `OpenAITTS` | OpenAI | `voice` for Agora-managed `tts-1`; `api_key`, `model`, `base_url`, `voice` for BYOK | 24000 Hz (fixed) |
+| `OpenAITTS` | OpenAI | `voice` for Agora-managed global `tts-1`; `api_key`, `model`, `base_url`, `voice` for BYOK | 24000 Hz (fixed) |
 | `CartesiaTTS` | Cartesia | `api_key`, `voice_id`, `model_id` | 8000–48000 Hz |
 | `GoogleTTS` | Google Cloud | `key`, `voice_name` | — |
 | `AmazonTTS` | Amazon Polly | `access_key`, `secret_key`, `region`, `voice_id`, `engine` | — |
@@ -54,7 +54,7 @@ Used with `agent.with_tts()`. Each TTS vendor produces audio at a specific sampl
 | `RimeTTS` | Rime | `key`, `speaker`, `model_id` | — |
 | `FishAudioTTS` | Fish Audio | `key`, `reference_id`, `backend` | — |
 | `GroqTTS` | Groq | `key` | — |
-| `MiniMaxTTS` | MiniMax | `model` for supported Agora-managed models; `key`, `group_id`, `model`, `voice_id`, `url` for BYOK | — |
+| `MiniMaxTTS` | MiniMax | `model` for supported Agora-managed global models; `key`, `group_id`, `model`, `voice_id`, `url` for BYOK | — |
 | `DeepgramTTS` | Deepgram | `api_key`, `model` | Configurable |
 | `SarvamTTS` | Sarvam | `api_key` | — |
 

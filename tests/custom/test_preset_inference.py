@@ -78,8 +78,9 @@ def test_session_start_infers_presets_for_managed_tts_and_llm() -> None:
 
     agents = FakeAgentsClient()
     client = FakeClient(agents)
+    agent = agent._clone()  # noqa: SLF001
+    agent._client = client  # noqa: SLF001
     agent.create_session(
-        client=client,
         channel="channel",
         token="token",
         agent_uid="1",
@@ -105,8 +106,9 @@ async def test_async_session_start_infers_presets_for_managed_tts_and_llm() -> N
 
     agents = FakeAsyncAgentsClient()
     client = FakeClient(agents)
+    agent = agent._clone()  # noqa: SLF001
+    agent._client = client  # noqa: SLF001
     await agent.create_async_session(
-        client=client,
         channel="channel",
         token="token",
         agent_uid="1",
@@ -132,8 +134,9 @@ def test_session_start_infers_managed_asr_without_skipping_llm_or_tts_validation
 
     agents = FakeAgentsClient()
     client = FakeClient(agents)
+    agent = agent._clone()  # noqa: SLF001
+    agent._client = client  # noqa: SLF001
     agent.create_session(
-        client=client,
         channel="channel",
         token="token",
         agent_uid="1",
@@ -156,10 +159,11 @@ def test_explicit_asr_preset_still_requires_tts_and_llm() -> None:
 
     agents = FakeAgentsClient()
     client = FakeClient(agents)
+    agent = agent._clone()  # noqa: SLF001
+    agent._client = client  # noqa: SLF001
 
     with pytest.raises(ValueError, match="TTS configuration is required"):
         agent.create_session(
-            client=client,
             channel="channel",
             token="token",
             agent_uid="1",
@@ -175,10 +179,11 @@ def test_managed_llm_inference_still_requires_tts() -> None:
 
     agents = FakeAgentsClient()
     client = FakeClient(agents)
+    agent = agent._clone()  # noqa: SLF001
+    agent._client = client  # noqa: SLF001
 
     with pytest.raises(ValueError, match="TTS configuration is required"):
         agent.create_session(
-            client=client,
             channel="channel",
             token="token",
             agent_uid="1",
@@ -193,10 +198,11 @@ def test_explicit_llm_preset_still_requires_tts() -> None:
 
     agents = FakeAgentsClient()
     client = FakeClient(agents)
+    agent = agent._clone()  # noqa: SLF001
+    agent._client = client  # noqa: SLF001
 
     with pytest.raises(ValueError, match="TTS configuration is required"):
         agent.create_session(
-            client=client,
             channel="channel",
             token="token",
             agent_uid="1",
@@ -214,10 +220,11 @@ def test_managed_tts_inference_still_requires_llm() -> None:
 
     agents = FakeAgentsClient()
     client = FakeClient(agents)
+    agent = agent._clone()  # noqa: SLF001
+    agent._client = client  # noqa: SLF001
 
     with pytest.raises(ValueError, match="LLM configuration is required"):
         agent.create_session(
-            client=client,
             channel="channel",
             token="token",
             agent_uid="1",
@@ -232,10 +239,11 @@ def test_explicit_tts_preset_still_requires_llm() -> None:
 
     agents = FakeAgentsClient()
     client = FakeClient(agents)
+    agent = agent._clone()  # noqa: SLF001
+    agent._client = client  # noqa: SLF001
 
     with pytest.raises(ValueError, match="LLM configuration is required"):
         agent.create_session(
-            client=client,
             channel="channel",
             token="token",
             agent_uid="1",

@@ -64,6 +64,7 @@ class MicrosoftTTSOptions(BaseModel):
     sample_rate: Optional[MicrosoftSampleRate] = Field(default=None, description="Sample rate in Hz")
     speed: Optional[float] = Field(default=None, description="Speaking rate multiplier")
     volume: Optional[float] = Field(default=None, description="Audio volume")
+    additional_params: Optional[Dict[str, Any]] = Field(default=None, description="Additional Microsoft TTS params")
     skip_patterns: Optional[List[int]] = Field(default=None)
 
 class MicrosoftTTS(BaseTTS):
@@ -75,11 +76,12 @@ class MicrosoftTTS(BaseTTS):
         return self.options.sample_rate
 
     def to_config(self) -> Dict[str, Any]:
-        params: Dict[str, Any] = {
+        params: Dict[str, Any] = dict(self.options.additional_params or {})
+        params.update({
             "key": self.options.key,
             "region": self.options.region,
             "voice_name": self.options.voice_name,
-        }
+        })
 
         if self.options.sample_rate is not None:
             params["sample_rate"] = self.options.sample_rate
@@ -406,25 +408,42 @@ class MiniMaxTTSOptions(BaseModel):
     group_id: Optional[str] = Field(default=None, description="MiniMax group identifier")
     model: str = Field(..., description="TTS model (e.g., 'speech-02-turbo')")
     voice_id: Optional[str] = Field(default=None, description="Voice style identifier (e.g., 'English_captivating_female1')")
-    url: Optional[str] = Field(default=None, description="WebSocket endpoint (e.g., 'wss://api-uw.minimax.io/ws/v1/t2a_v2')")
+    speed: Optional[float] = Field(default=None, description="Speaking speed")
+    vol: Optional[float] = Field(default=None, description="Volume gain")
+    pitch: Optional[float] = Field(default=None, description="Pitch adjustment")
+    emotion: Optional[str] = Field(default=None, description="Emotion style")
+    latex_read: Optional[bool] = Field(default=None, description="Whether to read LaTeX expressions")
+    english_normalization: Optional[bool] = Field(default=None, description="Whether to normalize English text")
+    timber_weights: Optional[List[Dict[str, Any]]] = Field(default=None, description="Alternative timbre mix config")
+    sample_rate: Optional[int] = Field(default=None, description="Output sample rate in Hz")
+    pronunciation_dict: Optional[Dict[str, Any]] = Field(default=None, description="Pronunciation replacement dictionary")
+    language_boost: Optional[str] = Field(default=None, description="Language boost strategy")
+    url: Optional[str] = Field(default=None, description="Optional WebSocket endpoint override")
+    additional_params: Optional[Dict[str, Any]] = Field(default=None, description="Additional MiniMax TTS params")
     skip_patterns: Optional[List[int]] = Field(default=None)
 
     @model_validator(mode="after")
     def _validate_byok_params(self) -> "MiniMaxTTSOptions":
+        if self.voice_id is not None and self.timber_weights is not None:
+            raise ValueError("MiniMaxTTS requires exactly one of voice_id or timber_weights")
         if self.key is not None:
             missing = [
                 name
                 for name, value in (
                     ("group_id", self.group_id),
-                    ("voice_id", self.voice_id),
-                    ("url", self.url),
+                    ("voice_id or timber_weights", self.voice_id if self.voice_id is not None else self.timber_weights),
                 )
                 if value is None
             ]
-            if missing:
+            if missing and not (len(missing) == 1 and missing[0] == "voice_id or timber_weights"):
                 raise ValueError(f"MiniMaxTTS requires {', '.join(missing)} when key is set")
-        elif self.model.strip().lower() not in MiniMaxPresetModels:
-            raise ValueError("MiniMaxTTS requires key unless using a supported Agora-managed model")
+            if self.voice_id is None and self.timber_weights is None:
+                raise ValueError("MiniMaxTTS requires exactly one of voice_id or timber_weights")
+        else:
+            if self.voice_id is None and self.timber_weights is None:
+                raise ValueError("MiniMaxTTS requires exactly one of voice_id or timber_weights")
+            if self.model.strip().lower() not in MiniMaxPresetModels:
+                raise ValueError("MiniMaxTTS requires key unless using a supported Agora-managed model")
         return self
 
 class MiniMaxTTS(BaseTTS):
@@ -433,17 +452,41 @@ class MiniMaxTTS(BaseTTS):
 
     @property
     def sample_rate(self) -> Optional[int]:
-        return None
+        return self.options.sample_rate
 
     def to_config(self) -> Dict[str, Any]:
-        params: Dict[str, Any] = {}
+        params: Dict[str, Any] = dict(self.options.additional_params or {})
         if self.options.key is not None:
             params["key"] = self.options.key
             params["group_id"] = self.options.group_id
             params["model"] = self.options.model
-            params["url"] = self.options.url
+            if self.options.url is not None:
+                params["url"] = self.options.url
+        voice_setting: Dict[str, Any] = {}
         if self.options.voice_id is not None:
-            params["voice_setting"] = {"voice_id": self.options.voice_id}
+            voice_setting["voice_id"] = self.options.voice_id
+        if self.options.speed is not None:
+            voice_setting["speed"] = self.options.speed
+        if self.options.vol is not None:
+            voice_setting["vol"] = self.options.vol
+        if self.options.pitch is not None:
+            voice_setting["pitch"] = self.options.pitch
+        if self.options.emotion is not None:
+            voice_setting["emotion"] = self.options.emotion
+        if self.options.latex_read is not None:
+            voice_setting["latex_read"] = self.options.latex_read
+        if self.options.english_normalization is not None:
+            voice_setting["english_normalization"] = self.options.english_normalization
+        if voice_setting:
+            params["voice_setting"] = voice_setting
+        if self.options.timber_weights is not None:
+            params["timber_weights"] = self.options.timber_weights
+        if self.options.sample_rate is not None:
+            params["audio_setting"] = {"sample_rate": self.options.sample_rate}
+        if self.options.pronunciation_dict is not None:
+            params["pronunciation_dict"] = self.options.pronunciation_dict
+        if self.options.language_boost is not None:
+            params["language_boost"] = self.options.language_boost
 
         result: Dict[str, Any] = {"vendor": "minimax", "params": params}
         if self.options.key is None:

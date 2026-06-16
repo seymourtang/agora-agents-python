@@ -20,7 +20,7 @@ client = Agora(
     debug=True,
 )
 # All requests (including session.start()) will be logged
-session = agent.create_session(client, ...)
+session = agent.create_session(...)
 session.start()  # Logs: HTTP request POST .../agents/start ...
 ```
 

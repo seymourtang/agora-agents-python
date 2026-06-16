@@ -288,7 +288,7 @@ client = Agora(
 )
 
 agent = (
-    Agent(name='full-featured-assistant')
+    Agent(client=client, name='full-featured-assistant')
     .with_llm(OpenAI(
         api_key='your-key',
         base_url='https://api.openai.com/v1/chat/completions',
@@ -331,7 +331,6 @@ agent = (
 )
 
 session = agent.create_session(
-    client,
     channel='demo-room',
     agent_uid='1',
     remote_uids=['100'],

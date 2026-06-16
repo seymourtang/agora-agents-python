@@ -8,11 +8,22 @@ description: Full API reference for the Python Agent builder class.
 
 **Import:** `from agora_agent import Agent`
 
+If you want vendor availability to come from the client, prefer `Agora` + `Agent` with `client.vendors.*`:
+
+<!-- snippet: fragment -->
+```python
+from agora_agent import Agent, Agora, Area
+
+client = Agora(area=Area.US, app_id="...", app_certificate="...")
+agent = Agent(client=client, name="global-agent")
+```
+
 ## Constructor
 
 <!-- snippet: fragment -->
 ```python
 Agent(
+    client: Optional[Any] = None,
     name: Optional[str] = None,
     instructions: Optional[str] = None,
     turn_detection: Optional[TurnDetectionConfig] = None,
@@ -34,6 +45,7 @@ Agent(
 | Parameter | Type | Default | Description |
 |---|---|---|---|
 | `name` | `Optional[str]` | `None` | Agent name, used as default session name |
+| `client` | `Optional[Any]` | `None` | Bound Agora client used later by `create_session()` and `create_async_session()` |
 | `instructions` | `Optional[str]` | `None` | Deprecated. Use LLM vendor `system_messages` instead. |
 | `turn_detection` | `Optional[TurnDetectionConfig]` | `None` | Interaction language and turn detection configuration |
 | `interruption` | `Optional[InterruptionConfig]` | `None` | Unified interruption control configuration |
@@ -63,8 +75,9 @@ Set the LLM vendor for cascading flow.
 
 <!-- snippet: fragment -->
 ```python
-from agora_agent import OpenAI
-agent = Agent().with_llm(OpenAI(api_key='your-key', base_url='https://api.openai.com/v1/chat/completions', model='gpt-4o-mini'))
+from agora_agent import Agora, Area, Agent
+client = Agora(area=Area.US, app_id='your-app-id', app_certificate='your-app-certificate')
+agent = Agent(client=client).with_llm(client.vendors.llm.openai(model='gpt-4o-mini'))
 ```
 
 ### `with_tts(vendor: BaseTTS) -> Agent`
@@ -73,8 +86,9 @@ Set the TTS vendor. Records the vendor's `sample_rate` for avatar validation.
 
 <!-- snippet: fragment -->
 ```python
-from agora_agent import ElevenLabsTTS
-agent = Agent().with_tts(ElevenLabsTTS(key='your-key', model_id='eleven_flash_v2_5', voice_id='your-voice-id', base_url='wss://api.elevenlabs.io/v1'))
+from agora_agent import Agora, Area, Agent
+client = Agora(area=Area.US, app_id='your-app-id', app_certificate='your-app-certificate')
+agent = Agent(client=client).with_tts(client.vendors.tts.elevenlabs(key='your-key', model_id='eleven_flash_v2_5', voice_id='your-voice-id', base_url='wss://api.elevenlabs.io/v1'))
 ```
 
 ### `with_stt(vendor: BaseSTT) -> Agent`
@@ -83,8 +97,9 @@ Set the STT (ASR) vendor.
 
 <!-- snippet: fragment -->
 ```python
-from agora_agent import DeepgramSTT
-agent = Agent().with_stt(DeepgramSTT(api_key='your-key', language='en-US'))
+from agora_agent import Agora, Area, Agent
+client = Agora(area=Area.US, app_id='your-app-id', app_certificate='your-app-certificate')
+agent = Agent(client=client).with_stt(client.vendors.stt.deepgram(api_key='your-key', language='en-US'))
 ```
 
 ### `with_mllm(vendor: BaseMLLM) -> Agent`
@@ -93,7 +108,7 @@ Set the MLLM vendor for multimodal flow. Calling `with_mllm()` automatically set
 
 <!-- snippet: fragment -->
 ```python
-from agora_agent import OpenAIRealtime
+from agora_agent import Agent, OpenAIRealtime
 agent = Agent().with_mllm(OpenAIRealtime(api_key='your-key'))
 ```
 
@@ -198,7 +213,6 @@ Set filler words configuration (played while waiting for LLM response).
 <!-- snippet: fragment -->
 ```python
 create_session(
-    client: Any,
     channel: str,
     agent_uid: str,
     remote_uids: List[str],
@@ -212,11 +226,10 @@ create_session(
 ) -> AgentSession
 ```
 
-Creates an `AgentSession` bound to the given client and channel.
+Creates an `AgentSession` using the client already bound to `Agent(client=...)`.
 
 | Parameter | Type | Required | Description |
 |---|---|---|---|
-| `client` | `Agora` or `AsyncAgora` | Yes | Authenticated client |
 | `channel` | `str` | Yes | Channel name |
 | `agent_uid` | `str` | Yes | UID for the agent |
 | `remote_uids` | `List[str]` | Yes | UIDs of remote participants |
@@ -230,7 +243,18 @@ Creates an `AgentSession` bound to the given client and channel.
 
 `pipeline_id` is sent as the top-level `/join` field `pipeline_id`, not inside `properties`.
 
+`create_session()` requires that the agent was constructed with `client=...`. If no client is bound, it raises `ValueError`.
+
 **Returns:** `AgentSession`
+
+When you omit credentials for supported Agora-managed global models, AgentKit sends the matching Agora-managed configuration automatically:
+
+- Deepgram STT: `nova-2`, `nova-3`
+- OpenAI LLM: `gpt-4o-mini`, `gpt-4.1-mini`, `gpt-5-nano`, `gpt-5-mini`
+- OpenAI TTS: `tts-1`
+- MiniMax TTS: `speech-2.6-turbo`, `speech-2.8-turbo`, `speech_2_6_turbo`, `speech_2_8_turbo`
+
+If you provide your own vendor API key for those same models, AgentKit keeps the request in BYOK mode.
 
 ## `to_properties()`
 

@@ -1,130 +1,200 @@
 ---
 sidebar_position: 4
 title: Regional Routing
-description: Configure the Agora client to route requests to the nearest region.
+description: Configure the Agora client to route requests to the nearest Agora region.
 ---
 
 # Regional Routing
 
-The `Agora` and `AsyncAgora` clients include a built-in domain pool that automatically routes requests to the best available regional endpoint. This page explains how the pool works and how to control it.
+The `Agora` and `AsyncAgora` clients use a domain pool to route API requests to the nearest Agora region. This is configured via the `Area` enum.
 
-## Area Enum
+## Area enum
 
-When you create a client, you specify an `Area` that determines the pool of regional endpoints:
+```python
+from agora_agent import Area
+```
+
+| Value | Region |
+|---|---|
+| `Area.US` | United States (west + east) |
+| `Area.EU` | Europe (west + central) |
+| `Area.AP` | Asia-Pacific (southeast + northeast) |
+| `Area.CN` | Chinese mainland (east + north) |
+
+Pass the area when creating the client:
 
 ```python
 from agora_agent import Agora, Area
 
-client = Agora(area=Area.US, app_id='your-app-id', app_certificate='your-app-certificate')
+client = Agora(
+    area=Area.EU,
+    app_id="your-app-id",
+    app_certificate="your-app-certificate",
+)
 ```
 
-| Area | Primary Region | Fallback Region | Domain |
-|---|---|---|---|
-| `Area.US` | `api-us-west-1` | `api-us-east-1` | `agora.io` |
-| `Area.EU` | `api-eu-west-1` | `api-eu-central-1` | `agora.io` |
-| `Area.AP` | `api-ap-southeast-1` | `api-ap-northeast-1` | `agora.io` |
-| `Area.CN` | `api-cn-east-1` | `api-cn-north-1` | `sd-rtn.com` |
+## Area-aware vendor hints
 
-## Pool Behavior
+Use `client.vendors.*` when you want IDE auto-complete and runtime validation to narrow vendor choices after selecting `area`, and pass `client` into `Agent(client=client, ...)`.
 
-The `Pool` manages region prefixes and domain suffixes:
+| Client area | STT helpers | LLM helpers | TTS helpers | Avatar helpers |
+|---|---|---|---|---|
+| `Area.US`, `Area.EU`, `Area.AP` | `deepgram`, `speechmatics`, `microsoft`, `openai`, `google`, `amazon`, `assemblyai`, `ares`, `sarvam` | `openai`, `azure`, `anthropic`, `gemini`, `groq`, `vertexai`, `bedrock`, `dify`, `custom` | `elevenlabs`, `microsoft`, `openai`, `cartesia`, `google`, `amazon`, `deepgram`, `humeai`, `rime`, `fishaudio`, `minimax`, `murf`, `sarvam` | `liveavatar`, `heygen`, `akool`, `anam`, `generic` |
+| `Area.CN` | `fengming`, `tencent`, `microsoft`, `xfyun`, `xfyun_bigmodel`, `xfyun_dialect` | `aliyun`, `bytedance`, `deepseek`, `tencent` | `minimax`, `tencent`, `bytedance`, `microsoft`, `cosyvoice`, `bytedance_duplex`, `stepfun` | `sensetime` |
 
-1. **Initial URL** — constructed from the first region prefix and domain: `https://api-us-west-1.agora.io/api/conversational-ai-agent`
-2. **DNS-based domain selection** — `select_best_domain()` races DNS lookups against all domain suffixes and picks the fastest responder
-3. **Region cycling** — `next_region()` rotates to the next region prefix (e.g., from `api-us-west-1` to `api-us-east-1`), wrapping around to the start when exhausted
-4. **Auto-refresh** — domain selection is cached for 30 seconds, then refreshed on the next call
-
-## Manual Domain Selection
-
-### Sync (`Agora`)
-
-`select_best_domain()` is a regular method on the sync client:
+Global client example:
 
 ```python
-from agora_agent import Agora, Area
+from agora_agent import Agent, Agora, Area
 
-client = Agora(area=Area.US, app_id='your-app-id', app_certificate='your-app-certificate')
+client = Agora(
+    area=Area.US,
+    app_id="your-app-id",
+    app_certificate="your-app-certificate",
+)
 
-# Manually trigger DNS-based domain selection
-client.select_best_domain()
+agent = (
+    Agent(
+        client=client,
+        name="global-agent",
+        turn_detection={"language": "en-US"},
+    )
+    .with_stt(client.vendors.stt.deepgram(model="nova-3", language="en-US"))
+    .with_llm(client.vendors.llm.openai(model="gpt-4o-mini"))
+    .with_tts(client.vendors.tts.minimax(
+        model="speech_2_6_turbo",
+        voice_id="English_captivating_female1",
+    ))
+)
 
-print(client.get_current_url())
-# https://api-us-west-1.agora.io/api/conversational-ai-agent
+session = agent.create_session(
+    channel="global-room",
+    agent_uid="1001",
+    remote_uids=["*"],
+)
 ```
 
-### Async (`AsyncAgora`)
-
-On `AsyncAgora`, `select_best_domain()` is a **coroutine** — you must call it with `await`:
+CN client example:
 
 ```python
-import asyncio
-from agora_agent import AsyncAgora, Area
+import os
 
-async def main():
-    client = AsyncAgora(area=Area.US, app_id='your-app-id', app_certificate='your-app-certificate')
+from agora_agent import Agent, Agora, Area
 
-    # IMPORTANT: select_best_domain() is async on AsyncAgora
-    await client.select_best_domain()
+client = Agora(
+    area=Area.CN,
+    app_id="your-app-id",
+    app_certificate="your-app-certificate",
+)
 
-    print(client.get_current_url())
+agent = (
+    Agent(
+        client=client,
+        name="cn-agent",
+        turn_detection={"language": "zh-CN"},
+    )
+    .with_stt(client.vendors.stt.fengming())
+    .with_llm(client.vendors.llm.aliyun(
+        base_url="https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
+        model="qwen-plus",
+        api_key=os.environ["ALIYUN_API_KEY"],
+    ))
+    .with_tts(client.vendors.tts.minimax(
+        key=os.environ["MINIMAX_API_KEY"],
+        model="speech-01-turbo",
+        voice_id="female-shaonv",
+        sample_rate=16000,
+    ))
+)
 
-asyncio.run(main())
+session = agent.create_session(
+    channel="cn-room",
+    agent_uid="1001",
+    remote_uids=["*"],
+)
 ```
 
-**Common mistake:** Calling `client.select_best_domain()` without `await` on `AsyncAgora` returns a coroutine object instead of executing the domain selection. No error is raised — the call silently does nothing. Always use `await`:
+## How the domain pool works
+
+Each area has two regional domain prefixes and two domain suffixes. The `Pool` class:
+
+1. Starts with the first regional prefix and the first domain suffix
+2. Resolves the best domain suffix via DNS every **30 seconds**
+3. Constructs the full URL as `https://{prefix}.{suffix}/api/conversational-ai-agent` for global areas, and `https://{prefix}.{suffix}/cn/api/conversational-ai-agent` for `Area.CN`
+
+## Region-to-domain mapping
+
+| Area | Primary prefix | Fallback prefix | Primary suffix | Fallback suffix |
+|---|---|---|---|---|
+| `Area.US` | `api-us-west-1` | `api-us-east-1` | `agora.io` | `sd-rtn.com` |
+| `Area.EU` | `api-eu-west-1` | `api-eu-central-1` | `agora.io` | `sd-rtn.com` |
+| `Area.AP` | `api-ap-southeast-1` | `api-ap-northeast-1` | `agora.io` | `sd-rtn.com` |
+| `Area.CN` | `api-cn-east-1` | `api-cn-north-1` | `sd-rtn.com` | `agora.io` |
+
+Note: `Area.CN` uses `sd-rtn.com` as the primary suffix and the `/cn/api/conversational-ai-agent` path.
+
+## Manual failover
+
+If a request fails, call `client.next_region()` to cycle to the next domain prefix, then retry:
 
 ```python
-# Wrong — returns a coroutine object, does not execute
-client.select_best_domain()
+from agora_agent import Agent, Agora, Area
 
-# Correct
-await client.select_best_domain()
+client = Agora(
+    area=Area.EU,
+    app_id="your-app-id",
+    app_certificate="your-app-certificate",
+)
+
+agent = (
+    Agent(client=client, name="failover-demo")
+    .with_llm(client.vendors.llm.openai(
+        api_key="your-openai-key",
+        base_url="https://api.openai.com/v1/chat/completions",
+        model="gpt-4o-mini",
+        system_messages=[{"role": "system", "content": "You are helpful."}],
+    ))
+    .with_tts(client.vendors.tts.elevenlabs(
+        key="your-elevenlabs-key",
+        model_id="eleven_flash_v2_5",
+        voice_id="your-voice-id",
+        base_url="wss://api.elevenlabs.io/v1",
+        sample_rate=24000,
+    ))
+    .with_stt(client.vendors.stt.deepgram(
+        api_key="your-deepgram-key",
+        model="nova-2",
+    ))
+)
+
+session = agent.create_session(
+    channel="my-room",
+    agent_uid="1",
+    remote_uids=["100"],
+)
+
+try:
+    session.start()
+except Exception as err:
+    print(f"First attempt failed, cycling region: {err}")
+    client.next_region()
+    session.start()
 ```
 
-## Region Cycling
-
-If a request fails, cycle to the next region prefix:
-
-```python
-from agora_agent import Agora, Area
-
-client = Agora(area=Area.US, app_id='your-app-id', app_certificate='your-app-certificate')
-
-print(client.get_current_url())
-# https://api-us-west-1.agora.io/api/conversational-ai-agent
-
-client.next_region()
-
-print(client.get_current_url())
-# https://api-us-east-1.agora.io/api/conversational-ai-agent
-
-# Wraps around after exhausting all prefixes
-client.next_region()
-print(client.get_current_url())
-# https://api-us-west-1.agora.io/api/conversational-ai-agent
-```
-
-`next_region()` is a regular (non-async) method on both `Agora` and `AsyncAgora`.
-
-## Accessing the Pool Directly
-
-For advanced use, access the `Pool` object:
-
-```python
-pool = client.pool
-
-pool.next_region()
-pool.select_best_domain()  # sync only
-
-url = pool.get_current_url()
-area = pool.get_area()
-```
-
-## Client Method Summary
+## Additional methods
 
 | Method | `Agora` | `AsyncAgora` | Description |
 |---|---|---|---|
-| `next_region()` | sync | sync | Cycle to next region prefix |
-| `select_best_domain()` | sync | **`async` (requires `await`)** | DNS-based domain selection |
-| `get_current_url()` | sync | sync | Get the current base URL |
-| `pool` (property) | sync | sync | Access the `Pool` object |
+| `next_region()` | sync | sync | Cycle to the next domain prefix in the pool |
+| `select_best_domain()` | sync | `async` (requires `await`) | Trigger a manual DNS resolution check |
+| `get_current_url()` | sync | sync | Inspect the full URL currently being used |
+| `pool` | sync | sync | Access the `Pool` instance for advanced usage |
+
+```python
+print(client.get_current_url())
+
+client.select_best_domain()
+
+# AsyncAgora requires await:
+# await client.select_best_domain()
+```

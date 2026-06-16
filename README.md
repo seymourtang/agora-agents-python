@@ -19,7 +19,7 @@ pip install agora-agents
 
 ## Quick Start
 
-Start with the `Agent` builder: create a client with app credentials, choose your ASR, LLM, and TTS providers, then start a session. Omit vendor API keys for supported Agora-managed models, or provide keys when you want BYOK.
+Start with the `Agent` builder: create a client with app credentials, choose your ASR, LLM, and TTS providers, then start a session. Omit vendor API keys for supported Agora-managed global models, or provide keys when you want BYOK.
 Set Agora interaction language with `turn_detection.language`; provider-specific STT language values remain under `asr.params`. Ares uses only the REST `asr.language` value sourced from `turn_detection.language`.
 
 ```python
@@ -30,9 +30,6 @@ from agora_agent import (
     Agent,
     Agora,
     Area,
-    DeepgramSTT,
-    MiniMaxTTS,
-    OpenAI,
     expires_in_hours,
 )
 
@@ -54,13 +51,13 @@ def start_conversation() -> str:
         app_certificate=app_certificate,
     )
 
-    agent = Agent(name=f"conversation-{int(time.time())}", turn_detection={"language": "en-US"}).with_stt(
-        DeepgramSTT(
+    agent = Agent(client=client, name=f"conversation-{int(time.time())}", turn_detection={"language": "en-US"}).with_stt(
+        client.vendors.stt.deepgram(
             model="nova-3",
             language="en",
         )
     ).with_llm(
-        OpenAI(
+        client.vendors.llm.openai(
             model="gpt-4o-mini",
             system_messages=[{"role": "system", "content": AGENT_PROMPT}],
             greeting_message=GREETING,
@@ -73,14 +70,13 @@ def start_conversation() -> str:
             },
         )
     ).with_tts(
-        MiniMaxTTS(
+        client.vendors.tts.minimax(
             model="speech_2_6_turbo",
             voice_id="English_captivating_female1",
         )
     )
 
     session = agent.create_session(
-        client,
         channel=f"demo-channel-{int(time.time())}",
         agent_uid="123456",
         remote_uids=["*"],
@@ -94,7 +90,11 @@ def start_conversation() -> str:
 
 ### Why no token or vendor key in the example?
 
-`Agora` generates the required ConvoAI REST auth and RTC join tokens automatically when you provide `app_id` and `app_certificate`. For supported Agora-managed models, leave vendor API keys unset; provide keys when you want BYOK.
+`Agora` generates the required ConvoAI REST auth and RTC join tokens automatically when you provide `app_id` and `app_certificate`. For supported Agora-managed global models, leave vendor API keys unset; provide keys when you want BYOK. CN MiniMax TTS is not Agora-managed in the same way and typically includes `key`.
+
+### Regional agent builders
+
+Use `client.vendors.*` so vendor availability follows `client.area`. The Quick Start above is the global (`Area.US`) pattern; CN uses a different vendor catalog. See [`docs/guides/regional-routing.md`](./docs/guides/regional-routing.md) for regional examples.
 
 ## AI Studio pipeline IDs
 
@@ -102,12 +102,12 @@ Use `pipeline_id` when you want a published AI Studio pipeline to provide the ba
 
 ```python
 agent = Agent(
+    client=client,
     name="support",
     pipeline_id="studio-pipeline-id",
 )
 
 session = agent.create_session(
-    client,
     channel="support-room",
     agent_uid="1",
     remote_uids=["100"],
@@ -118,7 +118,6 @@ You can override it per session:
 
 ```python
 session = agent.create_session(
-    client,
     channel="support-room",
     agent_uid="1",
     remote_uids=["100"],
@@ -133,14 +132,14 @@ AgentKit sends the resolved value as the top-level `/join` field `pipeline_id`, 
 Use the same `Agent` builder shape, but provide credentials explicitly when you want vendor-managed billing and routing instead of Agora-managed models.
 
 ```python
-agent = Agent(turn_detection={"language": "en-US"}).with_stt(
-    DeepgramSTT(
+agent = Agent(client=client, turn_detection={"language": "en-US"}).with_stt(
+    client.vendors.stt.deepgram(
         api_key=os.environ["DEEPGRAM_API_KEY"],
         model="nova-3",
         language="en",
     )
 ).with_llm(
-    OpenAI(
+    client.vendors.llm.openai(
         api_key=os.environ["OPENAI_API_KEY"],
         base_url="https://api.openai.com/v1/chat/completions",
         model="gpt-4o-mini",
@@ -151,12 +150,11 @@ agent = Agent(turn_detection={"language": "en-US"}).with_stt(
         top_p=0.95,
     )
 ).with_tts(
-    MiniMaxTTS(
-        key=os.environ["MINIMAX_API_KEY"],
-        group_id=os.environ["MINIMAX_GROUP_ID"],
-        model="speech_2_6_turbo",
-        voice_id="English_captivating_female1",
-        url="wss://api-uw.minimax.io/ws/v1/t2a_v2",
+    client.vendors.tts.elevenlabs(
+        key=os.environ["ELEVENLABS_API_KEY"],
+        model_id="eleven_flash_v2_5",
+        voice_id=os.environ["ELEVENLABS_VOICE_ID"],
+        base_url="wss://api.elevenlabs.io/v1",
     )
 )
 ```

@@ -22,7 +22,7 @@ Call `agent.with_mllm(vendor)` to enable MLLM mode. The builder sets `mllm.enabl
 ```python
 from agora_agent import Agent
 
-agent = Agent(name='realtime-agent')
+agent = Agent(client=client, name='realtime-agent')
 ```
 
 ## OpenAI Realtime
@@ -39,14 +39,14 @@ client = Agora(
 )
 
 agent = (
-    Agent(name='realtime-agent')
+    Agent(client=client, name='realtime-agent')
     .with_mllm(OpenAIRealtime(
         api_key='your-openai-key',
         model='gpt-4o-realtime-preview',
     ))
 )
 
-session = agent.create_session(client, channel='realtime-room', agent_uid='1', remote_uids=['100'])
+session = agent.create_session(channel='realtime-room', agent_uid='1', remote_uids=['100'])
 agent_id = session.start()
 # Agent handles audio end-to-end — no separate STT/TTS needed
 session.stop()
@@ -66,14 +66,14 @@ async def main():
         )
 
     agent = (
-        Agent(name='realtime-agent')
+        Agent(client=client, name='realtime-agent')
         .with_mllm(OpenAIRealtime(
             api_key='your-openai-key',
             model='gpt-4o-realtime-preview',
         ))
     )
 
-    session = agent.create_session(client, channel='realtime-room', agent_uid='1', remote_uids=['100'])
+    session = agent.create_session(channel='realtime-room', agent_uid='1', remote_uids=['100'])
     agent_id = await session.start()
     await session.stop()
 
@@ -94,7 +94,7 @@ client = Agora(
 )
 
 agent = (
-    Agent(name='gemini-agent')
+    Agent(client=client, name='gemini-agent')
     .with_mllm(GeminiLive(
         api_key='your-google-ai-api-key',
         model='gemini-live-2.5-flash',
@@ -102,7 +102,7 @@ agent = (
     ))
 )
 
-session = agent.create_session(client, channel='gemini-room', agent_uid='1', remote_uids=['100'])
+session = agent.create_session(channel='gemini-room', agent_uid='1', remote_uids=['100'])
 agent_id = session.start()
 session.stop()
 ```
@@ -115,7 +115,7 @@ from agora_agent import Agent, Agora, Area, XaiGrok
 client = Agora(area=Area.US, app_id='your-app-id', app_certificate='your-app-certificate')
 
 agent = (
-    Agent(name='xai-agent')
+    Agent(client=client, name='xai-agent')
     .with_mllm(XaiGrok(
         api_key='your-xai-key',
         voice='eve',
@@ -125,7 +125,7 @@ agent = (
     ))
 )
 
-session = agent.create_session(client, channel='xai-room', agent_uid='1', remote_uids=['100'])
+session = agent.create_session(channel='xai-room', agent_uid='1', remote_uids=['100'])
 agent_id = session.start()
 session.stop()
 ```

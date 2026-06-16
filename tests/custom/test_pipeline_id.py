@@ -44,6 +44,8 @@ class FakeClient:
 def start_agent(agent, **overrides):
     agents = FakeAgentsClient()
     client = FakeClient(agents)
+    agent = agent._clone()  # noqa: SLF001
+    agent._client = client  # noqa: SLF001
     options = {
         "channel": "channel",
         "token": "token",
@@ -52,7 +54,7 @@ def start_agent(agent, **overrides):
         **overrides,
     }
 
-    agent_id = agent.create_session(client, **options).start()
+    agent_id = agent.create_session(**options).start()
 
     assert agent_id == "agent-id"
     assert len(agents.calls) == 1
@@ -177,10 +179,9 @@ def test_pipeline_id_survives_builder_clone() -> None:
 async def test_async_session_uses_agent_pipeline_id() -> None:
     agents = FakeAsyncAgentsClient()
     client = FakeClient(agents)
-    agent = Agent(name="support", pipeline_id="studio-pipeline-id")
+    agent = Agent(name="support", pipeline_id="studio-pipeline-id", client=client)
 
     agent_id = await agent.create_async_session(
-        client,
         channel="channel",
         token="token",
         agent_uid="1",

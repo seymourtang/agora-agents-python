@@ -337,6 +337,7 @@ class Agent:
 
     def __init__(
         self,
+        client: typing.Optional[typing.Any] = None,
         name: typing.Optional[str] = None,
         instructions: typing.Optional[str] = None,
         turn_detection: typing.Optional[TurnDetectionConfig] = None,
@@ -354,6 +355,7 @@ class Agent:
         greeting_configs: typing.Optional[LlmGreetingConfigs] = None,
         pipeline_id: typing.Optional[str] = None,
     ):
+        self._client = client
         self._name = name
         self._pipeline_id = pipeline_id
         self._instructions = instructions
@@ -733,7 +735,6 @@ class Agent:
 
     def create_session(
         self,
-        client: typing.Any,
         channel: str,
         agent_uid: str,
         remote_uids: typing.List[str],
@@ -749,12 +750,16 @@ class Agent:
     ) -> "AgentSession":
         from .agent_session import AgentSession
 
+        resolved_client = self._client
+        if resolved_client is None:
+            raise ValueError("client is required. Pass client=... to Agent(...) or AgoraAgent(...).")
+
         session_name = name or self._name or f"agent-{int(time.time())}"
         return AgentSession(
-            client=client,
+            client=resolved_client,
             agent=self,
-            app_id=client.app_id if hasattr(client, "app_id") else "",
-            app_certificate=client.app_certificate if hasattr(client, "app_certificate") else None,
+            app_id=resolved_client.app_id if hasattr(resolved_client, "app_id") else "",
+            app_certificate=resolved_client.app_certificate if hasattr(resolved_client, "app_certificate") else None,
             name=session_name,
             channel=channel,
             token=token,
@@ -771,7 +776,6 @@ class Agent:
 
     def create_async_session(
         self,
-        client: typing.Any,
         channel: str,
         agent_uid: str,
         remote_uids: typing.List[str],
@@ -792,12 +796,16 @@ class Agent:
         """
         from .agent_session import AsyncAgentSession
 
+        resolved_client = self._client
+        if resolved_client is None:
+            raise ValueError("client is required. Pass client=... to Agent(...) or AgoraAgent(...).")
+
         session_name = name or self._name or f"agent-{int(time.time())}"
         return AsyncAgentSession(
-            client=client,
+            client=resolved_client,
             agent=self,
-            app_id=client.app_id if hasattr(client, "app_id") else "",
-            app_certificate=client.app_certificate if hasattr(client, "app_certificate") else None,
+            app_id=resolved_client.app_id if hasattr(resolved_client, "app_id") else "",
+            app_certificate=resolved_client.app_certificate if hasattr(resolved_client, "app_certificate") else None,
             name=session_name,
             channel=channel,
             token=token,
@@ -984,7 +992,8 @@ class Agent:
         return self._copy_model_update(self._turn_detection, {"language": language})
 
     def _clone(self) -> "Agent":
-        new_agent = Agent.__new__(Agent)
+        new_agent = self.__class__.__new__(self.__class__)
+        new_agent._client = self._client
         new_agent._name = self._name
         new_agent._pipeline_id = self._pipeline_id
         new_agent._llm = self._llm

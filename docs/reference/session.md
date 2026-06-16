@@ -17,7 +17,7 @@ from agora_agent import AgentSession, AsyncAgentSession
 
 ## Constructor
 
-Sessions are normally created via `Agent.create_session()`. Direct construction is available for advanced use:
+Sessions are normally created via `Agent(client=...).create_session()`. Direct construction is available for advanced use:
 
 <!-- snippet: fragment -->
 ```python
@@ -63,6 +63,13 @@ AgentSession(
 | `warn` | `Optional[Callable[[str], None]]` | No | Custom warning sink |
 
 `pipeline_id` is sent as the top-level `/join` field `pipeline_id`, not inside `properties`. If unset, `AgentSession.start()` uses the agent-level value from `Agent(..., pipeline_id=...)`.
+
+For normal SDK usage, prefer binding the client on the agent first:
+
+```python
+agent = Agent(client=client, name="assistant")
+session = agent.create_session(channel="room", agent_uid="1", remote_uids=["100"])
+```
 
 ## Methods
 
@@ -250,6 +257,23 @@ Remove a previously registered event handler.
 ```python
 session.off('started', my_handler)
 ```
+
+## Presets and BYOK
+
+Prefer configuring vendors on the `Agent` builder. When you omit credentials for supported Agora-managed global models, AgentKit sends the matching Agora-managed configuration at session start. CN MiniMax TTS is not Agora-managed in the same way and typically includes `key`.
+
+`preset` is an advanced session option for project-specific settings, not for selecting Agora-managed models. Most applications should use the builder instead.
+
+- Omit vendor credentials on the builder for supported Agora-managed global models.
+- Provide vendor API keys when you want BYOK.
+- Pass `preset` on `agent.create_session(...)` only when you need to access specific project-specific settings.
+
+Supported Agora-managed models:
+
+- Deepgram STT: `nova-2`, `nova-3`
+- OpenAI LLM: `gpt-4o-mini`, `gpt-4.1-mini`, `gpt-5-nano`, `gpt-5-mini`
+- OpenAI TTS: `tts-1`
+- MiniMax TTS: `speech-2.6-turbo`, `speech-2.8-turbo`, `speech_2_6_turbo`, `speech_2_8_turbo`
 
 ## Properties
 
