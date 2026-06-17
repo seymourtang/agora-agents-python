@@ -126,7 +126,7 @@ from .constants import (
     ThinkOnThinkingActionInterrupt,
     TurnDetectionTypeValues,
 )
-from .regional_agent import AgoraAgent, CNAgent, GlobalAgent, RegionalAgent
+from .regional_agent import CNAgent, GlobalAgent, RegionalAgent
 from .token import (
     GenerateConvoAITokenOptions,
     GenerateTokenOptions,
@@ -311,7 +311,6 @@ __all__ = [
     "CNAgent",
     "GlobalAgent",
     "RegionalAgent",
-    "AgoraAgent",
     # LLM sub-types
     "LlmGreetingConfigs",
     "LlmGreetingConfigsMode",

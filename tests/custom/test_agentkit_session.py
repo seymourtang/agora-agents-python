@@ -11,6 +11,7 @@ from agora_agent.agentkit.vendors import (
     OpenAIRealtime,
 )
 from agora_agent.agents.types.get_turns_agents_response import GetTurnsAgentsResponse
+from test_helpers import test_client
 
 
 APP_ID = "0" * 32
@@ -67,7 +68,7 @@ def _session(agent, warn=None):
 
 
 def test_generic_avatar_enrichment_adds_session_context_and_token():
-    agent = Agent().with_avatar(
+    agent = Agent(test_client()).with_avatar(
         GenericAvatar(
             api_key="avatar-key",
             api_base_url="https://avatar.example.com",
@@ -91,7 +92,7 @@ def test_generic_avatar_enrichment_adds_session_context_and_token():
 
 
 def test_generic_avatar_empty_session_fields_are_filled():
-    agent = Agent().with_avatar(
+    agent = Agent(test_client()).with_avatar(
         GenericAvatar(
             api_key="avatar-key",
             api_base_url="https://avatar.example.com",
@@ -118,7 +119,7 @@ def test_generic_avatar_empty_session_fields_are_filled():
 
 def test_avatar_uid_matching_agent_uid_warns():
     warnings = []
-    agent = Agent().with_avatar(
+    agent = Agent(test_client()).with_avatar(
         GenericAvatar(
             api_key="avatar-key",
             api_base_url="https://avatar.example.com",
@@ -139,7 +140,7 @@ def test_avatar_uid_matching_agent_uid_warns():
 
 def test_vendor_config_takes_priority_over_agent_level_convenience_fields():
     agent = (
-        Agent()
+        Agent(test_client())
         .with_llm(
             OpenAI(
                 model="gpt-4o-mini",
@@ -168,7 +169,7 @@ def test_vendor_config_takes_priority_over_agent_level_convenience_fields():
 
 def test_session_start_properties_applies_mllm_agent_level_defaults():
     agent = (
-        Agent()
+        Agent(test_client())
         .with_mllm(OpenAIRealtime(api_key="mllm-key"))
         .with_greeting("agent greeting")
         .with_failure_message("agent failure")
@@ -189,7 +190,7 @@ def test_session_start_properties_applies_mllm_agent_level_defaults():
 
 def test_session_start_properties_preserves_mllm_vendor_defaults():
     agent = (
-        Agent()
+        Agent(test_client())
         .with_mllm(
             OpenAIRealtime(
                 api_key="mllm-key",
@@ -215,7 +216,7 @@ def test_session_start_properties_preserves_mllm_vendor_defaults():
 
 
 def test_session_start_allows_mllm_without_tts():
-    agent = Agent().with_mllm(OpenAIRealtime(api_key="mllm-key"))
+    agent = Agent(test_client()).with_mllm(OpenAIRealtime(api_key="mllm-key"))
     session = _session(agent)
 
     assert session.start() == "agent-1"
@@ -223,7 +224,7 @@ def test_session_start_allows_mllm_without_tts():
 
 def test_session_start_rejects_mllm_with_enabled_avatar():
     agent = (
-        Agent()
+        Agent(test_client())
         .with_mllm(OpenAIRealtime(api_key="mllm-key"))
         .with_avatar(
             LiveAvatarAvatar(
@@ -243,7 +244,7 @@ def test_session_start_rejects_mllm_with_enabled_avatar():
 
 def test_session_start_allows_mllm_with_disabled_avatar():
     agent = (
-        Agent()
+        Agent(test_client())
         .with_mllm(OpenAIRealtime(api_key="mllm-key"))
         .with_avatar(
             LiveAvatarAvatar(
@@ -263,7 +264,7 @@ def test_session_start_allows_mllm_with_disabled_avatar():
 def test_avatar_sample_rate_validation_uses_serialized_vendor_keys():
     warnings = []
     agent = (
-        Agent()
+        Agent(test_client())
         .with_avatar(LiveAvatarAvatar(api_key="avatar-key", quality="medium", agora_uid="2"))
         .with_tts(ElevenLabsTTS(key="tts-key", model_id="eleven_flash_v2_5", voice_id="voice", base_url="wss://api.elevenlabs.io/v1", sample_rate=24000))
     )
@@ -275,7 +276,7 @@ def test_avatar_sample_rate_validation_uses_serialized_vendor_keys():
 
 
 def test_avatar_user_token_is_not_overwritten():
-    agent = Agent().with_avatar(
+    agent = Agent(test_client()).with_avatar(
         LiveAvatarAvatar(
             api_key="live-key",
             quality="medium",
@@ -295,7 +296,7 @@ def test_avatar_user_token_is_not_overwritten():
 
 
 def test_get_turns_forwards_pagination_args():
-    session = _session(Agent())
+    session = _session(Agent(test_client()))
     session._agent_id = "agent-id"  # noqa: SLF001
 
     session.get_turns(page_index=3, page_size=25)
@@ -304,7 +305,7 @@ def test_get_turns_forwards_pagination_args():
 
 
 def test_get_all_turns_aggregates_pages():
-    session = _session(Agent())
+    session = _session(Agent(test_client()))
     session._agent_id = "agent-id"  # noqa: SLF001
 
     response = session.get_all_turns(page_size=1)
@@ -339,7 +340,7 @@ def test_get_all_turns_raises_when_pagination_does_not_advance():
 
     session = AgentSession(
         client=_StuckClient(),
-        agent=Agent(),
+        agent=Agent(test_client()),
         app_id=APP_ID,
         app_certificate=APP_CERTIFICATE,
         name="test",
@@ -375,7 +376,7 @@ def test_get_all_turns_raises_when_pagination_metadata_missing():
 
     session = AgentSession(
         client=_NoMetaClient(),
-        agent=Agent(),
+        agent=Agent(test_client()),
         app_id=APP_ID,
         app_certificate=APP_CERTIFICATE,
         name="test",

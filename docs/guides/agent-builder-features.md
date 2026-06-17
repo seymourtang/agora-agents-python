@@ -10,6 +10,16 @@ The Agent builder supports many configuration options beyond the core LLM, TTS, 
 
 For string values with a finite set of options (e.g. `data_channel`, `sal_mode`, `area`), use the type-safe constants (`DataChannel`, `SalModeValues`, `GeofenceArea`, etc.) instead of raw strings to avoid typos and get IDE autocomplete.
 
+Unless noted otherwise, examples below assume you already created a client:
+
+```python
+from agora_agent import Agora, Area
+
+client = Agora(area=Area.US, app_id='your-app-id', app_certificate='your-app-certificate')
+```
+
+Pass `client=client` to every `Agent(...)` builder. `create_session()` and `create_async_session()` raise `ValueError` without a bound client.
+
 ## Overview
 
 | Feature | Method | Description |
@@ -43,7 +53,7 @@ from agora_agent import (
 )
 
 agent = (
-    Agent(
+    Agent(client=client,
         advanced_features=AdvancedFeatures(enable_sal=True),
     )
     .with_sal(SalConfig(
@@ -71,13 +81,13 @@ Enable MLLM, RTM, SAL, or tools:
 from agora_agent import Agent, AdvancedFeatures, OpenAIRealtime
 
 # MLLM mode (see mllm-flow guide)
-agent = Agent().with_mllm(OpenAIRealtime(api_key='...'))
+agent = Agent(client=client).with_mllm(OpenAIRealtime(api_key='...'))
 
 # RTM signaling for custom data delivery
-agent = Agent(advanced_features=AdvancedFeatures(enable_rtm=True))
+agent = Agent(client=client, advanced_features=AdvancedFeatures(enable_rtm=True))
 
 # Enable tool invocation via MCP
-agent = Agent().with_tools()
+agent = Agent(client=client).with_tools()
 ```
 
 ## Session Parameters
@@ -95,7 +105,7 @@ from agora_agent import (
 )
 
 agent = (
-    Agent()
+    Agent(client=client)
     .with_parameters(SessionParams(
         silence_config=SilenceConfig(
             timeout_ms=10000,
@@ -118,7 +128,7 @@ agent = (
 
 ```python
 agent = (
-    Agent()
+    Agent(client=client)
     .with_llm(OpenAI(
         api_key='...',
         base_url='https://api.openai.com/v1/chat/completions',
@@ -139,7 +149,7 @@ Restrict which geographic regions the backend can use:
 from agora_agent import Agent, GeofenceConfig, GeofenceArea, GeofenceExcludeArea
 
 agent = (
-    Agent()
+    Agent(client=client)
     .with_geofence(GeofenceConfig(area=GeofenceArea.NORTH_AMERICA))
     .with_llm(OpenAI(api_key='...', base_url='https://api.openai.com/v1/chat/completions', model='gpt-4o-mini'))
     .with_tts(ElevenLabsTTS(key='...', model_id='...', voice_id='...', base_url='wss://api.elevenlabs.io/v1', sample_rate=24000))
@@ -148,7 +158,7 @@ agent = (
 
 # Global with exclusion
 agent = (
-    Agent()
+    Agent(client=client)
     .with_geofence(GeofenceConfig(area=GeofenceArea.GLOBAL, exclude_area=GeofenceExcludeArea.EUROPE))
     .with_llm(OpenAI(api_key='...', base_url='https://api.openai.com/v1/chat/completions', model='gpt-4o-mini'))
     .with_tts(ElevenLabsTTS(key='...', model_id='...', voice_id='...', base_url='wss://api.elevenlabs.io/v1', sample_rate=24000))
@@ -164,7 +174,7 @@ Attach custom labels returned in notification callbacks:
 
 ```python
 agent = (
-    Agent()
+    Agent(client=client)
     .with_labels({
         'environment': 'production',
         'team': 'support',
@@ -184,7 +194,7 @@ Configure RTC media encryption:
 from agora_agent import Agent, RtcConfig
 
 agent = (
-    Agent()
+    Agent(client=client)
     .with_rtc(RtcConfig(
         encryption_key='your-32-byte-key',
         encryption_mode=5,  # AES_128_GCM
@@ -211,7 +221,7 @@ from agora_agent import (
 )
 
 agent = (
-    Agent()
+    Agent(client=client)
     .with_filler_words(FillerWordsConfig(
         enable=True,
         trigger=FillerWordsTrigger(
@@ -240,7 +250,7 @@ Read back configuration via properties:
 from agora_agent import Agent, GeofenceConfig, GeofenceArea
 
 agent = (
-    Agent()
+    Agent(client=client)
     .with_geofence(GeofenceConfig(area=GeofenceArea.EUROPE))
     .with_labels({'env': 'staging'})
 )
@@ -261,6 +271,7 @@ agent.config         # Full read-only snapshot
 ```python
 from agora_agent import Agora, Area
 from agora_agent import (
+import time
     Agent,
     AdvancedFeatures,
     SessionParams,
@@ -329,10 +340,10 @@ agent = (
 )
 
 session = agent.create_session(
-    channel='demo-room',
+    channel=f"demo-channel-{int(time.time())}",
     agent_uid='1',
     remote_uids=['100'],
-    name='full-featured-assistant',
+    name=f"conversation-{int(time.time())}",
     idle_timeout=120,
 )
 

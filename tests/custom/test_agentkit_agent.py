@@ -14,6 +14,7 @@ import pytest
 
 from agora_agent import AgentClient, Area
 from agora_agent.agentkit.vendors import (
+from test_helpers import test_client
     AkoolAvatar,
     ElevenLabsTTS,
     LiveAvatarAvatar,
@@ -56,13 +57,13 @@ def test_model_copy_helper_supports_pydantic_v1_copy_api():
 
 
 def test_with_audio_scenario_sets_session_parameter():
-    agent = Agent().with_audio_scenario("chorus")
+    agent = Agent(test_client()).with_audio_scenario("chorus")
 
     assert _parameter(agent.config, "audio_scenario") == "chorus"
 
 
 def test_with_audio_scenario_preserves_existing_parameters():
-    agent = Agent(parameters={"enable_metrics": True}).with_audio_scenario(
+    agent = Agent(test_client(), parameters={"enable_metrics": True}).with_audio_scenario(
         "chorus"
     )
 
@@ -71,7 +72,7 @@ def test_with_audio_scenario_preserves_existing_parameters():
 
 
 def test_enable_rtm_defaults_data_channel_to_rtm():
-    properties = Agent(advanced_features={"enable_rtm": True}).to_properties(
+    properties = Agent(test_client(), advanced_features={"enable_rtm": True}).to_properties(
         channel="room",
         agent_uid="1",
         remote_uids=["100"],
@@ -100,7 +101,7 @@ def test_enable_rtm_preserves_explicit_data_channel():
 
 def test_vendor_config_takes_priority_over_agent_level_convenience_fields():
     agent = (
-        Agent()
+        Agent(test_client())
         .with_llm(
             OpenAI(
                 model="gpt-4o-mini",
@@ -128,7 +129,7 @@ def test_vendor_config_takes_priority_over_agent_level_convenience_fields():
 
 
 def test_avatar_sample_rate_validation_works_when_tts_added_after_avatar():
-    agent = Agent().with_avatar(
+    agent = Agent(test_client()).with_avatar(
         LiveAvatarAvatar(api_key="avatar-key", quality="medium", agora_uid="2")
     )
 
@@ -140,7 +141,7 @@ def test_avatar_sample_rate_validation_works_when_tts_added_after_avatar():
 
 def test_avatar_sample_rate_validation_uses_wrapper_sample_rate():
     agent = (
-        Agent()
+        Agent(test_client())
         .with_avatar(AkoolAvatar(api_key="avatar-key"))
         .with_tts(
             ElevenLabsTTS(key="tts-key", model_id="model", voice_id="voice", base_url="wss://api.elevenlabs.io/v1", sample_rate=16000)
@@ -190,7 +191,7 @@ def test_bound_client_allows_region_incompatible_llm_at_builder_time():
 
 def test_to_properties_rejects_mllm_with_enabled_avatar():
     agent = (
-        Agent()
+        Agent(test_client())
         .with_mllm(OpenAIRealtime(api_key="mllm-key"))
         .with_avatar(
             LiveAvatarAvatar(
@@ -216,7 +217,7 @@ def test_to_properties_mllm_with_avatar_fires_before_token_generation():
     clear, actionable error even when app_id/app_certificate are empty.
     """
     agent = (
-        Agent()
+        Agent(test_client())
         .with_mllm(OpenAIRealtime(api_key="mllm-key"))
         .with_avatar(
             LiveAvatarAvatar(
@@ -240,7 +241,7 @@ def test_to_properties_mllm_with_avatar_fires_before_token_generation():
 
 def test_to_properties_rejects_mllm_with_default_enabled_avatar():
     """Avatar with no `enable` field should be treated as enabled."""
-    agent = Agent().with_mllm(OpenAIRealtime(api_key="mllm-key"))
+    agent = Agent(test_client()).with_mllm(OpenAIRealtime(api_key="mllm-key"))
     agent._avatar = {  # noqa: SLF001
         "vendor": "liveavatar",
         "params": {
@@ -262,7 +263,7 @@ def test_to_properties_rejects_mllm_with_default_enabled_avatar():
 
 def test_to_properties_allows_mllm_with_disabled_avatar_and_no_tts():
     properties = (
-        Agent()
+        Agent(test_client())
         .with_mllm(OpenAIRealtime(api_key="mllm-key"))
         .with_avatar(
             LiveAvatarAvatar(
@@ -290,7 +291,7 @@ def test_to_properties_allows_mllm_with_disabled_avatar_and_no_tts():
 
 def test_to_properties_mllm_without_tts_or_llm_succeeds():
     properties = (
-        Agent()
+        Agent(test_client())
         .with_mllm(OpenAIRealtime(api_key="mllm-key"))
         .to_properties(
             channel="room",

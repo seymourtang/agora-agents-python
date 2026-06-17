@@ -30,6 +30,15 @@ from agora_agent import Agent, Agora, Area, DeepgramSTT, OpenAI
 
 The package installs as `agora-agents` and imports as `agora_agent`.
 
+Every `Agent` builder must receive a bound client:
+
+```python
+from agora_agent import Agent, Agora, Area
+
+client = Agora(area=Area.US, app_id="your-app-id", app_certificate="your-app-certificate")
+agent = Agent(client=client)
+```
+
 ## Sync vs. Async
 
 The SDK supports both synchronous and asynchronous usage:

@@ -2,6 +2,7 @@ import pytest
 
 from agora_agent import Agent, DeepgramSTT, MiniMaxTTS, OpenAI, OpenAITTS
 from agora_agent.agentkit.presets import resolve_session_presets
+from test_helpers import test_client
 
 
 class StartResponse:
@@ -71,7 +72,7 @@ def dump(value):
 
 def test_session_start_infers_presets_for_managed_tts_and_llm() -> None:
     agent = (
-        Agent()
+        Agent(test_client())
         .with_llm(OpenAI(model="gpt-4o-mini"))
         .with_tts(MiniMaxTTS(model="speech_2_8_turbo", voice_id="English_captivating_female1"))
     )
@@ -99,7 +100,7 @@ def test_session_start_infers_presets_for_managed_tts_and_llm() -> None:
 @pytest.mark.asyncio
 async def test_async_session_start_infers_presets_for_managed_tts_and_llm() -> None:
     agent = (
-        Agent()
+        Agent(test_client())
         .with_llm(OpenAI(model="gpt-4o-mini"))
         .with_tts(OpenAITTS(voice="alloy"))
     )
@@ -126,7 +127,7 @@ async def test_async_session_start_infers_presets_for_managed_tts_and_llm() -> N
 
 def test_session_start_infers_managed_asr_without_skipping_llm_or_tts_validation() -> None:
     agent = (
-        Agent()
+        Agent(test_client())
         .with_stt(DeepgramSTT(model="nova-3", language="en-US"))
         .with_llm(OpenAI(model="gpt-4o-mini"))
         .with_tts(OpenAITTS(voice="alloy"))
@@ -155,7 +156,7 @@ def test_session_start_infers_managed_asr_without_skipping_llm_or_tts_validation
 
 
 def test_explicit_asr_preset_still_requires_tts_and_llm() -> None:
-    agent = Agent()
+    agent = Agent(test_client())
 
     agents = FakeAgentsClient()
     client = FakeClient(agents)
@@ -175,7 +176,7 @@ def test_explicit_asr_preset_still_requires_tts_and_llm() -> None:
 
 
 def test_managed_llm_inference_still_requires_tts() -> None:
-    agent = Agent().with_llm(OpenAI(model="gpt-4o-mini"))
+    agent = Agent(test_client()).with_llm(OpenAI(model="gpt-4o-mini"))
 
     agents = FakeAgentsClient()
     client = FakeClient(agents)
@@ -194,7 +195,7 @@ def test_managed_llm_inference_still_requires_tts() -> None:
 
 
 def test_explicit_llm_preset_still_requires_tts() -> None:
-    agent = Agent()
+    agent = Agent(test_client())
 
     agents = FakeAgentsClient()
     client = FakeClient(agents)
@@ -214,7 +215,7 @@ def test_explicit_llm_preset_still_requires_tts() -> None:
 
 
 def test_managed_tts_inference_still_requires_llm() -> None:
-    agent = Agent().with_tts(
+    agent = Agent(test_client()).with_tts(
         MiniMaxTTS(model="speech_2_8_turbo", voice_id="English_captivating_female1")
     )
 
@@ -235,7 +236,7 @@ def test_managed_tts_inference_still_requires_llm() -> None:
 
 
 def test_explicit_tts_preset_still_requires_llm() -> None:
-    agent = Agent()
+    agent = Agent(test_client())
 
     agents = FakeAgentsClient()
     client = FakeClient(agents)

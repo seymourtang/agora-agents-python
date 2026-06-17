@@ -26,7 +26,7 @@ The Python SDK has three layers:
 
 This is the primary developer-facing API. It provides:
 
-- **`Agent`** — a fluent builder for configuring AI agents with LLM, TTS, STT, MLLM, and avatar vendors
+- **`Agent`** — a fluent builder for configuring AI agents with LLM, TTS, STT, MLLM, and avatar vendors. Requires a bound `Agora` / `AsyncAgora` client via `client=...`.
 - **`AgentSession` / `AsyncAgentSession`** — lifecycle management for running agents (start, stop, say, interrupt)
 - **Vendor classes** — typed configuration for 28+ vendor integrations across 5 categories
 - **`generate_rtc_token()`** — helper for building RTC tokens

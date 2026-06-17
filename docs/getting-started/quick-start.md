@@ -9,6 +9,7 @@ description: Build and run your first Agora Conversational AI agent in Python wi
 This guide starts with the standard AgentKit path:
 
 - `app_id`, `app_certificate`, and `area` on `Agora` or `AsyncAgora`
+- `Agent(client=client, ...)` — **client is required** on every agent builder
 - the `Agent` builder with `.with_stt()`, `.with_llm()`, and `.with_tts()`
 - automatic ConvoAI REST auth and RTC join token generation
 - no vendor API keys when using supported Agora-managed global models
@@ -17,6 +18,7 @@ This guide starts with the standard AgentKit path:
 
 ```python
 from agora_agent import Agent, Agora, Area, DeepgramSTT, MiniMaxTTS, OpenAI
+import time
 
 
 def main() -> None:
@@ -39,10 +41,10 @@ def main() -> None:
     )
 
     session = agent.create_session(
-        channel="support-room-123",
+        channel=f"demo-channel-{int(time.time())}",
         agent_uid="1",
         remote_uids=["100"],
-        name="support-assistant",
+        name=f"conversation-{int(time.time())}",
         idle_timeout=120,
     )
 
@@ -60,7 +62,7 @@ if __name__ == "__main__":
 ## What this does
 
 1. `Agora` runs in app-credentials mode when you pass `app_id` and `app_certificate` only.
-2. `Agent(client=client, ...)` binds the authenticated client once and reuses it when you later create sessions.
+2. `Agent(client=client, ...)` requires a bound client. `create_session()` raises `ValueError` without it.
 3. `Agent(client=client, ...)` binds the area-aware client once. Pass vendor classes such as `DeepgramSTT(...)`, `OpenAI(...)`, and `MiniMaxTTS(...)` directly; the SDK does not enforce area and vendor matching. Leave vendor credentials unset for supported Agora-managed global models, or provide keys when you want BYOK. CN MiniMax TTS typically includes `key`.
 4. `create_session(name=...)` sets the agent instance name for the Start Agent API. If omitted, the SDK generates `agent-{timestamp}`.
 5. `session.start()` generates the required auth tokens and returns the unique agent session ID.

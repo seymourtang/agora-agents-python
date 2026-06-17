@@ -12,6 +12,7 @@ Create `Agora` or `AsyncAgora` with `app_id` and `app_certificate` only. The SDK
 
 ```python
 from agora_agent import Agent, Agora, Area, DeepgramSTT, OpenAI, MiniMaxTTS
+import time
 
 client = Agora(
     area=Area.US,
@@ -30,10 +31,10 @@ agent = (
 )
 
 session = agent.create_session(
-    channel="room-123",
+    channel=f"demo-channel-{int(time.time())}",
     agent_uid="1",
     remote_uids=["100"],
-    name="auth-demo",
+    name=f"conversation-{int(time.time())}",
 )
 ```
 
@@ -52,3 +53,32 @@ print(client.auth_mode)  # "app-credentials"
 ## Legacy auth modes
 
 The generated client still supports pre-minted REST tokens and HTTP Basic Auth for legacy integrations. Do not use those modes for new session integrations. Use app credentials so AgentKit can mint short-lived ConvoAI REST auth and RTC join tokens for each session.
+
+### HTTP Basic Auth
+
+```python
+client = Agora(
+    area=Area.US,
+    app_id="your-app-id",
+    app_certificate="your-app-certificate",
+    customer_id="your-customer-id",
+    customer_secret="your-customer-secret",
+)
+print(client.auth_mode)  # "basic"
+```
+
+### Pre-built REST token
+
+Pass the raw token string. The SDK sets `Authorization: agora token=<auth_token>` automatically.
+
+```python
+client = Agora(
+    area=Area.US,
+    app_id="your-app-id",
+    app_certificate="your-app-certificate",
+    auth_token="your-raw-token",
+)
+print(client.auth_mode)  # "token"
+```
+
+`auth_token` is mutually exclusive with `customer_id` / `customer_secret`.

@@ -1,9 +1,6 @@
 from __future__ import annotations
 
 import typing
-import typing_extensions
-
-from ..core.domain import Area
 from .agent import Agent
 from .vendors.base import BaseAvatar, BaseLLM, BaseSTT, BaseTTS
 from .vendors.cn import (
@@ -64,9 +61,6 @@ from .vendors.tts import (
     SarvamTTS,
 )
 from .vendors.avatar import AkoolAvatar, AnamAvatar, GenericAvatar, HeyGenAvatar, LiveAvatarAvatar
-
-if typing.TYPE_CHECKING:
-    from ..pool_client import Agora, AsyncAgora
 
 CNSTT = typing.Union[TencentSTT, FengmingSTT, MicrosoftCNSTT, XfyunSTT, XfyunBigModelSTT, XfyunDialectSTT]
 CNTTS = typing.Union[MiniMaxCNTTS, TencentTTS, BytedanceTTS, MicrosoftCNTTS, CosyVoiceTTS, BytedanceDuplexTTS, StepFunTTS]
@@ -142,30 +136,3 @@ class GlobalAgent(Agent):
 
 
 RegionalAgent = typing.Union[CNAgent, GlobalAgent]
-_GlobalArea = typing_extensions.Literal[Area.US, Area.EU, Area.AP]
-
-
-@typing.overload
-def AgoraAgent(*, client: "Agora[typing_extensions.Literal[Area.CN]]", **kwargs: typing.Any) -> CNAgent:
-    ...
-
-
-@typing.overload
-def AgoraAgent(*, client: "Agora[_GlobalArea]", **kwargs: typing.Any) -> GlobalAgent:
-    ...
-
-
-@typing.overload
-def AgoraAgent(*, client: "AsyncAgora[typing_extensions.Literal[Area.CN]]", **kwargs: typing.Any) -> CNAgent:
-    ...
-
-
-@typing.overload
-def AgoraAgent(*, client: "AsyncAgora[_GlobalArea]", **kwargs: typing.Any) -> GlobalAgent:
-    ...
-
-
-def AgoraAgent(*, client: typing.Any, **kwargs: typing.Any) -> RegionalAgent:
-    area_scope = getattr(client, "area_scope", None)
-    agent_cls = CNAgent if area_scope == "cn" else GlobalAgent
-    return agent_cls(client=client, **kwargs)

@@ -16,7 +16,6 @@ if typing.TYPE_CHECKING:
     from .version import __version__
     from .agentkit import (
         Agent,
-        AgoraAgent,
         AgentSession,
         AgentSessionOptions,
         AgentClient,
@@ -34,7 +33,6 @@ if typing.TYPE_CHECKING:
 _dynamic_imports: typing.Dict[str, str] = {
     "Agora": ".pool_client",
     "Agent": ".agentkit",
-    "AgoraAgent": ".agentkit",
     "AgentClient": ".pool_client",
     "AgentSession": ".agentkit",
     "AgentSessionOptions": ".agentkit",
@@ -58,7 +56,6 @@ _dynamic_imports: typing.Dict[str, str] = {
 _ROOT_ALL = (
     "Agora",
     "Agent",
-    "AgoraAgent",
     "AgentClient",
     "AgentSession",
     "AgentSessionOptions",

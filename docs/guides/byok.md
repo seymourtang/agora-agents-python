@@ -21,6 +21,7 @@ Typical reasons:
 import os
 
 from agora_agent import Agent, Agora, Area, DeepgramSTT, ElevenLabsTTS, OpenAI
+import time
 
 
 def main() -> None:
@@ -62,10 +63,10 @@ def main() -> None:
     )
 
     session = agent.create_session(
-        channel="support-room-123",
+        channel=f"demo-channel-{int(time.time())}",
         agent_uid="1",
         remote_uids=["100"],
-        name="support-assistant",
+        name=f"conversation-{int(time.time())}",
         idle_timeout=120,
     )
 

@@ -31,6 +31,17 @@ Used with `agent.with_llm()` for the cascading flow (ASR → LLM → TTS).
 | `Dify` | Dify | `api_key`, `url`, `model` |
 | `CustomLLM` | OpenAI-compatible LLM | `api_key`, `base_url`, `model` |
 
+### CN LLM Vendors
+
+Used with `agent.with_llm()` when routing to `Area.CN`. All CN LLM helpers use an OpenAI-compatible shape.
+
+| Class | Provider | Required Parameters |
+|---|---|---|
+| `AliyunLLM` | Alibaba Cloud | `base_url`, `model`; `api_key?` for BYOK |
+| `BytedanceLLM` | ByteDance | `base_url`, `model`; `api_key?` for BYOK |
+| `DeepSeekLLM` | DeepSeek | `base_url`, `model`; `api_key?` for BYOK |
+| `TencentLLM` | Tencent | `base_url`, `model`; `api_key?` for BYOK |
+
 <!-- snippet: executable -->
 ```python
 from agora_agent import OpenAI
@@ -53,10 +64,24 @@ Used with `agent.with_tts()`. Each TTS vendor produces audio at a specific sampl
 | `HumeAITTS` | Hume AI | `key`, `voice_id`, `provider` | — |
 | `RimeTTS` | Rime | `key`, `speaker`, `model_id` | — |
 | `FishAudioTTS` | Fish Audio | `key`, `reference_id`, `backend` | — |
-| `GroqTTS` | Groq | `key` | — |
+| `MurfTTS` | Murf | `key`, `voice_id`, `model` | — |
 | `MiniMaxTTS` | MiniMax | `model` for supported Agora-managed global models; `key`, `group_id`, `model`, `voice_id`, `url` for BYOK | — |
 | `DeepgramTTS` | Deepgram | `api_key`, `model` | Configurable |
 | `SarvamTTS` | Sarvam | `api_key` | — |
+
+### CN TTS Vendors
+
+Used with `agent.with_tts()` when routing to `Area.CN`. Use `MiniMaxCNTTS` and `MicrosoftCNTTS` for CN-specific implementations that differ from the global classes.
+
+| Class | Provider | Required Parameters | Sample Rate |
+|---|---|---|---|
+| `MiniMaxCNTTS` | MiniMax (CN) | `model`, `voice_id` or `timber_weights`; `key` typically required | — |
+| `TencentTTS` | Tencent | `app_id`, `secret_id`, `secret_key`, `voice_type` | — |
+| `BytedanceTTS` | ByteDance | `token`, `app_id`, `cluster`, `voice_type` | — |
+| `MicrosoftCNTTS` | Microsoft Azure (CN) | `key`, `region`, `voice_name` | 8000, 16000, 24000, or 48000 Hz |
+| `CosyVoiceTTS` | CosyVoice | `api_key`, `model`, `voice` | — |
+| `BytedanceDuplexTTS` | ByteDance Duplex | `app_id`, `token`, `resource_id`, `speaker` | — |
+| `StepFunTTS` | StepFun | `api_key`, `model`, `voice_id` | — |
 
 <!-- snippet: executable -->
 ```python
@@ -88,6 +113,19 @@ Use `turn_detection.language` for Agora interaction language; it defaults to `en
 | `AssemblyAISTT` | AssemblyAI | `api_key`, `language` |
 | `AresSTT` | Ares | — (all optional) |
 | `SarvamSTT` | Sarvam | `api_key`, `language` |
+
+### CN STT Vendors
+
+Used with `agent.with_stt()` when routing to `Area.CN`.
+
+| Class | Provider | Required Parameters |
+|---|---|---|
+| `FengmingSTT` | Fengming | — (all optional) |
+| `TencentSTT` | Tencent | `key`, `app_id`, `secret`, `engine_model_type`, `voice_id` |
+| `MicrosoftCNSTT` | Microsoft Azure (CN) | `key`, `region`, `language` |
+| `XfyunSTT` | iFlytek | `app_id`, `access_key_id`, `access_key_secret` |
+| `XfyunBigModelSTT` | iFlytek Big Model | `app_id`, `access_key_id`, `access_key_secret` |
+| `XfyunDialectSTT` | iFlytek Dialect | `app_id`, `access_key_id`, `access_key_secret` |
 
 <!-- snippet: executable -->
 ```python

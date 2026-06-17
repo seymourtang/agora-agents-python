@@ -6,9 +6,11 @@ description: Full API reference for the Python Agent builder class.
 
 # Agent Reference
 
-**Import:** `from agora_agent import Agent`
+**Import:** `from agora_agent import Agent, CNAgent, GlobalAgent`
 
-Bind the client once on `Agent(client=client, ...)`, then pass vendor classes directly. The bound client sets the API routing region and provides area-specific IDE hints via `CNAgent` / `GlobalAgent`:
+Bind the client on every `Agent` builder via `Agent(client=client, ...)`, then pass vendor classes directly. The bound client sets the API routing region and provides area-specific IDE hints via `CNAgent` / `GlobalAgent`:
+
+> **`client` is required.** `create_session()` and `create_async_session()` raise `ValueError` if no client was bound on the agent.
 
 <!-- snippet: fragment -->
 ```python
@@ -23,7 +25,7 @@ agent = Agent(client=client)
 <!-- snippet: fragment -->
 ```python
 Agent(
-    client: Optional[Any] = None,
+    client: Agora | AsyncAgora,
     instructions: Optional[str] = None,
     turn_detection: Optional[TurnDetectionConfig] = None,
     interruption: Optional[InterruptionConfig] = None,
@@ -43,7 +45,7 @@ Agent(
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `client` | `Optional[Any]` | `None` | Bound Agora client used later by `create_session()` and `create_async_session()` |
+| `client` | `Agora` / `AsyncAgora` | — | **Required.** Authenticated client used by `create_session()` and `create_async_session()` |
 | `instructions` | `Optional[str]` | `None` | Deprecated. Use LLM vendor `system_messages` instead. |
 | `turn_detection` | `Optional[TurnDetectionConfig]` | `None` | Interaction language and turn detection configuration |
 | `interruption` | `Optional[InterruptionConfig]` | `None` | Unified interruption control configuration |
@@ -106,8 +108,10 @@ Set the MLLM vendor for multimodal flow. Calling `with_mllm()` automatically set
 
 <!-- snippet: fragment -->
 ```python
-from agora_agent import Agent, OpenAIRealtime
-agent = Agent().with_mllm(OpenAIRealtime(api_key='your-key'))
+from agora_agent import Agent, Agora, Area, OpenAIRealtime
+
+client = Agora(area=Area.US, app_id='your-app-id', app_certificate='your-app-certificate')
+agent = Agent(client=client).with_mllm(OpenAIRealtime(api_key='your-key'))
 ```
 
 ### `with_avatar(vendor: BaseAvatar) -> Agent`
@@ -242,15 +246,37 @@ Creates an `AgentSession` using the client already bound to `Agent(client=...)`.
 Example:
 
 ```python
+import time
 session = agent.create_session(
-    channel="support-room",
+    channel=f"demo-channel-{int(time.time())}",
     agent_uid="1",
     remote_uids=["100"],
-    name="support-agent",
+    name=f"conversation-{int(time.time())}",
 )
 ```
 
 **Returns:** `AgentSession`
+
+## `create_async_session()`
+
+Same parameters and behavior as `create_session()`, but returns `AsyncAgentSession` for `asyncio` applications.
+
+<!-- snippet: fragment -->
+```python
+import time
+
+session = agent.create_async_session(
+    channel=f"demo-channel-{int(time.time())}",
+    agent_uid="1",
+    remote_uids=["100"],
+    name=f"conversation-{int(time.time())}",
+)
+agent_id = await session.start()
+```
+
+**Returns:** `AsyncAgentSession`
+
+Requires `client=...` on the agent builder, same as `create_session()`.
 
 When you omit credentials for supported Agora-managed global models, AgentKit sends the matching Agora-managed configuration automatically:
 

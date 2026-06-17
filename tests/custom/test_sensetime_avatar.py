@@ -4,6 +4,7 @@ from types import SimpleNamespace
 from agora_agent.agentkit import Agent, AgentSession, validate_avatar_config
 from agora_agent.agentkit.avatar_types import is_sensetime_avatar
 from agora_agent.agentkit.vendors.cn import SenseTimeAvatar
+from test_helpers import test_client
 
 APP_ID = "0" * 32
 APP_CERTIFICATE = "1" * 32
@@ -109,7 +110,7 @@ def test_validate_avatar_config_requires_agora_token_at_session_time() -> None:
 
 
 def test_sensetime_avatar_session_validation_and_token_passthrough() -> None:
-    agent = Agent().with_avatar(
+    agent = Agent(test_client()).with_avatar(
         SenseTimeAvatar(
             agora_token="avatar-token",
             agora_uid="2",
@@ -132,7 +133,7 @@ def test_sensetime_avatar_session_validation_and_token_passthrough() -> None:
 
 
 def test_sensetime_avatar_enrichment_generates_token() -> None:
-    agent = Agent().with_avatar(
+    agent = Agent(test_client()).with_avatar(
         SenseTimeAvatar(
             agora_uid="2",
             app_key="sensetime-app-key",
@@ -154,7 +155,7 @@ def test_sensetime_avatar_enrichment_generates_token() -> None:
 
 
 def test_sensetime_avatar_user_token_is_not_overwritten() -> None:
-    agent = Agent().with_avatar(
+    agent = Agent(test_client()).with_avatar(
         SenseTimeAvatar(
             agora_uid="2",
             agora_token="user-token",

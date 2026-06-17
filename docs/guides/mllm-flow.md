@@ -23,13 +23,14 @@ Set the agent instance name when you create the session:
 
 ```python
 from agora_agent import Agent
+import time
 
 agent = Agent(client=client)
 session = agent.create_session(
-    channel="realtime-room",
+    channel=f"demo-channel-{int(time.time())}",
     agent_uid="1",
     remote_uids=["100"],
-    name="realtime-agent",
+    name=f"conversation-{int(time.time())}",
 )
 ```
 
@@ -39,6 +40,7 @@ session = agent.create_session(
 
 ```python
 from agora_agent import Agent, Agora, Area, OpenAIRealtime
+import time
 
 client = Agora(
     area=Area.US,
@@ -54,7 +56,7 @@ agent = (
     ))
 )
 
-session = agent.create_session(channel='realtime-room', agent_uid='1', remote_uids=['100'], name='realtime-agent')
+session = agent.create_session(channel=f"demo-channel-{int(time.time())}", agent_uid='1', remote_uids=['100'], name=f"conversation-{int(time.time())}")
 agent_id = session.start()
 # Agent handles audio end-to-end — no separate STT/TTS needed
 session.stop()
@@ -65,6 +67,7 @@ session.stop()
 ```python
 import asyncio
 from agora_agent import Agent, AsyncAgora, Area, OpenAIRealtime
+import time
 
 async def main():
     client = AsyncAgora(
@@ -81,7 +84,7 @@ async def main():
         ))
     )
 
-    session = agent.create_session(channel='realtime-room', agent_uid='1', remote_uids=['100'], name='realtime-agent')
+    session = agent.create_session(channel=f"demo-channel-{int(time.time())}", agent_uid='1', remote_uids=['100'], name=f"conversation-{int(time.time())}")
     agent_id = await session.start()
     await session.stop()
 
@@ -94,6 +97,7 @@ Gemini Live uses a Google AI API key:
 
 ```python
 from agora_agent import Agent, Agora, Area, GeminiLive
+import time
 
 client = Agora(
     area=Area.AP,
@@ -110,7 +114,7 @@ agent = (
     ))
 )
 
-session = agent.create_session(channel='gemini-room', agent_uid='1', remote_uids=['100'], name='gemini-agent')
+session = agent.create_session(channel=f"demo-channel-{int(time.time())}", agent_uid='1', remote_uids=['100'], name=f"conversation-{int(time.time())}")
 agent_id = session.start()
 session.stop()
 ```
@@ -119,6 +123,7 @@ session.stop()
 
 ```python
 from agora_agent import Agent, Agora, Area, XaiGrok
+import time
 
 client = Agora(area=Area.US, app_id='your-app-id', app_certificate='your-app-certificate')
 
@@ -133,7 +138,7 @@ agent = (
     ))
 )
 
-session = agent.create_session(channel='xai-room', agent_uid='1', remote_uids=['100'], name='xai-agent')
+session = agent.create_session(channel=f"demo-channel-{int(time.time())}", agent_uid='1', remote_uids=['100'], name=f"conversation-{int(time.time())}")
 agent_id = session.start()
 session.stop()
 ```

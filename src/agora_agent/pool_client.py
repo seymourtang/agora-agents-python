@@ -9,7 +9,7 @@ import typing
 import httpx
 import typing_extensions
 
-from .agentkit.regional_agent import CNAgent, GlobalAgent, RegionalAgent
+from .agentkit.regional_agent import RegionalAgent
 from .agentkit.vendors.region import AreaScope, area_to_scope
 from .client import Agora as BaseAgora
 from .client import AsyncAgora as BaseAsyncAgora
@@ -396,27 +396,6 @@ class Agora(BaseAgora, typing.Generic[_AreaT]):
         """Return the vendor scope implied by the configured area."""
         return area_to_scope(self._area)
 
-    @typing.overload
-    def create_agent(self: "Agora[typing_extensions.Literal[Area.CN]]", *args: typing.Any, **kwargs: typing.Any) -> CNAgent:
-        ...
-
-    @typing.overload
-    def create_agent(self: "Agora[_GlobalArea]", *args: typing.Any, **kwargs: typing.Any) -> GlobalAgent:
-        ...
-
-    @typing.overload
-    def create_agent(self, *args: typing.Any, **kwargs: typing.Any) -> RegionalAgent:
-        ...
-
-    def create_agent(self, *args: typing.Any, **kwargs: typing.Any) -> RegionalAgent:
-        """Create an area-aware agent for IDE-friendly vendor suggestions.
-
-        Pass the agent instance name later via ``agent.create_session(name=...)``.
-        """
-        agent_cls = CNAgent if self.area_scope == "cn" else GlobalAgent
-        kwargs.setdefault("client", self)
-        return agent_cls(*args, **kwargs)
-
     def validate_agent_region(self, agent: RegionalAgent) -> None:
         """No-op. Area and vendor compatibility is not enforced by the SDK."""
 
@@ -754,27 +733,6 @@ class AsyncAgora(BaseAsyncAgora, typing.Generic[_AreaT]):
     def area_scope(self) -> AreaScope:
         """Return the vendor scope implied by the configured area."""
         return area_to_scope(self._area)
-
-    @typing.overload
-    def create_agent(self: "AsyncAgora[typing_extensions.Literal[Area.CN]]", *args: typing.Any, **kwargs: typing.Any) -> CNAgent:
-        ...
-
-    @typing.overload
-    def create_agent(self: "AsyncAgora[_GlobalArea]", *args: typing.Any, **kwargs: typing.Any) -> GlobalAgent:
-        ...
-
-    @typing.overload
-    def create_agent(self, *args: typing.Any, **kwargs: typing.Any) -> RegionalAgent:
-        ...
-
-    def create_agent(self, *args: typing.Any, **kwargs: typing.Any) -> RegionalAgent:
-        """Create an area-aware agent for IDE-friendly vendor suggestions.
-
-        Pass the agent instance name later via ``agent.create_session(name=...)``.
-        """
-        agent_cls = CNAgent if self.area_scope == "cn" else GlobalAgent
-        kwargs.setdefault("client", self)
-        return agent_cls(*args, **kwargs)
 
     def validate_agent_region(self, agent: RegionalAgent) -> None:
         """No-op. Area and vendor compatibility is not enforced by the SDK."""

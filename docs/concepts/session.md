@@ -33,11 +33,12 @@ You can check the current state with `session.status`.
 
 ## Creating a Session
 
-Use `Agent.create_session()` to create a session. Set the agent instance name with the `name` parameter — this value is sent to the Start Agent API when you call `session.start()`.
+Use `Agent.create_session()` to create a session. The parent `Agent` must be constructed with `client=...`. Set the agent instance name with the `name` parameter — this value is sent to the Start Agent API when you call `session.start()`.
 
 <!-- snippet: executable -->
 ```python
 from agora_agent import Agent, Agora, Area, DeepgramSTT, ElevenLabsTTS, OpenAI
+import time
 
 client = Agora(area=Area.US, app_id='your-app-id', app_certificate='your-app-certificate')
 
@@ -53,7 +54,7 @@ agent = (
     .with_stt(DeepgramSTT(api_key='your-deepgram-key', language='en-US'))
 )
 
-session = agent.create_session(channel='my-channel', agent_uid='1', remote_uids=['100'], name='my-agent')
+session = agent.create_session(channel=f"demo-channel-{int(time.time())}", agent_uid='1', remote_uids=['100'], name=f"conversation-{int(time.time())}")
 ```
 
 ## Sync Methods
@@ -112,6 +113,9 @@ await session.stop()
 | Update | `session.update(props)` → `None` | `await session.update(props)` → `None` |
 | History | `session.get_history()` → response | `await session.get_history()` → response |
 | Info | `session.get_info()` → response | `await session.get_info()` → response |
+| Think | `session.think(options)` → response | `await session.think(options)` → response |
+| Turns | `session.get_turns(options)` → response | `await session.get_turns(options)` → response |
+| All turns | `session.get_all_turns(options)` → response | `await session.get_all_turns(options)` → response |
 
 ## Agora-managed models and BYOK
 
@@ -119,10 +123,12 @@ When you omit credentials for supported Agora-managed global models on the build
 
 <!-- snippet: fragment -->
 ```python
-from agora_agent import Agent, DeepgramSTT, OpenAI, OpenAITTS
+from agora_agent import Agent, Agora, Area, DeepgramSTT, OpenAI, OpenAITTS
+
+client = Agora(area=Area.US, app_id='your-app-id', app_certificate='your-app-certificate')
 
 agent = (
-    Agent()
+    Agent(client=client)
     .with_stt(DeepgramSTT(model="nova-3", language="en-US"))
     .with_llm(OpenAI(
         model="gpt-4o-mini",
@@ -189,7 +195,8 @@ Session methods raise `RuntimeError` if called in an invalid state:
 
 <!-- snippet: fragment -->
 ```python
-session = agent.create_session(channel='my-channel', agent_uid='1', remote_uids=['100'], name='my-agent')
+import time
+session = agent.create_session(channel=f"demo-channel-{int(time.time())}", agent_uid='1', remote_uids=['100'], name=f"conversation-{int(time.time())}")
 
 # This raises RuntimeError — session hasn't started yet
 session.say('Hello!')  # RuntimeError: Cannot say in idle state

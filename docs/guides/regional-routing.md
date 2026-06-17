@@ -46,6 +46,7 @@ Global client example:
 
 ```python
 from agora_agent import Agent, Agora, Area, DeepgramSTT, MiniMaxTTS, OpenAI
+import time
 
 client = Agora(
     area=Area.US,
@@ -67,10 +68,10 @@ agent = (
 )
 
 session = agent.create_session(
-    channel="global-room",
+    channel=f"demo-channel-{int(time.time())}",
     agent_uid="1001",
     remote_uids=["*"],
-    name="global-agent",
+    name=f"conversation-{int(time.time())}",
 )
 ```
 
@@ -80,6 +81,7 @@ CN client example:
 import os
 
 from agora_agent import Agent, Agora, Area, AliyunLLM, FengmingSTT, MiniMaxCNTTS
+import time
 
 client = Agora(
     area=Area.CN,
@@ -107,12 +109,22 @@ agent = (
 )
 
 session = agent.create_session(
-    channel="cn-room",
+    channel=f"demo-channel-{int(time.time())}",
     agent_uid="1001",
     remote_uids=["*"],
-    name="cn-agent",
+    name=f"conversation-{int(time.time())}",
 )
 ```
+
+## Area-aware agent construction
+
+```python
+from agora_agent import Agent
+
+agent = Agent(client=client, turn_detection={"language": "zh-CN"})
+```
+
+`Agent(client=...)` returns `CNAgent` for `Area.CN` and `GlobalAgent` for global areas. A bound `client` is required. The SDK does not reject mismatched vendor classes at build time or session start.
 
 ## How the domain pool works
 
@@ -139,6 +151,7 @@ If a request fails, call `client.next_region()` to cycle to the next domain pref
 
 ```python
 from agora_agent import Agent, Agora, Area, DeepgramSTT, ElevenLabsTTS, OpenAI
+import time
 
 client = Agora(
     area=Area.EU,
@@ -168,10 +181,10 @@ agent = (
 )
 
 session = agent.create_session(
-    channel="my-room",
+    channel=f"demo-channel-{int(time.time())}",
     agent_uid="1",
     remote_uids=["100"],
-    name="failover-demo",
+    name=f"conversation-{int(time.time())}",
 )
 
 try:

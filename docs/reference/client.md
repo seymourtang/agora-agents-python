@@ -6,6 +6,10 @@ description: Constructor options and public methods for the Agora Python client.
 
 # Agora / AsyncAgora Client
 
+**Import:** `from agora_agent import Agora, AsyncAgora, AgentClient, AsyncAgentClient`
+
+`AgentClient` and `AsyncAgentClient` are aliases for `Agora` and `AsyncAgora`.
+
 ## `Agora` Constructor
 
 <!-- snippet: fragment -->
@@ -24,15 +28,18 @@ client = Agora(
 | `area` | `Area` | Yes | — | Region for API routing (`Area.US`, `Area.EU`, `Area.AP`, `Area.CN`) |
 | `app_id` | `str` | Yes* | — | Agora App ID (app-credentials mode) |
 | `app_certificate` | `str` | Yes* | — | Agora App Certificate (app-credentials mode) |
-| `username` | `str` | Yes* | — | Customer ID (Basic Auth mode) |
-| `password` | `str` | Yes* | — | Customer Secret (Basic Auth mode) |
-| `auth_token` | `str` | No | — | Pre-built `agora token=<value>` |
+| `customer_id` | `str` | Yes* | — | Customer ID (Basic Auth mode) |
+| `customer_secret` | `str` | Yes* | — | Customer Secret (Basic Auth mode) |
+| `auth_token` | `str` | No | — | Pre-built raw REST token; SDK sets `Authorization: agora token=<auth_token>` |
 | `headers` | `Dict[str, str]` | No | `None` | Additional headers sent with every request |
 | `timeout` | `float` | No | `60` | Request timeout in seconds |
 | `follow_redirects` | `bool` | No | `True` | Whether to follow HTTP redirects |
 | `httpx_client` | `httpx.Client` | No | `None` | Custom httpx client instance |
+| `debug` | `bool` | No | `False` | Log HTTP requests and responses when `True` |
 
-*Provide either `app_id` + `app_certificate`, or `username` + `password`.
+*Provide either `app_id` + `app_certificate`, or `customer_id` + `customer_secret`. `auth_token` is mutually exclusive with `customer_id` / `customer_secret`.
+
+When `area=Area.CN`, the constructor returns a `CNAgora` instance; global areas return `GlobalAgoraClient`. Both are subclasses of `Agora` and behave the same at runtime.
 
 ## `AsyncAgora` Constructor
 
@@ -41,6 +48,8 @@ Identical to `Agora` except:
 | Parameter | Difference |
 |---|---|
 | `httpx_client` | Accepts `httpx.AsyncClient` instead of `httpx.Client` |
+
+`AsyncAgora(area=Area.CN, ...)` returns `CNAsyncAgora`; global areas return `GlobalAsyncAgoraClient`.
 
 <!-- snippet: fragment -->
 ```python
@@ -53,7 +62,33 @@ client = AsyncAgora(
 )
 ```
 
+## Properties
+
+| Property | Type | Description |
+|---|---|---|
+| `client.area` | `Area` | Configured API area |
+| `client.area_scope` | `Literal["cn", "global"]` | Vendor scope implied by `area` (`"cn"` for `Area.CN`, otherwise `"global"`) |
+| `client.app_id` | `str` | Agora App ID |
+| `client.app_certificate` | `str` | Agora App Certificate |
+| `client.auth_mode` | `Literal["app-credentials", "basic", "token"]` | Active authentication mode |
+| `client.pool` | `Pool` | Domain pool for regional URL cycling |
+
 ## Public Methods
+
+### `stop_agent(agent_id: str) -> None`
+
+Stop a running agent by ID without holding an `AgentSession` reference. Idempotent when the agent has already stopped (404 is treated as success).
+
+<!-- snippet: fragment -->
+```python
+client.stop_agent(agent_id)
+```
+
+- **`AsyncAgora`:** `await client.stop_agent(agent_id)`
+
+### `validate_agent_region(agent) -> None`
+
+No-op. The SDK does not enforce area and vendor compatibility.
 
 ### `next_region()`
 
@@ -97,18 +132,6 @@ url = client.get_current_url()
 
 - **Returns:** `str`
 - **Sync on both `Agora` and `AsyncAgora`**
-
-### `pool` (property)
-
-Access the `Pool` object for advanced domain management.
-
-<!-- snippet: fragment -->
-```python
-pool = client.pool
-pool.get_area()  # Area.US
-```
-
-- **Returns:** `Pool`
 
 ## Sub-Clients (Fern-Generated)
 

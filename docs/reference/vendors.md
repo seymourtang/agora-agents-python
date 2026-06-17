@@ -492,7 +492,7 @@ CN TTS classes use explicit names when they differ from the global implementatio
 
 All CN TTS vendor classes support `skip_patterns` and `additional_params`.
 
-#### `MiniMaxTTS` (CN)
+#### `MiniMaxCNTTS`
 
 | Parameter | Type | Required | Default | Description |
 |---|---|---|---|---|
@@ -542,7 +542,7 @@ All CN TTS vendor classes support `skip_patterns` and `additional_params`.
 | `additional_params` | `Dict[str, Any]` | No | `None` | Additional Bytedance TTS parameters |
 | `skip_patterns` | `List[int]` | No | `None` | Skip patterns |
 
-#### `MicrosoftTTS` (CN)
+#### `MicrosoftCNTTS`
 
 | Parameter | Type | Required | Default | Description |
 |---|---|---|---|---|
@@ -634,7 +634,7 @@ No constructor parameters. Use `FengmingSTT()`.
 | `language` | `str` | No | `None` | Xfyun Dialect ASR language |
 | `additional_params` | `Dict[str, Any]` | No | `None` | Additional Xfyun Dialect ASR parameters |
 
-#### `MicrosoftSTT` (CN)
+#### `MicrosoftCNSTT`
 
 | Parameter | Type | Required | Default | Description |
 |---|---|---|---|---|

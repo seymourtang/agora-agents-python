@@ -17,7 +17,7 @@ from agora_agent import AgentSession, AsyncAgentSession
 
 ## Constructor
 
-Sessions are normally created via `Agent(client=...).create_session()`. Direct construction is available for advanced use:
+Sessions are normally created via `Agent(client=client, ...).create_session()`. The agent builder must have a bound client. Direct `AgentSession` construction is available for advanced use:
 
 <!-- snippet: fragment -->
 ```python
@@ -67,12 +67,13 @@ AgentSession(
 For normal SDK usage, prefer binding the client on the agent first. Pass the agent instance name via `create_session(name=...)`:
 
 ```python
+import time
 agent = Agent(client=client)
 session = agent.create_session(
-    channel="room",
+    channel=f"demo-channel-{int(time.time())}",
     agent_uid="1",
     remote_uids=["100"],
-    name="my-agent",
+    name=f"conversation-{int(time.time())}",
 )
 ```
 

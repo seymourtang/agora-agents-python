@@ -1,6 +1,7 @@
 import pytest
 
 from agora_agent import Agent, OpenAI, OpenAITTS
+from test_helpers import test_client
 
 
 def dump(value):
@@ -63,7 +64,7 @@ def start_agent(agent, **overrides):
 
 
 def test_agent_pipeline_id_sends_top_level_pipeline_id() -> None:
-    call = start_agent(Agent(pipeline_id="studio-pipeline-id"))
+    call = start_agent(Agent(test_client(), pipeline_id="studio-pipeline-id"))
 
     assert call["appid"] == "appid"
     assert call["name"] == "support"
@@ -77,7 +78,7 @@ def test_agent_pipeline_id_sends_top_level_pipeline_id() -> None:
 
 def test_session_pipeline_id_overrides_agent_pipeline_id() -> None:
     call = start_agent(
-        Agent(pipeline_id="agent-pipeline"),
+        Agent(test_client(), pipeline_id="agent-pipeline"),
         pipeline_id="session-pipeline",
     )
 
@@ -85,7 +86,7 @@ def test_session_pipeline_id_overrides_agent_pipeline_id() -> None:
 
 
 def test_agent_pipeline_id_skips_missing_vendor_validation() -> None:
-    call = start_agent(Agent(pipeline_id="studio-pipeline-id"))
+    call = start_agent(Agent(test_client(), pipeline_id="studio-pipeline-id"))
 
     assert call["pipeline_id"] == "studio-pipeline-id"
     properties = dump(call["properties"])
@@ -95,7 +96,7 @@ def test_agent_pipeline_id_skips_missing_vendor_validation() -> None:
 
 
 def test_pipeline_id_allows_single_llm_override_without_tts_or_asr() -> None:
-    agent = Agent(pipeline_id="studio-pipeline-id").with_llm(
+    agent = Agent(test_client(), pipeline_id="studio-pipeline-id").with_llm(
         OpenAI(
             api_key="openai-key",
             base_url="https://api.openai.com/v1/chat/completions",
@@ -115,7 +116,7 @@ def test_pipeline_id_allows_single_llm_override_without_tts_or_asr() -> None:
 
 def test_pipeline_id_allows_multiple_overrides_without_asr() -> None:
     agent = (
-        Agent(pipeline_id="studio-pipeline-id")
+        Agent(test_client(), pipeline_id="studio-pipeline-id")
         .with_llm(
             OpenAI(
                 api_key="openai-key",
@@ -145,7 +146,7 @@ def test_pipeline_id_allows_multiple_overrides_without_asr() -> None:
 
 def test_skip_vendor_validation_boolean_is_deprecated() -> None:
     with pytest.warns(DeprecationWarning, match="skip_vendor_validation is deprecated"):
-        properties = Agent().to_properties(
+        properties = Agent(test_client()).to_properties(
             channel="channel",
             token="token",
             agent_uid="1",
@@ -160,14 +161,14 @@ def test_skip_vendor_validation_boolean_is_deprecated() -> None:
 
 
 def test_pipeline_id_is_not_sent_inside_properties() -> None:
-    call = start_agent(Agent(pipeline_id="studio-pipeline-id"))
+    call = start_agent(Agent(test_client(), pipeline_id="studio-pipeline-id"))
 
     assert call["pipeline_id"] == "studio-pipeline-id"
     assert "pipeline_id" not in dump(call["properties"])
 
 
 def test_pipeline_id_survives_builder_clone() -> None:
-    agent = Agent(pipeline_id="studio-pipeline-id").with_tools(True)
+    agent = Agent(test_client(), pipeline_id="studio-pipeline-id").with_tools(True)
 
     assert agent.pipeline_id == "studio-pipeline-id"
     call = start_agent(agent)
@@ -180,7 +181,7 @@ def test_pipeline_id_survives_builder_clone() -> None:
 async def test_async_session_uses_agent_pipeline_id() -> None:
     agents = FakeAsyncAgentsClient()
     client = FakeClient(agents)
-    agent = Agent(pipeline_id="studio-pipeline-id", client=client)
+    agent = Agent(test_client(), pipeline_id="studio-pipeline-id", client=client)
 
     agent_id = await agent.create_async_session(
         channel="channel",

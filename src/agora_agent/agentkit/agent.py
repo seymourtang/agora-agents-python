@@ -318,8 +318,9 @@ class Agent:
     """A reusable agent definition.
 
     Use the fluent builder methods (.with_llm(), .with_tts(), .with_stt(), .with_mllm())
-    to configure vendor settings after construction. Bind an Agora client with
-    ``Agent(client=client, ...)`` so :meth:`create_session` can reuse it.
+    to configure vendor settings after construction. Every ``Agent`` must be
+    constructed with a bound ``Agora`` or ``AsyncAgora`` client via
+    ``Agent(client=client, ...)``.
 
     The agent instance name is **not** configured on ``Agent``. Pass it when creating
     a session via :meth:`create_session` / :meth:`create_async_session` ``name=...``.
@@ -391,7 +392,7 @@ class Agent:
         @typing.overload
         def __new__(
             cls,
-            client: typing.Optional[typing.Any] = None,
+            client: typing.Any,
             *args: typing.Any,
             **kwargs: typing.Any,
         ) -> "Agent":
@@ -399,11 +400,13 @@ class Agent:
 
     def __new__(
         cls,
-        client: typing.Optional[typing.Any] = None,
+        client: typing.Any,
         *args: typing.Any,
         **kwargs: typing.Any,
     ) -> "Agent":
-        if cls is Agent and client is not None:
+        if client is None:
+            raise TypeError("client is required. Pass client=... to Agent(...).")
+        if cls is Agent:
             area_scope = getattr(client, "area_scope", None)
             if area_scope == "cn":
                 from .regional_agent import CNAgent
@@ -417,7 +420,7 @@ class Agent:
 
     def __init__(
         self,
-        client: typing.Optional[typing.Any] = None,
+        client: typing.Any,
         instructions: typing.Optional[str] = None,
         turn_detection: typing.Optional[TurnDetectionConfig] = None,
         interruption: typing.Optional[InterruptionConfig] = None,
@@ -434,6 +437,8 @@ class Agent:
         greeting_configs: typing.Optional[LlmGreetingConfigs] = None,
         pipeline_id: typing.Optional[str] = None,
     ):
+        if client is None:
+            raise TypeError("client is required. Pass client=... to Agent(...).")
         self._client = client
         self._pipeline_id = pipeline_id
         self._instructions = instructions
@@ -841,7 +846,7 @@ class Agent:
 
         resolved_client = self._client
         if resolved_client is None:
-            raise ValueError("client is required. Pass client=... to Agent(...) or AgoraAgent(...).")
+            raise ValueError("client is required. Pass client=... to Agent(...).")
 
         session_name = name or f"agent-{int(time.time())}"
         return AgentSession(
@@ -888,7 +893,7 @@ class Agent:
 
         resolved_client = self._client
         if resolved_client is None:
-            raise ValueError("client is required. Pass client=... to Agent(...) or AgoraAgent(...).")
+            raise ValueError("client is required. Pass client=... to Agent(...).")
 
         session_name = name or f"agent-{int(time.time())}"
         return AsyncAgentSession(

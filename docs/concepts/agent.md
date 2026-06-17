@@ -6,7 +6,7 @@ description: The Agent builder — configure an AI agent with LLM, TTS, STT, and
 
 # Agent
 
-The `Agent` class is a fluent builder for configuring AI agent properties. It collects vendor settings (LLM, TTS, STT, MLLM, avatar), binds an Agora client when you pass `client=...`, and then produces a fully configured `AgentSession` when you call `create_session()`. The agent instance name is set on `create_session(name=...)`, not on the `Agent` constructor.
+The `Agent` class is a fluent builder for configuring AI agent properties. Pass a bound `Agora` or `AsyncAgora` client with `client=...` — it is required for `create_session()` and `create_async_session()`. The builder collects vendor settings (LLM, TTS, STT, MLLM, avatar) and produces a fully configured `AgentSession` when you call `create_session()`. The agent instance name is set on `create_session(name=...)`, not on the `Agent` constructor.
 
 ## Constructor
 
@@ -31,6 +31,8 @@ agent = Agent(client=client).with_llm(
 
 | Parameter | Type | Required | Description |
 |---|---|---|---|
+| `client` | `Agora` / `AsyncAgora` | Yes | Authenticated client from `Agora(...)` or `AsyncAgora(...)`. Required for `create_session()` and `create_async_session()`. |
+| `pipeline_id` | `str` | No | Published AI Studio pipeline ID used as this agent's base configuration |
 | `instructions` | `str` | No | Deprecated. Use LLM vendor `system_messages` instead. |
 | `greeting` | `str` | No | Deprecated. Use LLM/MLLM vendor `greeting_message` instead. |
 | `failure_message` | `str` | No | Deprecated. Use LLM/MLLM vendor `failure_message` instead. |
@@ -43,6 +45,8 @@ agent = Agent(client=client).with_llm(
 | `labels` | `Dict[str, str]` | No | Custom key-value labels (returned in callbacks) |
 | `rtc` | `RtcConfig` | No | RTC media encryption |
 | `filler_words` | `FillerWordsConfig` | No | Filler words while waiting for LLM |
+
+When `client` is provided, `Agent(client=...)` returns `CNAgent` for `Area.CN` and `GlobalAgent` for global areas.
 
 ## Builder Methods
 
@@ -103,6 +107,7 @@ Because each `with_*` call returns a new `Agent`, you can build a base configura
 <!-- snippet: executable -->
 ```python
 from agora_agent import Agent, Agora, Area, DeepgramSTT, ElevenLabsTTS, OpenAI
+import time
 
 client = Agora(area=Area.US, app_id='your-app-id', app_certificate='your-app-certificate')
 
@@ -119,8 +124,8 @@ base = (
 )
 
 # Same agent config, different channels and session names
-session_a = base.create_session(channel='room-a', agent_uid='1', remote_uids=['100'], name='agent-room-a')
-session_b = base.create_session(channel='room-b', agent_uid='1', remote_uids=['200'], name='agent-room-b')
+session_a = base.create_session(channel=f"demo-channel-{int(time.time())}", agent_uid='1', remote_uids=['100'], name=f"conversation-{int(time.time())}")
+session_b = base.create_session(channel=f"demo-channel-{int(time.time())}", agent_uid='1', remote_uids=['200'], name=f"conversation-{int(time.time())}")
 ```
 
 ## `create_session()`
@@ -129,11 +134,12 @@ Creates a new `AgentSession` using the client already bound to the agent. Pass t
 
 <!-- snippet: fragment -->
 ```python
+import time
 session = agent.create_session(
-    channel='my-channel',
+    channel=f"demo-channel-{int(time.time())}",
     agent_uid='1',
     remote_uids=['100'],
-    name='optional-session-name',
+    name=f"conversation-{int(time.time())}",
     token='optional-pre-built-token',
     idle_timeout=300,
     enable_string_uid=True,
