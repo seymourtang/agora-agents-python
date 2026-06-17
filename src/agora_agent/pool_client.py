@@ -209,109 +209,56 @@ class Agora(BaseAgora, typing.Generic[_AreaT]):
     )
     """
 
-    if typing.TYPE_CHECKING:
+    @typing.overload
+    def __new__(
+        cls,
+        *,
+        area: typing_extensions.Literal[Area.CN],
+        app_id: str,
+        app_certificate: str,
+        customer_id: typing.Optional[str] = None,
+        customer_secret: typing.Optional[str] = None,
+        auth_token: typing.Optional[str] = None,
+        headers: typing.Optional[typing.Dict[str, str]] = None,
+        timeout: typing.Optional[float] = None,
+        follow_redirects: typing.Optional[bool] = True,
+        httpx_client: typing.Optional[httpx.Client] = None,
+        debug: bool = False,
+    ) -> "CNAgora": ...
 
-        @typing.overload
-        def __new__(
-            cls,
-            *,
-            area: typing_extensions.Literal[Area.CN],
-            app_id: str,
-            app_certificate: str,
-            customer_id: typing.Optional[str] = None,
-            customer_secret: typing.Optional[str] = None,
-            auth_token: typing.Optional[str] = None,
-            headers: typing.Optional[typing.Dict[str, str]] = None,
-            timeout: typing.Optional[float] = None,
-            follow_redirects: typing.Optional[bool] = True,
-            httpx_client: typing.Optional[httpx.Client] = None,
-            debug: bool = False,
-        ) -> "CNAgora": ...
+    @typing.overload
+    def __new__(
+        cls,
+        *,
+        area: _GlobalArea,
+        app_id: str,
+        app_certificate: str,
+        customer_id: typing.Optional[str] = None,
+        customer_secret: typing.Optional[str] = None,
+        auth_token: typing.Optional[str] = None,
+        headers: typing.Optional[typing.Dict[str, str]] = None,
+        timeout: typing.Optional[float] = None,
+        follow_redirects: typing.Optional[bool] = True,
+        httpx_client: typing.Optional[httpx.Client] = None,
+        debug: bool = False,
+    ) -> "GlobalAgoraClient": ...
 
-        @typing.overload
-        def __new__(
-            cls,
-            *,
-            area: _GlobalArea,
-            app_id: str,
-            app_certificate: str,
-            customer_id: typing.Optional[str] = None,
-            customer_secret: typing.Optional[str] = None,
-            auth_token: typing.Optional[str] = None,
-            headers: typing.Optional[typing.Dict[str, str]] = None,
-            timeout: typing.Optional[float] = None,
-            follow_redirects: typing.Optional[bool] = True,
-            httpx_client: typing.Optional[httpx.Client] = None,
-            debug: bool = False,
-        ) -> "GlobalAgoraClient": ...
-
-        @typing.overload
-        def __new__(
-            cls,
-            *,
-            area: _AreaT,
-            app_id: str,
-            app_certificate: str,
-            customer_id: typing.Optional[str] = None,
-            customer_secret: typing.Optional[str] = None,
-            auth_token: typing.Optional[str] = None,
-            headers: typing.Optional[typing.Dict[str, str]] = None,
-            timeout: typing.Optional[float] = None,
-            follow_redirects: typing.Optional[bool] = True,
-            httpx_client: typing.Optional[httpx.Client] = None,
-            debug: bool = False,
-        ) -> "Agora[_AreaT]": ...
-
-        @typing.overload
-        def __init__(
-            self: "Agora[typing_extensions.Literal[Area.CN]]",
-            *,
-            area: typing_extensions.Literal[Area.CN],
-            app_id: str,
-            app_certificate: str,
-            customer_id: typing.Optional[str] = None,
-            customer_secret: typing.Optional[str] = None,
-            auth_token: typing.Optional[str] = None,
-            headers: typing.Optional[typing.Dict[str, str]] = None,
-            timeout: typing.Optional[float] = None,
-            follow_redirects: typing.Optional[bool] = True,
-            httpx_client: typing.Optional[httpx.Client] = None,
-            debug: bool = False,
-        ) -> None: ...
-
-        @typing.overload
-        def __init__(
-            self: "Agora[_GlobalArea]",
-            *,
-            area: _GlobalArea,
-            app_id: str,
-            app_certificate: str,
-            customer_id: typing.Optional[str] = None,
-            customer_secret: typing.Optional[str] = None,
-            auth_token: typing.Optional[str] = None,
-            headers: typing.Optional[typing.Dict[str, str]] = None,
-            timeout: typing.Optional[float] = None,
-            follow_redirects: typing.Optional[bool] = True,
-            httpx_client: typing.Optional[httpx.Client] = None,
-            debug: bool = False,
-        ) -> None: ...
-
-        @typing.overload
-        def __init__(
-            self,
-            *,
-            area: _AreaT,
-            app_id: str,
-            app_certificate: str,
-            customer_id: typing.Optional[str] = None,
-            customer_secret: typing.Optional[str] = None,
-            auth_token: typing.Optional[str] = None,
-            headers: typing.Optional[typing.Dict[str, str]] = None,
-            timeout: typing.Optional[float] = None,
-            follow_redirects: typing.Optional[bool] = True,
-            httpx_client: typing.Optional[httpx.Client] = None,
-            debug: bool = False,
-        ) -> None: ...
+    @typing.overload
+    def __new__(
+        cls,
+        *,
+        area: _AreaT,
+        app_id: str,
+        app_certificate: str,
+        customer_id: typing.Optional[str] = None,
+        customer_secret: typing.Optional[str] = None,
+        auth_token: typing.Optional[str] = None,
+        headers: typing.Optional[typing.Dict[str, str]] = None,
+        timeout: typing.Optional[float] = None,
+        follow_redirects: typing.Optional[bool] = True,
+        httpx_client: typing.Optional[httpx.Client] = None,
+        debug: bool = False,
+    ) -> "Agora[_AreaT]": ...
 
     def __new__(cls, **kwargs: typing.Any) -> typing.Any:
         if cls is Agora:
@@ -321,6 +268,57 @@ class Agora(BaseAgora, typing.Generic[_AreaT]):
                     return object.__new__(CNAgora)
                 return object.__new__(GlobalAgoraClient)
         return object.__new__(cls)
+
+    @typing.overload
+    def __init__(
+        self: "Agora[typing_extensions.Literal[Area.CN]]",
+        *,
+        area: typing_extensions.Literal[Area.CN],
+        app_id: str,
+        app_certificate: str,
+        customer_id: typing.Optional[str] = None,
+        customer_secret: typing.Optional[str] = None,
+        auth_token: typing.Optional[str] = None,
+        headers: typing.Optional[typing.Dict[str, str]] = None,
+        timeout: typing.Optional[float] = None,
+        follow_redirects: typing.Optional[bool] = True,
+        httpx_client: typing.Optional[httpx.Client] = None,
+        debug: bool = False,
+    ) -> None: ...
+
+    @typing.overload
+    def __init__(
+        self: "Agora[_GlobalArea]",
+        *,
+        area: _GlobalArea,
+        app_id: str,
+        app_certificate: str,
+        customer_id: typing.Optional[str] = None,
+        customer_secret: typing.Optional[str] = None,
+        auth_token: typing.Optional[str] = None,
+        headers: typing.Optional[typing.Dict[str, str]] = None,
+        timeout: typing.Optional[float] = None,
+        follow_redirects: typing.Optional[bool] = True,
+        httpx_client: typing.Optional[httpx.Client] = None,
+        debug: bool = False,
+    ) -> None: ...
+
+    @typing.overload
+    def __init__(
+        self,
+        *,
+        area: _AreaT,
+        app_id: str,
+        app_certificate: str,
+        customer_id: typing.Optional[str] = None,
+        customer_secret: typing.Optional[str] = None,
+        auth_token: typing.Optional[str] = None,
+        headers: typing.Optional[typing.Dict[str, str]] = None,
+        timeout: typing.Optional[float] = None,
+        follow_redirects: typing.Optional[bool] = True,
+        httpx_client: typing.Optional[httpx.Client] = None,
+        debug: bool = False,
+    ) -> None: ...
 
     def __init__(
         self,
@@ -547,109 +545,56 @@ class AsyncAgora(BaseAsyncAgora, typing.Generic[_AreaT]):
     )
     """
 
-    if typing.TYPE_CHECKING:
+    @typing.overload
+    def __new__(
+        cls,
+        *,
+        area: typing_extensions.Literal[Area.CN],
+        app_id: str,
+        app_certificate: str,
+        customer_id: typing.Optional[str] = None,
+        customer_secret: typing.Optional[str] = None,
+        auth_token: typing.Optional[str] = None,
+        headers: typing.Optional[typing.Dict[str, str]] = None,
+        timeout: typing.Optional[float] = None,
+        follow_redirects: typing.Optional[bool] = True,
+        httpx_client: typing.Optional[httpx.AsyncClient] = None,
+        debug: bool = False,
+    ) -> "CNAsyncAgora": ...
 
-        @typing.overload
-        def __new__(
-            cls,
-            *,
-            area: typing_extensions.Literal[Area.CN],
-            app_id: str,
-            app_certificate: str,
-            customer_id: typing.Optional[str] = None,
-            customer_secret: typing.Optional[str] = None,
-            auth_token: typing.Optional[str] = None,
-            headers: typing.Optional[typing.Dict[str, str]] = None,
-            timeout: typing.Optional[float] = None,
-            follow_redirects: typing.Optional[bool] = True,
-            httpx_client: typing.Optional[httpx.AsyncClient] = None,
-            debug: bool = False,
-        ) -> "CNAsyncAgora": ...
+    @typing.overload
+    def __new__(
+        cls,
+        *,
+        area: _GlobalArea,
+        app_id: str,
+        app_certificate: str,
+        customer_id: typing.Optional[str] = None,
+        customer_secret: typing.Optional[str] = None,
+        auth_token: typing.Optional[str] = None,
+        headers: typing.Optional[typing.Dict[str, str]] = None,
+        timeout: typing.Optional[float] = None,
+        follow_redirects: typing.Optional[bool] = True,
+        httpx_client: typing.Optional[httpx.AsyncClient] = None,
+        debug: bool = False,
+    ) -> "GlobalAsyncAgoraClient": ...
 
-        @typing.overload
-        def __new__(
-            cls,
-            *,
-            area: _GlobalArea,
-            app_id: str,
-            app_certificate: str,
-            customer_id: typing.Optional[str] = None,
-            customer_secret: typing.Optional[str] = None,
-            auth_token: typing.Optional[str] = None,
-            headers: typing.Optional[typing.Dict[str, str]] = None,
-            timeout: typing.Optional[float] = None,
-            follow_redirects: typing.Optional[bool] = True,
-            httpx_client: typing.Optional[httpx.AsyncClient] = None,
-            debug: bool = False,
-        ) -> "GlobalAsyncAgoraClient": ...
-
-        @typing.overload
-        def __new__(
-            cls,
-            *,
-            area: _AreaT,
-            app_id: str,
-            app_certificate: str,
-            customer_id: typing.Optional[str] = None,
-            customer_secret: typing.Optional[str] = None,
-            auth_token: typing.Optional[str] = None,
-            headers: typing.Optional[typing.Dict[str, str]] = None,
-            timeout: typing.Optional[float] = None,
-            follow_redirects: typing.Optional[bool] = True,
-            httpx_client: typing.Optional[httpx.AsyncClient] = None,
-            debug: bool = False,
-        ) -> "AsyncAgora[_AreaT]": ...
-
-        @typing.overload
-        def __init__(
-            self: "AsyncAgora[typing_extensions.Literal[Area.CN]]",
-            *,
-            area: typing_extensions.Literal[Area.CN],
-            app_id: str,
-            app_certificate: str,
-            customer_id: typing.Optional[str] = None,
-            customer_secret: typing.Optional[str] = None,
-            auth_token: typing.Optional[str] = None,
-            headers: typing.Optional[typing.Dict[str, str]] = None,
-            timeout: typing.Optional[float] = None,
-            follow_redirects: typing.Optional[bool] = True,
-            httpx_client: typing.Optional[httpx.AsyncClient] = None,
-            debug: bool = False,
-        ) -> None: ...
-
-        @typing.overload
-        def __init__(
-            self: "AsyncAgora[_GlobalArea]",
-            *,
-            area: _GlobalArea,
-            app_id: str,
-            app_certificate: str,
-            customer_id: typing.Optional[str] = None,
-            customer_secret: typing.Optional[str] = None,
-            auth_token: typing.Optional[str] = None,
-            headers: typing.Optional[typing.Dict[str, str]] = None,
-            timeout: typing.Optional[float] = None,
-            follow_redirects: typing.Optional[bool] = True,
-            httpx_client: typing.Optional[httpx.AsyncClient] = None,
-            debug: bool = False,
-        ) -> None: ...
-
-        @typing.overload
-        def __init__(
-            self,
-            *,
-            area: _AreaT,
-            app_id: str,
-            app_certificate: str,
-            customer_id: typing.Optional[str] = None,
-            customer_secret: typing.Optional[str] = None,
-            auth_token: typing.Optional[str] = None,
-            headers: typing.Optional[typing.Dict[str, str]] = None,
-            timeout: typing.Optional[float] = None,
-            follow_redirects: typing.Optional[bool] = True,
-            httpx_client: typing.Optional[httpx.AsyncClient] = None,
-            debug: bool = False,
-        ) -> None: ...
+    @typing.overload
+    def __new__(
+        cls,
+        *,
+        area: _AreaT,
+        app_id: str,
+        app_certificate: str,
+        customer_id: typing.Optional[str] = None,
+        customer_secret: typing.Optional[str] = None,
+        auth_token: typing.Optional[str] = None,
+        headers: typing.Optional[typing.Dict[str, str]] = None,
+        timeout: typing.Optional[float] = None,
+        follow_redirects: typing.Optional[bool] = True,
+        httpx_client: typing.Optional[httpx.AsyncClient] = None,
+        debug: bool = False,
+    ) -> "AsyncAgora[_AreaT]": ...
 
     def __new__(cls, **kwargs: typing.Any) -> typing.Any:
         if cls is AsyncAgora:
@@ -659,6 +604,57 @@ class AsyncAgora(BaseAsyncAgora, typing.Generic[_AreaT]):
                     return object.__new__(CNAsyncAgora)
                 return object.__new__(GlobalAsyncAgoraClient)
         return object.__new__(cls)
+
+    @typing.overload
+    def __init__(
+        self: "AsyncAgora[typing_extensions.Literal[Area.CN]]",
+        *,
+        area: typing_extensions.Literal[Area.CN],
+        app_id: str,
+        app_certificate: str,
+        customer_id: typing.Optional[str] = None,
+        customer_secret: typing.Optional[str] = None,
+        auth_token: typing.Optional[str] = None,
+        headers: typing.Optional[typing.Dict[str, str]] = None,
+        timeout: typing.Optional[float] = None,
+        follow_redirects: typing.Optional[bool] = True,
+        httpx_client: typing.Optional[httpx.AsyncClient] = None,
+        debug: bool = False,
+    ) -> None: ...
+
+    @typing.overload
+    def __init__(
+        self: "AsyncAgora[_GlobalArea]",
+        *,
+        area: _GlobalArea,
+        app_id: str,
+        app_certificate: str,
+        customer_id: typing.Optional[str] = None,
+        customer_secret: typing.Optional[str] = None,
+        auth_token: typing.Optional[str] = None,
+        headers: typing.Optional[typing.Dict[str, str]] = None,
+        timeout: typing.Optional[float] = None,
+        follow_redirects: typing.Optional[bool] = True,
+        httpx_client: typing.Optional[httpx.AsyncClient] = None,
+        debug: bool = False,
+    ) -> None: ...
+
+    @typing.overload
+    def __init__(
+        self,
+        *,
+        area: _AreaT,
+        app_id: str,
+        app_certificate: str,
+        customer_id: typing.Optional[str] = None,
+        customer_secret: typing.Optional[str] = None,
+        auth_token: typing.Optional[str] = None,
+        headers: typing.Optional[typing.Dict[str, str]] = None,
+        timeout: typing.Optional[float] = None,
+        follow_redirects: typing.Optional[bool] = True,
+        httpx_client: typing.Optional[httpx.AsyncClient] = None,
+        debug: bool = False,
+    ) -> None: ...
 
     def __init__(
         self,
