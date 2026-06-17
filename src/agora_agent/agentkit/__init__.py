@@ -90,6 +90,7 @@ from .avatar_types import (
     is_heygen_avatar,
     is_live_avatar_avatar,
     is_rtc_avatar,
+    is_sensetime_avatar,
     validate_avatar_config,
     validate_tts_sample_rate,
 )
@@ -427,6 +428,7 @@ __all__ = [
     "is_akool_avatar",
     "is_anam_avatar",
     "is_generic_avatar",
+    "is_sensetime_avatar",
     "validate_avatar_config",
     "validate_tts_sample_rate",
 ]

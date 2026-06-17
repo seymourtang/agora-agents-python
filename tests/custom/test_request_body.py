@@ -316,6 +316,82 @@ def test_byok_pipeline_full_properties_shape() -> None:
     assert tts["params"]["voice_id"] == "voice123"
 
 
+def test_session_start_properties_preserves_turn_detection_asr_language() -> None:
+    """session.start() must keep asr.language from turn_detection (matches agora-agents-ts)."""
+    from agora_agent.agentkit.vendors.cn import TencentSTT
+
+    agent = (
+        Agent(turn_detection={"language": "en-US"})
+        .with_stt(
+            TencentSTT(
+                key="your-tencent-key",
+                app_id="your-tencent-app-id",
+                secret="your-tencent-secret",
+                engine_model_type="16k_zh",
+                voice_id="your-tencent-voice-id",
+            )
+        )
+        .with_llm(
+            OpenAI(
+                api_key="openai-key",
+                base_url="https://api.openai.com/v1/chat/completions",
+                model="gpt-4o-mini",
+            )
+        )
+        .with_tts(
+            ElevenLabsTTS(
+                key="el-key",
+                model_id="eleven_flash_v2_5",
+                voice_id="voice123",
+                base_url="wss://api.elevenlabs.io/v1",
+            )
+        )
+    )
+
+    props = build_properties(agent)
+
+    assert props["asr"] == {
+        "vendor": "tencent",
+        "language": "en-US",
+        "params": {
+            "key": "your-tencent-key",
+            "app_id": "your-tencent-app-id",
+            "secret": "your-tencent-secret",
+            "engine_model_type": "16k_zh",
+            "voice_id": "your-tencent-voice-id",
+        },
+    }
+    assert props["turn_detection"] == {"language": "en-US"}
+
+
+def test_session_start_properties_turn_detection_overrides_stt_top_level_language() -> None:
+    agent = (
+        Agent(turn_detection={"language": "fr-FR"})
+        .with_stt(SpeechmaticsSTT(api_key="stt-key", language="en"))
+        .with_llm(
+            OpenAI(
+                api_key="openai-key",
+                base_url="https://api.openai.com/v1/chat/completions",
+                model="gpt-4o-mini",
+            )
+        )
+        .with_tts(
+            ElevenLabsTTS(
+                key="el-key",
+                model_id="eleven_flash_v2_5",
+                voice_id="voice123",
+                base_url="wss://api.elevenlabs.io/v1",
+            )
+        )
+    )
+
+    props = build_properties(agent)
+
+    assert props["asr"]["language"] == "fr-FR"
+    assert props["asr"]["params"]["language"] == "en"
+    assert props["turn_detection"] == {"language": "fr-FR"}
+
+
 # ===========================================================================
 # Scenario 2 — Preset-backed pipeline (full start request, field stripping)
 # ===========================================================================

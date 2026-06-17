@@ -17,12 +17,15 @@ Avatars are currently supported only with the cascading ASR + LLM + TTS pipeline
 | Akool | `AkoolAvatar` | 16000 Hz |
 | Anam | `AnamAvatar` | None |
 | Generic | `GenericAvatar` | None |
+| SenseTime (CN) | `SenseTimeAvatar` | None |
 
 ## Token Model
 
 The agent and avatar join the same RTC channel with separate UIDs. The agent token is scoped to `agent_uid`; `avatar.params.agora_token` is scoped to the avatar `agora_uid`.
 
 When using `AgentSession.start()`, `agora_token` is optional for LiveAvatar, HeyGen, and Generic avatars. If omitted, AgentKit generates it with the same ConvoAI token path as the agent, using the avatar UID. You can still pass `agora_token` explicitly.
+
+SenseTime avatars are CN-only. Provide `agora_token` and `agora_uid` when constructing `SenseTimeAvatar`; AgentKit does not auto-generate the avatar token for this vendor.
 
 ## Sample Rate Constraint
 
@@ -96,6 +99,34 @@ agent = agent.with_avatar(GenericAvatar(
     avatar_id='avatar-123',
     agora_uid='2',
 ))
+```
+
+## SenseTime Avatar (CN)
+
+`SenseTimeAvatar` is available for `Area.CN` sessions. Unlike LiveAvatar, HeyGen, and Generic avatars, you must supply `agora_token` and `agora_uid` up front. AgentKit validates `app_key`, `sceneList`, `agora_uid`, and `agora_token` at session start.
+
+```python
+from agora_agent import Agora, Area, CNAgent, MiniMaxCNTTS, TencentSTT
+from agora_agent.agentkit import SenseTimeAvatar
+
+client = Agora(
+    area=Area.CN,
+    app_id="your-app-id",
+    app_certificate="your-app-certificate",
+)
+
+agent = (
+    CNAgent(client=client)
+    .with_stt(TencentSTT(key="...", app_id="...", secret="...", engine_model_type="16k_zh", voice_id="..."))
+    .with_tts(MiniMaxCNTTS(model="speech_2_6_turbo", voice_id="your-voice-id"))
+    .with_avatar(SenseTimeAvatar(
+        agora_token="avatar-publisher-token",
+        agora_uid="2",
+        app_key="your-sensetime-app-key",
+        sceneList=[{"digital_role": {"face_feature_id": "role-1"}}],
+        appId="your-sensetime-app-id",
+    ))
+)
 ```
 
 ## Akool Avatar (16 kHz)
@@ -196,3 +227,15 @@ If you call `with_avatar()` before `with_tts()`, the sample rate check is deferr
 |---|---|---|---|
 | `api_key` | `str` | Yes | Akool API key |
 | `avatar_id` | `str` | No | Avatar ID |
+
+## SenseTime Options
+
+| Parameter | Type | Required | Description |
+|---|---|---|---|
+| `agora_token` | `str` | Yes | Avatar publisher RTC token |
+| `agora_uid` | `str` | Yes | Avatar publisher RTC UID |
+| `app_key` | `str` | Yes | SenseTime application key |
+| `sceneList` | `List[Dict[str, Any]]` | Yes | SenseTime scene configuration list |
+| `appId` | `str` | No | SenseTime application ID |
+| `enable` | `bool` | No | Whether to enable the avatar |
+| `additional_params` | `Dict[str, Any]` | No | Additional SenseTime avatar parameters |

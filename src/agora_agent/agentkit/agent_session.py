@@ -24,6 +24,7 @@ from .avatar_types import (
     is_heygen_avatar,
     is_live_avatar_avatar,
     is_rtc_avatar,
+    is_sensetime_avatar,
     validate_avatar_config,
     validate_tts_sample_rate,
 )
@@ -209,6 +210,7 @@ class _AgentSessionBase:
             or is_akool_avatar(avatar)
             or is_anam_avatar(avatar)
             or is_generic_avatar(avatar)
+            or is_sensetime_avatar(avatar)
         ):
             validate_avatar_config(avatar)
 
@@ -255,7 +257,10 @@ class _AgentSessionBase:
                 params["agora_channel"] = self._channel
 
         if not is_avatar_token_managed(avatar):
-            validate_avatar_config(avatar, require_session_fields=is_generic_avatar(avatar))
+            validate_avatar_config(
+                avatar,
+                require_session_fields=is_generic_avatar(avatar) or is_sensetime_avatar(avatar),
+            )
             return
 
         if not params.get("agora_uid"):
@@ -349,7 +354,10 @@ class _AgentSessionBase:
                 llm["max_history"] = self._agent.max_history
             properties["llm"] = llm
         if self._agent.stt is not None:
-            properties["asr"] = self._dump_model(self._agent.stt)
+            turn_detection = properties.get("turn_detection") or {}
+            properties["asr"] = self._dump_model(
+                self._agent._resolve_asr_config(turn_detection)  # noqa: SLF001
+            )
 
         return properties
 

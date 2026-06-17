@@ -22,6 +22,10 @@ def is_generic_avatar(config: typing.Dict[str, typing.Any]) -> bool:
     return config.get("vendor") == "generic"
 
 
+def is_sensetime_avatar(config: typing.Dict[str, typing.Any]) -> bool:
+    return config.get("vendor") == "sensetime"
+
+
 def is_avatar_token_managed(config: typing.Dict[str, typing.Any]) -> bool:
     """Return True when AgentKit manages the avatar RTC publisher identity."""
     return (
@@ -101,6 +105,17 @@ def validate_avatar_config(
                 raise ValueError("Generic avatar requires agora_appid after session enrichment")
             if not params.get("agora_channel"):
                 raise ValueError("Generic avatar requires agora_channel after session enrichment")
+    elif is_sensetime_avatar(config):
+        params = config.get("params", {})
+        if not params.get("app_key"):
+            raise ValueError("SenseTime avatar requires app_key")
+        scene_list = params.get("sceneList")
+        if not scene_list:
+            raise ValueError("SenseTime avatar requires sceneList")
+        if not params.get("agora_uid"):
+            raise ValueError("SenseTime avatar requires agora_uid")
+        if require_session_fields and not params.get("agora_token"):
+            raise ValueError("SenseTime avatar requires agora_token")
 
 
 def validate_tts_sample_rate(
