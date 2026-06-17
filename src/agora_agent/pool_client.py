@@ -323,7 +323,7 @@ class Agora(BaseAgora, typing.Generic[_AreaT]):
     def __init__(
         self,
         *,
-        area: _AreaT,
+        area: typing.Any,
         app_id: str,
         app_certificate: str,
         customer_id: typing.Optional[str] = None,
@@ -659,7 +659,7 @@ class AsyncAgora(BaseAsyncAgora, typing.Generic[_AreaT]):
     def __init__(
         self,
         *,
-        area: _AreaT,
+        area: typing.Any,
         app_id: str,
         app_certificate: str,
         customer_id: typing.Optional[str] = None,
