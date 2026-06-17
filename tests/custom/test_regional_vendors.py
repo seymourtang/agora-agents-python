@@ -59,6 +59,7 @@ def test_cn_client_allows_global_only_vendor() -> None:
         DeepgramSTT(api_key="dg-key", model="nova-2", language="en-US")
     )
     assert agent.__class__.__name__ == "CNAgent"
+    assert agent.stt is not None
     assert agent.stt["vendor"] == "deepgram"
 
 
@@ -69,6 +70,7 @@ def test_global_client_allows_cn_only_vendor() -> None:
     )
     agent = Agent(client=client).with_stt(tencent_stt)
     assert agent.__class__.__name__ == "GlobalAgent"
+    assert agent.stt is not None
     assert agent.stt["vendor"] == "tencent"
 
 
