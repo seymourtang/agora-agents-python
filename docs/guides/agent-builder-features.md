@@ -44,7 +44,6 @@ from agora_agent import (
 
 agent = (
     Agent(
-        name='sal-assistant',
         advanced_features=AdvancedFeatures(enable_sal=True),
     )
     .with_sal(SalConfig(
@@ -96,7 +95,7 @@ from agora_agent import (
 )
 
 agent = (
-    Agent(name='params-agent')
+    Agent()
     .with_parameters(SessionParams(
         silence_config=SilenceConfig(
             timeout_ms=10000,
@@ -246,7 +245,6 @@ agent = (
     .with_labels({'env': 'staging'})
 )
 
-agent.name           # str | None
 agent.geofence       # GeofenceConfig(area='EUROPE')
 agent.labels         # {'env': 'staging'}
 agent.sal            # SalConfig | None
@@ -288,7 +286,7 @@ client = Agora(
 )
 
 agent = (
-    Agent(client=client, name='full-featured-assistant')
+    Agent(client=client)
     .with_llm(OpenAI(
         api_key='your-key',
         base_url='https://api.openai.com/v1/chat/completions',
@@ -334,6 +332,7 @@ session = agent.create_session(
     channel='demo-room',
     agent_uid='1',
     remote_uids=['100'],
+    name='full-featured-assistant',
     idle_timeout=120,
 )
 

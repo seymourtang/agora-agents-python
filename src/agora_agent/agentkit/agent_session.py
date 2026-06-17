@@ -44,7 +44,7 @@ class _AgentSessionRequiredOptions(typing.TypedDict, total=True):
     client: typing.Any
     agent: Agent
     app_id: str
-    name: str
+    name: str  # Agent instance name sent to the Start Agent API.
     channel: str
     agent_uid: str
     remote_uids: typing.List[str]
@@ -56,6 +56,10 @@ class AgentSessionOptions(_AgentSessionRequiredOptions, total=False):
     Required fields
     ---------------
     client, agent, app_id, name, channel, agent_uid, remote_uids
+
+    ``name`` is the agent instance identifier for the Start Agent API. Prefer
+    passing it through :meth:`Agent.create_session` rather than constructing
+    :class:`AgentSession` directly.
 
     Optional fields
     ---------------
@@ -493,9 +497,14 @@ class AgentSession(_AgentSessionBase):
     >>> from agora_agent import Agora, Area, Agent, OpenAI, ElevenLabsTTS
     >>>
     >>> client = Agora(area=Area.US, app_id="...", app_certificate="...")
-    >>> agent = Agent(name="assistant", instructions="You are a helpful voice assistant.")
+    >>> agent = Agent(client=client, instructions="You are a helpful voice assistant.")
     >>> agent = agent.with_llm(OpenAI(api_key="...", base_url="https://api.openai.com/v1/chat/completions", model="gpt-4")).with_tts(ElevenLabsTTS(key="...", model_id="...", voice_id="...", base_url="wss://api.elevenlabs.io/v1"))
-    >>> session = agent.create_session(client, channel="room-123", agent_uid="1", remote_uids=["100"])
+    >>> session = agent.create_session(
+    ...     channel="room-123",
+    ...     agent_uid="1",
+    ...     remote_uids=["100"],
+    ...     name="assistant",
+    ... )
     >>> agent_id = session.start()
     >>> session.say("Hello!")
     >>> session.stop()
@@ -821,9 +830,14 @@ class AsyncAgentSession(_AgentSessionBase):
     >>> from agora_agent import AsyncAgora, Area, Agent, OpenAI, ElevenLabsTTS
     >>>
     >>> client = AsyncAgora(area=Area.US, app_id="...", app_certificate="...")
-    >>> agent = Agent(name="assistant", instructions="You are helpful.")
+    >>> agent = Agent(client=client, instructions="You are helpful.")
     >>> agent = agent.with_llm(OpenAI(api_key="...", base_url="https://api.openai.com/v1/chat/completions", model="gpt-4")).with_tts(ElevenLabsTTS(key="...", model_id="...", voice_id="...", base_url="wss://api.elevenlabs.io/v1"))
-    >>> session = agent.create_async_session(client, channel="room-123", agent_uid="1", remote_uids=["100"])
+    >>> session = agent.create_async_session(
+    ...     channel="room-123",
+    ...     agent_uid="1",
+    ...     remote_uids=["100"],
+    ...     name="assistant",
+    ... )
     >>> agent_id = await session.start()
     >>> await session.say("Hello!")
     >>> await session.stop()

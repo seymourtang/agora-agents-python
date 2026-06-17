@@ -56,7 +56,6 @@ client = Agora(
 agent = (
     Agent(
         client=client,
-        name="global-agent",
         turn_detection={"language": "en-US"},
     )
     .with_stt(DeepgramSTT(model="nova-3", language="en-US"))
@@ -71,6 +70,7 @@ session = agent.create_session(
     channel="global-room",
     agent_uid="1001",
     remote_uids=["*"],
+    name="global-agent",
 )
 ```
 
@@ -90,7 +90,6 @@ client = Agora(
 agent = (
     Agent(
         client=client,
-        name="cn-agent",
         turn_detection={"language": "zh-CN"},
     )
     .with_stt(FengmingSTT())
@@ -111,6 +110,7 @@ session = agent.create_session(
     channel="cn-room",
     agent_uid="1001",
     remote_uids=["*"],
+    name="cn-agent",
 )
 ```
 
@@ -147,7 +147,7 @@ client = Agora(
 )
 
 agent = (
-    Agent(client=client, name="failover-demo")
+    Agent(client=client)
     .with_llm(OpenAI(
         api_key="your-openai-key",
         base_url="https://api.openai.com/v1/chat/completions",
@@ -171,6 +171,7 @@ session = agent.create_session(
     channel="my-room",
     agent_uid="1",
     remote_uids=["100"],
+    name="failover-demo",
 )
 
 try:

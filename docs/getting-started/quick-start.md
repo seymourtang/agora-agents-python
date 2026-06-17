@@ -27,7 +27,7 @@ def main() -> None:
     )
 
     agent = (
-        Agent(client=client, name="support-assistant")
+        Agent(client=client)
         .with_stt(DeepgramSTT(model="nova-3", language="en"))
         .with_llm(OpenAI(
             model="gpt-4o-mini",
@@ -42,6 +42,7 @@ def main() -> None:
         channel="support-room-123",
         agent_uid="1",
         remote_uids=["100"],
+        name="support-assistant",
         idle_timeout=120,
     )
 
@@ -61,7 +62,8 @@ if __name__ == "__main__":
 1. `Agora` runs in app-credentials mode when you pass `app_id` and `app_certificate` only.
 2. `Agent(client=client, ...)` binds the authenticated client once and reuses it when you later create sessions.
 3. `Agent(client=client, ...)` binds the area-aware client once. Pass vendor classes such as `DeepgramSTT(...)`, `OpenAI(...)`, and `MiniMaxTTS(...)` directly; the SDK does not enforce area and vendor matching. Leave vendor credentials unset for supported Agora-managed global models, or provide keys when you want BYOK. CN MiniMax TTS typically includes `key`.
-4. `session.start()` generates the required auth tokens and returns the unique agent session ID.
+4. `create_session(name=...)` sets the agent instance name for the Start Agent API. If omitted, the SDK generates `agent-{timestamp}`.
+5. `session.start()` generates the required auth tokens and returns the unique agent session ID.
 
 ## Async applications
 

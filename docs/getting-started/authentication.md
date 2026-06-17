@@ -33,6 +33,7 @@ session = agent.create_session(
     channel="room-123",
     agent_uid="1",
     remote_uids=["100"],
+    name="auth-demo",
 )
 ```
 

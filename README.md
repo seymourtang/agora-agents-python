@@ -55,7 +55,7 @@ def start_conversation() -> str:
         app_certificate=app_certificate,
     )
 
-    agent = Agent(client=client, name=f"conversation-{int(time.time())}", turn_detection={"language": "en-US"}).with_stt(
+    agent = Agent(client=client, turn_detection={"language": "en-US"}).with_stt(
         DeepgramSTT(
             model="nova-3",
             language="en",
@@ -84,6 +84,7 @@ def start_conversation() -> str:
         channel=f"demo-channel-{int(time.time())}",
         agent_uid="123456",
         remote_uids=["*"],
+        name=f"conversation-{int(time.time())}",
         idle_timeout=30,
         expires_in=expires_in_hours(1),
         debug=False,
@@ -107,7 +108,6 @@ Use `pipeline_id` when you want a published AI Studio pipeline to provide the ba
 ```python
 agent = Agent(
     client=client,
-    name="support",
     pipeline_id="studio-pipeline-id",
 )
 
@@ -115,6 +115,7 @@ session = agent.create_session(
     channel="support-room",
     agent_uid="1",
     remote_uids=["100"],
+    name="support",
 )
 ```
 
@@ -126,6 +127,7 @@ session = agent.create_session(
     agent_uid="1",
     remote_uids=["100"],
     pipeline_id="session-pipeline-id",
+    name="support",
 )
 ```
 
@@ -178,13 +180,21 @@ Use `with_mllm()` for OpenAI Realtime, Gemini Live, Vertex AI, or xAI Grok. No S
 ```python
 from agora_agent import Agent, OpenAIRealtime
 
-agent = Agent(name="realtime-assistant").with_mllm(
+agent = Agent().with_mllm(
     OpenAIRealtime(
         api_key=os.environ["OPENAI_API_KEY"],
         model="gpt-4o-realtime-preview",
         greeting_message="Hello! Ready to chat.",
     )
 )
+
+session = agent.create_session(
+    channel="realtime-room",
+    agent_uid="1",
+    remote_uids=["*"],
+    name="realtime-assistant",
+)
+session.start()
 ```
 
 See the [MLLM Flow guide](./docs/guides/mllm-flow.md) for full examples with Gemini Live and Vertex AI.

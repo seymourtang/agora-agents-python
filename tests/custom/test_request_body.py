@@ -153,7 +153,7 @@ async def start_async_session(agent, **session_kwargs):
 
 def full_agent_with_tts(tts):
     return (
-        Agent(name="support")
+        Agent()
         .with_stt(DeepgramSTT(api_key="dg-key", model="nova-2", language="en"))
         .with_llm(
             OpenAI(
@@ -269,7 +269,7 @@ def test_request_properties_validation_fallback_allows_pipeline_partial_config()
 def test_byok_pipeline_full_properties_shape() -> None:
     """OpenAI BYOK LLM + Deepgram BYOK STT + ElevenLabs TTS produces expected properties."""
     agent = (
-        Agent(name="support")
+        Agent()
         .with_stt(DeepgramSTT(api_key="dg-key", model="nova-2", language="en"))
         .with_llm(
             OpenAI(
@@ -324,7 +324,7 @@ def test_byok_pipeline_full_properties_shape() -> None:
 def test_managed_llm_and_tts_produce_preset_and_strip_fields() -> None:
     """Managed OpenAI LLM + MiniMax TTS generate preset string and strip BYOK fields."""
     agent = (
-        Agent(name="support")
+        Agent()
         .with_llm(OpenAI(model="gpt-4o-mini"))
         .with_tts(MiniMaxTTS(model="speech_2_8_turbo", voice_id="English_captivating_female1"))
     )
@@ -350,7 +350,7 @@ def test_managed_llm_and_tts_produce_preset_and_strip_fields() -> None:
 def test_llm_config_greeting_wins_over_agent_level_greeting() -> None:
     """When OpenAI vendor sets greeting_message it overrides agent.with_greeting()."""
     agent = (
-        Agent(name="support")
+        Agent()
         .with_llm(
             OpenAI(
                 api_key="openai-key",
@@ -373,7 +373,7 @@ def test_llm_config_greeting_wins_over_agent_level_greeting() -> None:
 
 def test_vertex_ai_llm_constructs_correct_url_and_params() -> None:
     """VertexAILLM auto-constructs the aiplatform URL; project_id/location are URL-encoded, not in params."""
-    agent = Agent(name="support").with_llm(
+    agent = Agent().with_llm(
         VertexAILLM(
             api_key="vertex-token",
             model="gemini-2.0-flash",
@@ -401,7 +401,7 @@ def test_vertex_ai_llm_constructs_correct_url_and_params() -> None:
 
 def test_openai_stt_5a_model_param_is_sent() -> None:
     """5a: OpenAISTT model appears inside input_audio_transcription.model."""
-    agent = Agent(name="support").with_stt(
+    agent = Agent().with_stt(
         OpenAISTT(
             api_key="oai-key",
             model="gpt-4o-mini-transcribe",
@@ -417,7 +417,7 @@ def test_openai_stt_5a_model_param_is_sent() -> None:
 
 def test_openai_stt_5b_prompt_param_is_sent() -> None:
     """5b: OpenAISTT prompt appears inside input_audio_transcription.prompt."""
-    agent = Agent(name="support").with_stt(
+    agent = Agent().with_stt(
         OpenAISTT(
             api_key="oai-key",
             model="gpt-4o-mini-transcribe",
@@ -433,7 +433,7 @@ def test_openai_stt_5b_prompt_param_is_sent() -> None:
 
 def test_openai_stt_5c_language_param_is_sent() -> None:
     """5c: OpenAISTT language appears inside input_audio_transcription.language."""
-    agent = Agent(name="support").with_stt(
+    agent = Agent().with_stt(
         OpenAISTT(
             api_key="oai-key",
             model="gpt-4o-mini-transcribe",
@@ -449,7 +449,7 @@ def test_openai_stt_5c_language_param_is_sent() -> None:
 
 def test_openai_stt_5d_api_key_is_top_level_in_params() -> None:
     """5d: OpenAISTT api_key is a top-level key inside asr.params (not inside input_audio_transcription)."""
-    agent = Agent(name="support").with_stt(
+    agent = Agent().with_stt(
         OpenAISTT(
             api_key="oai-key",
             model="gpt-4o-mini-transcribe",
@@ -472,7 +472,7 @@ def test_openai_stt_5d_api_key_is_top_level_in_params() -> None:
 def test_6a_asr_preset_with_byok_llm_and_tts() -> None:
     """6a: Managed Deepgram ASR preset + BYOK LLM + BYOK TTS."""
     agent = (
-        Agent(name="support")
+        Agent()
         .with_stt(DeepgramSTT(model="nova-3", language="en-US"))
         .with_llm(
             OpenAI(
@@ -506,7 +506,7 @@ def test_6a_asr_preset_with_byok_llm_and_tts() -> None:
 def test_6b_tts_preset_with_byok_llm_and_asr() -> None:
     """6b: Managed OpenAITTS preset + BYOK LLM + BYOK Deepgram ASR."""
     agent = (
-        Agent(name="support")
+        Agent()
         .with_stt(DeepgramSTT(api_key="dg-key", model="nova-2", language="en-US"))
         .with_llm(
             OpenAI(
@@ -540,7 +540,7 @@ def test_6b_tts_preset_with_byok_llm_and_asr() -> None:
 
 def test_7b_pipeline_id_with_byok_llm_override() -> None:
     """7b: pipeline_id present, single LLM override, ASR/TTS absent from properties."""
-    agent = Agent(name="support", pipeline_id="studio-pipeline").with_llm(
+    agent = Agent(pipeline_id="studio-pipeline").with_llm(
         OpenAI(
             api_key="openai-key",
             base_url="https://api.openai.com/v1/chat/completions",
@@ -558,7 +558,7 @@ def test_7b_pipeline_id_with_byok_llm_override() -> None:
 
 def test_7c_pipeline_id_empty_properties_no_vendors() -> None:
     """7c: pipeline_id alone — no vendor keys in properties."""
-    agent = Agent(name="support", pipeline_id="studio-pipeline")
+    agent = Agent(pipeline_id="studio-pipeline")
 
     call = start_session(agent)
     assert call["pipeline_id"] == "studio-pipeline"
@@ -570,7 +570,7 @@ def test_7c_pipeline_id_empty_properties_no_vendors() -> None:
 
 def test_7d_pipeline_id_with_byok_tts_only() -> None:
     """7d: pipeline_id present, TTS-only BYOK override — ASR and LLM absent from properties."""
-    agent = Agent(name="support", pipeline_id="studio-pipeline").with_tts(
+    agent = Agent(pipeline_id="studio-pipeline").with_tts(
         ElevenLabsTTS(
             key="el-key",
             model_id="eleven_flash_v2_5",
@@ -591,7 +591,7 @@ def test_7d_pipeline_id_with_byok_tts_only() -> None:
 def test_7e_pipeline_id_with_byok_asr_and_tts() -> None:
     """7e: pipeline_id present, ASR+TTS BYOK overrides — LLM absent from properties."""
     agent = (
-        Agent(name="support", pipeline_id="studio-pipeline")
+        Agent(pipeline_id="studio-pipeline")
         .with_stt(DeepgramSTT(api_key="dg-key", language="en"))
         .with_tts(
             ElevenLabsTTS(
@@ -618,7 +618,7 @@ def test_7e_pipeline_id_with_byok_asr_and_tts() -> None:
 
 def test_8a_mllm_start_call_has_correct_top_level_vendor() -> None:
     """8a: OpenAIRealtime MLLM session – start call contains mllm with vendor=openai."""
-    agent = Agent(name="support").with_mllm(
+    agent = Agent().with_mllm(
         OpenAIRealtime(api_key="realtime-key", model="gpt-4o-realtime-preview", voice="coral")
     )
 
@@ -635,7 +635,7 @@ def test_8a_mllm_start_call_has_correct_top_level_vendor() -> None:
 def test_8b_agent_greeting_fills_mllm_when_vendor_omits_it() -> None:
     """8b: agent.with_greeting() fills mllm.greeting_message when vendor does not set it."""
     agent = (
-        Agent(name="support")
+        Agent()
         .with_mllm(OpenAIRealtime(api_key="realtime-key"))
         .with_greeting("hello from agent")
     )
@@ -647,7 +647,7 @@ def test_8b_agent_greeting_fills_mllm_when_vendor_omits_it() -> None:
 def test_8c_vendor_greeting_wins_over_agent_level_greeting_in_mllm() -> None:
     """8c: Vendor-level greeting_message wins over agent.with_greeting() in MLLM mode."""
     agent = (
-        Agent(name="support")
+        Agent()
         .with_mllm(
             OpenAIRealtime(
                 api_key="realtime-key",
@@ -667,7 +667,7 @@ def test_8c_vendor_greeting_wins_over_agent_level_greeting_in_mllm() -> None:
 
 
 def test_byok_deepgram_stt_params() -> None:
-    agent = Agent(name="t").with_stt(
+    agent = Agent().with_stt(
         DeepgramSTT(api_key="dg-key", model="nova-2", language="en")
     )
     props = build_properties(agent, allow_missing={"llm", "tts"})
@@ -678,7 +678,7 @@ def test_byok_deepgram_stt_params() -> None:
 
 
 def test_byok_microsoft_stt_params() -> None:
-    agent = Agent(name="t").with_stt(
+    agent = Agent().with_stt(
         MicrosoftSTT(key="ms-key", region="eastus", language="en-US")
     )
     props = build_properties(agent, allow_missing={"llm", "tts"})
@@ -689,7 +689,7 @@ def test_byok_microsoft_stt_params() -> None:
 
 
 def test_byok_google_stt_params() -> None:
-    agent = Agent(name="t").with_stt(
+    agent = Agent().with_stt(
         GoogleSTT(
             project_id="my-project",
             location="global",
@@ -708,7 +708,7 @@ def test_byok_google_stt_params() -> None:
 
 
 def test_byok_amazon_stt_params() -> None:
-    agent = Agent(name="t").with_stt(
+    agent = Agent().with_stt(
         AmazonSTT(access_key="ak", secret_key="sk", region="us-east-1", language="en-US")
     )
     props = build_properties(agent, allow_missing={"llm", "tts"})
@@ -721,7 +721,7 @@ def test_byok_amazon_stt_params() -> None:
 
 
 def test_byok_assemblyai_stt_params() -> None:
-    agent = Agent(name="t").with_stt(
+    agent = Agent().with_stt(
         AssemblyAISTT(api_key="assembly-key", language="en-US")
     )
     props = build_properties(agent, allow_missing={"llm", "tts"})
@@ -731,14 +731,14 @@ def test_byok_assemblyai_stt_params() -> None:
 
 
 def test_byok_ares_stt_no_params() -> None:
-    agent = Agent(name="t").with_stt(AresSTT())
+    agent = Agent().with_stt(AresSTT())
     props = build_properties(agent, allow_missing={"llm", "tts"})
     assert props["asr"]["vendor"] == "ares"
     assert "params" not in props["asr"]
 
 
 def test_byok_speechmatics_stt_params() -> None:
-    agent = Agent(name="t").with_stt(
+    agent = Agent().with_stt(
         SpeechmaticsSTT(api_key="sm-key", language="en")
     )
     props = build_properties(agent, allow_missing={"llm", "tts"})
@@ -748,7 +748,7 @@ def test_byok_speechmatics_stt_params() -> None:
 
 
 def test_byok_sarvam_stt_params() -> None:
-    agent = Agent(name="t").with_stt(
+    agent = Agent().with_stt(
         SarvamSTT(api_key="sarvam-key", language="en-IN")
     )
     props = build_properties(agent, allow_missing={"llm", "tts"})
@@ -763,7 +763,7 @@ def test_byok_sarvam_stt_params() -> None:
 
 
 def test_byok_openai_llm_params() -> None:
-    agent = Agent(name="t").with_llm(
+    agent = Agent().with_llm(
         OpenAI(
             api_key="openai-key",
             base_url="https://api.openai.com/v1/chat/completions",
@@ -777,7 +777,7 @@ def test_byok_openai_llm_params() -> None:
 
 
 def test_byok_azure_openai_llm_params() -> None:
-    agent = Agent(name="t").with_llm(
+    agent = Agent().with_llm(
         AzureOpenAI(
             api_key="azure-key",
             endpoint="https://example.openai.azure.com",
@@ -792,7 +792,7 @@ def test_byok_azure_openai_llm_params() -> None:
 
 
 def test_byok_anthropic_llm_params() -> None:
-    agent = Agent(name="t").with_llm(
+    agent = Agent().with_llm(
         Anthropic(
             api_key="anthropic-key",
             model="claude-3-5-sonnet-20241022",
@@ -809,7 +809,7 @@ def test_byok_anthropic_llm_params() -> None:
 
 
 def test_byok_gemini_llm_params() -> None:
-    agent = Agent(name="t").with_llm(
+    agent = Agent().with_llm(
         Gemini(api_key="gemini-key", model="gemini-2.0-flash")
     )
     props = build_properties(agent, allow_missing={"asr", "tts"})
@@ -819,7 +819,7 @@ def test_byok_gemini_llm_params() -> None:
 
 
 def test_byok_groq_llm_params() -> None:
-    agent = Agent(name="t").with_llm(
+    agent = Agent().with_llm(
         Groq(
             api_key="groq-key",
             model="llama-3.3-70b-versatile",
@@ -833,7 +833,7 @@ def test_byok_groq_llm_params() -> None:
 
 
 def test_byok_custom_llm_params() -> None:
-    agent = Agent(name="t").with_llm(
+    agent = Agent().with_llm(
         CustomLLM(
             api_key="custom-key",
             model="my-model",
@@ -847,7 +847,7 @@ def test_byok_custom_llm_params() -> None:
 
 
 def test_byok_amazon_bedrock_llm_params() -> None:
-    agent = Agent(name="t").with_llm(
+    agent = Agent().with_llm(
         AmazonBedrock(
             access_key="aws-access",
             secret_key="aws-secret",
@@ -862,7 +862,7 @@ def test_byok_amazon_bedrock_llm_params() -> None:
 
 
 def test_byok_dify_llm_params() -> None:
-    agent = Agent(name="t").with_llm(
+    agent = Agent().with_llm(
         Dify(
             api_key="dify-key",
             url="https://api.dify.ai/v1/chat-messages",
@@ -881,7 +881,7 @@ def test_byok_dify_llm_params() -> None:
 
 
 def test_byok_elevenlabs_tts_params() -> None:
-    agent = Agent(name="t").with_tts(
+    agent = Agent().with_tts(
         ElevenLabsTTS(
             key="el-key",
             model_id="eleven_flash_v2_5",
@@ -897,7 +897,7 @@ def test_byok_elevenlabs_tts_params() -> None:
 
 
 def test_byok_microsoft_tts_params() -> None:
-    agent = Agent(name="t").with_tts(
+    agent = Agent().with_tts(
         MicrosoftTTS(key="ms-key", region="eastus", voice_name="en-US-JennyNeural")
     )
     props = build_properties(agent, allow_missing={"asr", "llm"})
@@ -908,7 +908,7 @@ def test_byok_microsoft_tts_params() -> None:
 
 
 def test_byok_openai_tts_params() -> None:
-    agent = Agent(name="t").with_tts(
+    agent = Agent().with_tts(
         OpenAITTS(
             api_key="oai-tts-key",
             voice="alloy",
@@ -924,7 +924,7 @@ def test_byok_openai_tts_params() -> None:
 
 
 def test_byok_cartesia_tts_params() -> None:
-    agent = Agent(name="t").with_tts(
+    agent = Agent().with_tts(
         CartesiaTTS(api_key="cartesia-key", voice_id="voice", model_id="sonic-2", sample_rate=24000)
     )
     props = build_properties(agent, allow_missing={"asr", "llm"})
@@ -944,7 +944,7 @@ def test_byok_google_tts_params() -> None:
 
 
 def test_byok_amazon_tts_params() -> None:
-    agent = Agent(name="t").with_tts(
+    agent = Agent().with_tts(
         AmazonTTS(access_key="access", secret_key="secret", region="us-east-1", voice_id="Joanna", engine="neural")
     )
     props = build_properties(agent, allow_missing={"asr", "llm"})
@@ -956,7 +956,7 @@ def test_byok_amazon_tts_params() -> None:
 
 
 def test_byok_deepgram_tts_params() -> None:
-    agent = Agent(name="t").with_tts(
+    agent = Agent().with_tts(
         DeepgramTTS(api_key="dg-tts-key", model="aura-2-thalia-en", base_url="wss://api.deepgram.com/v1/speak", sample_rate=24000)
     )
     props = build_properties(agent, allow_missing={"asr", "llm"})
@@ -966,7 +966,7 @@ def test_byok_deepgram_tts_params() -> None:
 
 
 def test_byok_humeai_tts_params() -> None:
-    agent = Agent(name="t").with_tts(
+    agent = Agent().with_tts(
         HumeAITTS(key="hume-key", voice_id="voice", provider="CUSTOM_VOICE")
     )
     props = build_properties(agent, allow_missing={"asr", "llm"})
@@ -984,7 +984,7 @@ def test_byok_rime_tts_params() -> None:
 
 
 def test_byok_fishaudio_tts_params() -> None:
-    agent = Agent(name="t").with_tts(
+    agent = Agent().with_tts(
         FishAudioTTS(key="fish-key", reference_id="ref", backend="speech-1.5")
     )
     props = build_properties(agent, allow_missing={"asr", "llm"})
@@ -994,7 +994,7 @@ def test_byok_fishaudio_tts_params() -> None:
 
 
 def test_byok_minimax_byok_tts_params() -> None:
-    agent = Agent(name="t").with_tts(
+    agent = Agent().with_tts(
         MiniMaxTTS(
             key="mm-key",
             group_id="group",
@@ -1009,7 +1009,7 @@ def test_byok_minimax_byok_tts_params() -> None:
 
 
 def test_byok_sarvam_tts_params() -> None:
-    agent = Agent(name="t").with_tts(
+    agent = Agent().with_tts(
         SarvamTTS(key="sarvam-key", speaker="anushka", target_language_code="en-IN", sample_rate=24000)
     )
     props = build_properties(agent, allow_missing={"asr", "llm"})
@@ -1019,7 +1019,7 @@ def test_byok_sarvam_tts_params() -> None:
 
 
 def test_byok_murf_tts_params() -> None:
-    agent = Agent(name="t").with_tts(MurfTTS(key="murf-key", voice_id="Ariana"))
+    agent = Agent().with_tts(MurfTTS(key="murf-key", voice_id="Ariana"))
     props = build_properties(agent, allow_missing={"asr", "llm"})
     assert props["tts"]["vendor"] == "murf"
     assert props["tts"]["params"]["api_key"] == "murf-key"
@@ -1093,7 +1093,7 @@ async def test_async_start_session_google_tts_preserves_wire_aliases() -> None:
 
 def test_start_session_managed_minimax_tts_keeps_partial_preset_config() -> None:
     agent = (
-        Agent(name="support")
+        Agent()
         .with_llm(OpenAI(model="gpt-4o-mini"))
         .with_tts(MiniMaxTTS(model="speech_2_8_turbo", voice_id="English_captivating_female1"))
     )
@@ -1114,7 +1114,7 @@ def test_start_session_managed_minimax_tts_keeps_partial_preset_config() -> None
 
 
 def test_byok_openai_realtime_mllm_params() -> None:
-    agent = Agent(name="t").with_mllm(
+    agent = Agent().with_mllm(
         OpenAIRealtime(api_key="realtime-key", model="gpt-4o-realtime-preview", voice="coral")
     )
     props = build_properties(agent)
@@ -1125,7 +1125,7 @@ def test_byok_openai_realtime_mllm_params() -> None:
 
 
 def test_byok_gemini_live_mllm_params() -> None:
-    agent = Agent(name="t").with_mllm(
+    agent = Agent().with_mllm(
         GeminiLive(api_key="gemini-key", model="gemini-live-2.5-flash")
     )
     props = build_properties(agent)
@@ -1135,7 +1135,7 @@ def test_byok_gemini_live_mllm_params() -> None:
 
 
 def test_byok_vertex_ai_mllm_params() -> None:
-    agent = Agent(name="t").with_mllm(
+    agent = Agent().with_mllm(
         VertexAI(
             project_id="my-project",
             location="us-central1",
@@ -1152,7 +1152,7 @@ def test_byok_vertex_ai_mllm_params() -> None:
 
 
 def test_byok_xai_grok_mllm_params() -> None:
-    agent = Agent(name="t").with_mllm(XaiGrok(api_key="xai-key"))
+    agent = Agent().with_mllm(XaiGrok(api_key="xai-key"))
     props = build_properties(agent)
     assert props["mllm"]["vendor"] == "xai"
     assert props["mllm"]["api_key"] == "xai-key"

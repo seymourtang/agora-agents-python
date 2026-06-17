@@ -54,7 +54,7 @@ client = Agora(
 )
 
 agent = (
-    Agent(client=client, name='avatar-agent')
+    Agent(client=client)
     .with_llm(OpenAI(
         api_key='your-openai-key',
         base_url='https://api.openai.com/v1/chat/completions',
@@ -77,7 +77,7 @@ agent = (
     ))
 )
 
-session = agent.create_session(channel='avatar-room', agent_uid='1', remote_uids=['100'])
+session = agent.create_session(channel='avatar-room', agent_uid='1', remote_uids=['100'], name='avatar-agent')
 agent_id = session.start()
 session.say('Hello! I am your visual assistant.')
 session.stop()
@@ -106,7 +106,7 @@ Akool requires a TTS vendor configured at 16000 Hz:
 from agora_agent import ElevenLabsTTS, AkoolAvatar
 
 agent = (
-    Agent(name='akool-agent')
+    Agent()
     .with_llm(OpenAI(
         api_key='your-openai-key',
         base_url='https://api.openai.com/v1/chat/completions',
@@ -136,7 +136,7 @@ This example shows what happens when the TTS sample rate does not match the avat
 ```python
 # This raises ValueError at build time
 agent = (
-    Agent(name='broken-agent')
+    Agent()
     .with_llm(OpenAI(
         api_key='your-openai-key',
         base_url='https://api.openai.com/v1/chat/completions',
@@ -170,7 +170,7 @@ The `with_avatar()` call validates against the currently configured TTS. Always 
 ```python
 # Correct order: TTS first, then avatar
 agent = (
-    Agent(name='my-agent')
+    Agent()
     .with_tts(ElevenLabsTTS(key='your-elevenlabs-key', model_id='eleven_flash_v2_5', voice_id='your-voice-id', base_url='wss://api.elevenlabs.io/v1', sample_rate=24000))
     .with_avatar(HeyGenAvatar(api_key='your-heygen-key', quality='medium', agora_uid='2'))
 )

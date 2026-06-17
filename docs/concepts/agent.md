@@ -6,7 +6,7 @@ description: The Agent builder — configure an AI agent with LLM, TTS, STT, and
 
 # Agent
 
-The `Agent` class is a fluent builder for configuring AI agent properties. It collects vendor settings (LLM, TTS, STT, MLLM, avatar), binds an Agora client when you pass `client=...`, and then produces a fully configured `AgentSession` when you call `create_session()`.
+The `Agent` class is a fluent builder for configuring AI agent properties. It collects vendor settings (LLM, TTS, STT, MLLM, avatar), binds an Agora client when you pass `client=...`, and then produces a fully configured `AgentSession` when you call `create_session()`. The agent instance name is set on `create_session(name=...)`, not on the `Agent` constructor.
 
 ## Constructor
 
@@ -16,7 +16,7 @@ from agora_agent import Agent, Agora, Area, OpenAI
 
 client = Agora(area=Area.US, app_id='your-app-id', app_certificate='your-app-certificate')
 
-agent = Agent(client=client, name='support-assistant').with_llm(
+agent = Agent(client=client).with_llm(
     OpenAI(
         api_key='your-openai-key',
         base_url='https://api.openai.com/v1/chat/completions',
@@ -31,7 +31,6 @@ agent = Agent(client=client, name='support-assistant').with_llm(
 
 | Parameter | Type | Required | Description |
 |---|---|---|---|
-| `name` | `str` | No | Agent display name (used as session name if not overridden) |
 | `instructions` | `str` | No | Deprecated. Use LLM vendor `system_messages` instead. |
 | `greeting` | `str` | No | Deprecated. Use LLM/MLLM vendor `greeting_message` instead. |
 | `failure_message` | `str` | No | Deprecated. Use LLM/MLLM vendor `failure_message` instead. |
@@ -65,7 +64,6 @@ Each `with_*` method returns a **new** `Agent` instance — the original is unch
 |---|---|---|
 | `with_instructions(text)` | `str` | Deprecated. Use LLM vendor `system_messages` instead. |
 | `with_greeting(text)` | `str` | Deprecated. Use LLM/MLLM vendor `greeting_message` instead. |
-| `with_name(name)` | `str` | Override the agent name |
 | `with_turn_detection(config)` | `TurnDetectionConfig` | Configure `turn_detection.language` and cascading-flow SOS/EOS detection; use `with_interruption()` for interruption behavior |
 | `with_sal(config)` | `SalConfig` | Set SAL configuration |
 | `with_advanced_features(features)` | `Dict[str, Any]` | Set advanced features |
@@ -86,7 +84,7 @@ from agora_agent import Agent, Agora, Area, DeepgramSTT, ElevenLabsTTS, OpenAI
 client = Agora(area=Area.US, app_id='your-app-id', app_certificate='your-app-certificate')
 
 agent = (
-    Agent(client=client, name='my-agent')
+    Agent(client=client)
     .with_llm(OpenAI(
         api_key='your-openai-key',
         base_url='https://api.openai.com/v1/chat/completions',
@@ -120,14 +118,14 @@ base = (
     .with_stt(DeepgramSTT(api_key='your-deepgram-key', language='en-US'))
 )
 
-# Same agent config, different channels
-session_a = base.create_session(channel='room-a', agent_uid='1', remote_uids=['100'])
-session_b = base.create_session(channel='room-b', agent_uid='1', remote_uids=['200'])
+# Same agent config, different channels and session names
+session_a = base.create_session(channel='room-a', agent_uid='1', remote_uids=['100'], name='agent-room-a')
+session_b = base.create_session(channel='room-b', agent_uid='1', remote_uids=['200'], name='agent-room-b')
 ```
 
 ## `create_session()`
 
-Creates a new `AgentSession` using the client already bound to the agent.
+Creates a new `AgentSession` using the client already bound to the agent. Pass the agent instance name via the `name` parameter here — it is sent to the Start Agent API when the session starts.
 
 <!-- snippet: fragment -->
 ```python
@@ -147,7 +145,7 @@ session = agent.create_session(
 | `channel` | `str` | Yes | Agora channel name |
 | `agent_uid` | `str` | Yes | UID for the agent in the channel |
 | `remote_uids` | `List[str]` | Yes | UIDs of remote participants to listen to |
-| `name` | `str` | No | Session name (defaults to agent name or auto-generated) |
+| `name` | `str` | No | Agent instance name for the Start Agent API (defaults to `agent-{timestamp}` if omitted) |
 | `token` | `str` | No | Pre-built RTC token (if not provided, generated from client credentials) |
 | `idle_timeout` | `int` | No | Idle timeout in seconds |
 | `enable_string_uid` | `bool` | No | Enable string UIDs |
@@ -166,7 +164,6 @@ See [Avatar Integration](../guides/avatars.md) for details.
 
 | Property | Type | Description |
 |---|---|---|
-| `agent.name` | `Optional[str]` | Agent name |
 | `agent.instructions` | `Optional[str]` | System prompt |
 | `agent.greeting` | `Optional[str]` | Greeting message |
 | `agent.failure_message` | `Optional[str]` | Message spoken when LLM fails |

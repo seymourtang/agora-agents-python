@@ -26,7 +26,7 @@ client = Agora(
 )
 
 agent = (
-    Agent(client=client, name='assistant')
+    Agent(client=client)
     .with_llm(OpenAI(
         api_key='your-openai-key',
         base_url='https://api.openai.com/v1/chat/completions',
@@ -37,7 +37,7 @@ agent = (
     .with_stt(DeepgramSTT(api_key='your-deepgram-key', language='en-US', model='nova-2'))
 )
 
-session = agent.create_session(channel='support-room', agent_uid='1', remote_uids=['100'])
+session = agent.create_session(channel='support-room', agent_uid='1', remote_uids=['100'], name='support-agent')
 agent_id = session.start()
 session.say('Welcome! How can I assist you today?')
 # ... agent listens and responds automatically ...
@@ -58,7 +58,7 @@ async def main():
         )
 
     agent = (
-        Agent(client=client, name='assistant')
+        Agent(client=client)
         .with_llm(OpenAI(
             api_key='your-openai-key',
             base_url='https://api.openai.com/v1/chat/completions',
@@ -69,7 +69,7 @@ async def main():
         .with_stt(DeepgramSTT(api_key='your-deepgram-key', language='en-US', model='nova-2'))
     )
 
-    session = agent.create_session(channel='support-room', agent_uid='1', remote_uids=['100'])
+    session = agent.create_session(channel='support-room', agent_uid='1', remote_uids=['100'], name='support-agent')
     agent_id = await session.start()
     await session.say('Welcome! How can I assist you today?')
     # ... agent listens and responds automatically ...
@@ -92,7 +92,7 @@ client = Agora(
 )
 
 agent = (
-    Agent(client=client, name='azure-agent')
+    Agent(client=client)
     .with_llm(AzureOpenAI(
         api_key='your-azure-key',
         endpoint='https://your-resource.openai.azure.com',
@@ -112,7 +112,7 @@ agent = (
     ))
 )
 
-session = agent.create_session(channel='enterprise-room', agent_uid='1', remote_uids=['100'])
+session = agent.create_session(channel='enterprise-room', agent_uid='1', remote_uids=['100'], name='enterprise-agent')
 agent_id = session.start()
 session.say('Hello! I am your enterprise assistant.')
 session.stop()
@@ -140,7 +140,7 @@ llm = OpenAI(
 Configure greetings on the LLM vendor so message ownership stays with the LLM configuration:
 
 ```python
-agent = Agent(name='greeter').with_llm(OpenAI(
+agent = Agent().with_llm(OpenAI(
     api_key='your-openai-key',
     base_url='https://api.openai.com/v1/chat/completions',
     model='gpt-4o-mini',

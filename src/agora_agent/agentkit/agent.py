@@ -178,7 +178,9 @@ class SayOptions(typing_extensions.TypedDict, total=False):
 
 
 class SessionOptions(typing_extensions.TypedDict, total=False):
-    name: str
+    """Options accepted by :meth:`Agent.create_session` and :meth:`Agent.create_async_session`."""
+
+    name: str  # Agent instance name sent to the Start Agent API; defaults to agent-{timestamp} when omitted.
     channel: str
     token: str
     agent_uid: str
@@ -316,7 +318,11 @@ class Agent:
     """A reusable agent definition.
 
     Use the fluent builder methods (.with_llm(), .with_tts(), .with_stt(), .with_mllm())
-    to configure vendor settings after construction.
+    to configure vendor settings after construction. Bind an Agora client with
+    ``Agent(client=client, ...)`` so :meth:`create_session` can reuse it.
+
+    The agent instance name is **not** configured on ``Agent``. Pass it when creating
+    a session via :meth:`create_session` / :meth:`create_async_session` ``name=...``.
 
     Deprecated:
         The Agent-level ``instructions``, ``greeting``, ``failure_message``,
@@ -326,14 +332,20 @@ class Agent:
 
     Examples
     --------
-    >>> from agora_agent import Agent, OpenAI, ElevenLabsTTS, DeepgramSTT
+    >>> from agora_agent import Agent, Agora, Area, OpenAI, ElevenLabsTTS, DeepgramSTT
     >>>
-    >>> agent = Agent(instructions="You are a helpful voice assistant.")
+    >>> client = Agora(area=Area.US, app_id="...", app_certificate="...")
     >>> agent = (
-    ...     agent
+    ...     Agent(client=client, instructions="You are a helpful voice assistant.")
     ...     .with_llm(OpenAI(api_key="...", base_url="https://api.openai.com/v1/chat/completions", model="gpt-4"))
     ...     .with_tts(ElevenLabsTTS(key="...", model_id="...", voice_id="...", base_url="wss://api.elevenlabs.io/v1", sample_rate=24000))
     ...     .with_stt(DeepgramSTT(api_key="...", model="nova-2"))
+    ... )
+    >>> session = agent.create_session(
+    ...     channel="room-123",
+    ...     agent_uid="1",
+    ...     remote_uids=["100"],
+    ...     name="assistant",
     ... )
     """
 
@@ -406,7 +418,6 @@ class Agent:
     def __init__(
         self,
         client: typing.Optional[typing.Any] = None,
-        name: typing.Optional[str] = None,
         instructions: typing.Optional[str] = None,
         turn_detection: typing.Optional[TurnDetectionConfig] = None,
         interruption: typing.Optional[InterruptionConfig] = None,
@@ -424,7 +435,6 @@ class Agent:
         pipeline_id: typing.Optional[str] = None,
     ):
         self._client = client
-        self._name = name
         self._pipeline_id = pipeline_id
         self._instructions = instructions
         self._greeting = greeting
@@ -553,11 +563,6 @@ class Agent:
         """Deprecated. Configure greeting playback on the LLM vendor instead."""
         new_agent = self._clone()
         new_agent._greeting_configs = configs
-        return new_agent
-
-    def with_name(self, name: str) -> "Agent":
-        new_agent = self._clone()
-        new_agent._name = name
         return new_agent
 
     def with_sal(self, config: SalConfig) -> "Agent":
@@ -691,10 +696,6 @@ class Agent:
         return self._copy_model_update(self._parameters, {"data_channel": "rtm"})
 
     @property
-    def name(self) -> typing.Optional[str]:
-        return self._name
-
-    @property
     def pipeline_id(self) -> typing.Optional[str]:
         """Published AI Studio pipeline ID used as this agent's base configuration."""
         return self._pipeline_id
@@ -781,8 +782,12 @@ class Agent:
 
     @property
     def config(self) -> typing.Dict[str, typing.Any]:
+        """Read-only snapshot of the agent builder configuration.
+
+        Session-scoped fields such as the Start Agent API ``name`` are not included;
+        set those on :meth:`create_session`.
+        """
         return {
-            "name": self._name,
             "pipeline_id": self._pipeline_id,
             "instructions": self._instructions,
             "greeting": self._greeting,
@@ -820,13 +825,25 @@ class Agent:
         debug: typing.Optional[bool] = None,
         warn: typing.Optional[typing.Callable[[str], None]] = None,
     ) -> "AgentSession":
+        """Create a synchronous session bound to this agent configuration.
+
+        Parameters
+        ----------
+        channel, agent_uid, remote_uids
+            Required RTC join settings.
+        name
+            Agent instance name sent to the Start Agent API. When omitted, the SDK
+            generates ``agent-{timestamp}``.
+        token, idle_timeout, enable_string_uid, preset, pipeline_id, expires_in, debug, warn
+            Optional session overrides documented on :class:`AgentSession`.
+        """
         from .agent_session import AgentSession
 
         resolved_client = self._client
         if resolved_client is None:
             raise ValueError("client is required. Pass client=... to Agent(...) or AgoraAgent(...).")
 
-        session_name = name or self._name or f"agent-{int(time.time())}"
+        session_name = name or f"agent-{int(time.time())}"
         return AgentSession(
             client=resolved_client,
             agent=self,
@@ -864,7 +881,8 @@ class Agent:
         """Create an async session for use with :class:`~agora_agent.AsyncAgora`.
 
         Equivalent to :meth:`create_session` but returns an
-        :class:`~agora_agent.agentkit.AsyncAgentSession`.
+        :class:`~agora_agent.agentkit.AsyncAgentSession`. Pass the agent instance
+        name via ``name=...``; when omitted, the SDK generates ``agent-{timestamp}``.
         """
         from .agent_session import AsyncAgentSession
 
@@ -872,7 +890,7 @@ class Agent:
         if resolved_client is None:
             raise ValueError("client is required. Pass client=... to Agent(...) or AgoraAgent(...).")
 
-        session_name = name or self._name or f"agent-{int(time.time())}"
+        session_name = name or f"agent-{int(time.time())}"
         return AsyncAgentSession(
             client=resolved_client,
             agent=self,
@@ -1066,7 +1084,6 @@ class Agent:
     def _clone(self) -> "Agent":
         new_agent = self.__class__.__new__(self.__class__)
         new_agent._client = self._client
-        new_agent._name = self._name
         new_agent._pipeline_id = self._pipeline_id
         new_agent._llm = self._llm
         new_agent._tts = self._tts

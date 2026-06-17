@@ -15,7 +15,7 @@ Bind the client once on `Agent(client=client, ...)`, then pass vendor classes di
 from agora_agent import Agent, Agora, Area
 
 client = Agora(area=Area.US, app_id="...", app_certificate="...")
-agent = Agent(client=client, name="global-agent")
+agent = Agent(client=client)
 ```
 
 ## Constructor
@@ -24,7 +24,6 @@ agent = Agent(client=client, name="global-agent")
 ```python
 Agent(
     client: Optional[Any] = None,
-    name: Optional[str] = None,
     instructions: Optional[str] = None,
     turn_detection: Optional[TurnDetectionConfig] = None,
     interruption: Optional[InterruptionConfig] = None,
@@ -44,7 +43,6 @@ Agent(
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `name` | `Optional[str]` | `None` | Agent name, used as default session name |
 | `client` | `Optional[Any]` | `None` | Bound Agora client used later by `create_session()` and `create_async_session()` |
 | `instructions` | `Optional[str]` | `None` | Deprecated. Use LLM vendor `system_messages` instead. |
 | `turn_detection` | `Optional[TurnDetectionConfig]` | `None` | Interaction language and turn detection configuration |
@@ -158,10 +156,6 @@ Deprecated. Configure `system_messages` on the LLM vendor instead.
 
 Deprecated. Configure `greeting_message` on the LLM or MLLM vendor instead.
 
-### `with_name(name: str) -> Agent`
-
-Override the agent name.
-
 ### `with_sal(config: SalConfig) -> Agent`
 
 Set SAL (Selective Attention Locking) configuration.
@@ -226,14 +220,14 @@ create_session(
 ) -> AgentSession
 ```
 
-Creates an `AgentSession` using the client already bound to `Agent(client=...)`.
+Creates an `AgentSession` using the client already bound to `Agent(client=...)`. Pass the agent instance name with the `name` parameter.
 
 | Parameter | Type | Required | Description |
 |---|---|---|---|
 | `channel` | `str` | Yes | Channel name |
 | `agent_uid` | `str` | Yes | UID for the agent |
 | `remote_uids` | `List[str]` | Yes | UIDs of remote participants |
-| `name` | `Optional[str]` | No | Session name (defaults to agent name) |
+| `name` | `Optional[str]` | No | Session name sent to the Start Agent API (defaults to `agent-{timestamp}` if omitted) |
 | `token` | `Optional[str]` | No | Pre-built RTC+RTM token |
 | `expires_in` | `Optional[int]` | No | Token lifetime in seconds (default: `86400` = 24 h, Agora max). Only applies when the token is auto-generated. Use `expires_in_hours()` or `expires_in_minutes()` for clarity. Valid range: 1–86400. |
 | `idle_timeout` | `Optional[int]` | No | Idle timeout in seconds |
@@ -244,6 +238,17 @@ Creates an `AgentSession` using the client already bound to `Agent(client=...)`.
 `pipeline_id` is sent as the top-level `/join` field `pipeline_id`, not inside `properties`.
 
 `create_session()` requires that the agent was constructed with `client=...`. If no client is bound, it raises `ValueError`.
+
+Example:
+
+```python
+session = agent.create_session(
+    channel="support-room",
+    agent_uid="1",
+    remote_uids=["100"],
+    name="support-agent",
+)
+```
 
 **Returns:** `AgentSession`
 
@@ -281,7 +286,6 @@ to_properties(
 
 | Property | Type | Description |
 |---|---|---|
-| `name` | `Optional[str]` | Agent name |
 | `instructions` | `Optional[str]` | Deprecated Agent-level system prompt |
 | `greeting` | `Optional[str]` | Deprecated Agent-level greeting message |
 | `failure_message` | `Optional[str]` | Deprecated Agent-level failure message |

@@ -33,7 +33,7 @@ You can check the current state with `session.status`.
 
 ## Creating a Session
 
-Use `Agent.create_session()` to create a session:
+Use `Agent.create_session()` to create a session. Set the agent instance name with the `name` parameter — this value is sent to the Start Agent API when you call `session.start()`.
 
 <!-- snippet: executable -->
 ```python
@@ -42,7 +42,7 @@ from agora_agent import Agent, Agora, Area, DeepgramSTT, ElevenLabsTTS, OpenAI
 client = Agora(area=Area.US, app_id='your-app-id', app_certificate='your-app-certificate')
 
 agent = (
-    Agent(client=client, name='my-agent')
+    Agent(client=client)
     .with_llm(OpenAI(
         api_key='your-openai-key',
         base_url='https://api.openai.com/v1/chat/completions',
@@ -53,7 +53,7 @@ agent = (
     .with_stt(DeepgramSTT(api_key='your-deepgram-key', language='en-US'))
 )
 
-session = agent.create_session(channel='my-channel', agent_uid='1', remote_uids=['100'])
+session = agent.create_session(channel='my-channel', agent_uid='1', remote_uids=['100'], name='my-agent')
 ```
 
 ## Sync Methods
@@ -189,7 +189,7 @@ Session methods raise `RuntimeError` if called in an invalid state:
 
 <!-- snippet: fragment -->
 ```python
-session = agent.create_session(channel='my-channel', agent_uid='1', remote_uids=['100'])
+session = agent.create_session(channel='my-channel', agent_uid='1', remote_uids=['100'], name='my-agent')
 
 # This raises RuntimeError — session hasn't started yet
 session.say('Hello!')  # RuntimeError: Cannot say in idle state

@@ -48,7 +48,7 @@ AgentSession(
 | `client` | `Agora` or `AsyncAgora` | Yes | Authenticated client |
 | `agent` | `Agent` | Yes | Agent configuration |
 | `app_id` | `str` | Yes | Agora App ID |
-| `name` | `str` | Yes | Session name |
+| `name` | `str` | Yes | Agent instance name sent to the Start Agent API |
 | `channel` | `str` | Yes | Channel name |
 | `agent_uid` | `str` | Yes | UID for the agent |
 | `remote_uids` | `List[str]` | Yes | UIDs of remote participants |
@@ -64,11 +64,16 @@ AgentSession(
 
 `pipeline_id` is sent as the top-level `/join` field `pipeline_id`, not inside `properties`. If unset, `AgentSession.start()` uses the agent-level value from `Agent(..., pipeline_id=...)`.
 
-For normal SDK usage, prefer binding the client on the agent first:
+For normal SDK usage, prefer binding the client on the agent first. Pass the agent instance name via `create_session(name=...)`:
 
 ```python
-agent = Agent(client=client, name="assistant")
-session = agent.create_session(channel="room", agent_uid="1", remote_uids=["100"])
+agent = Agent(client=client)
+session = agent.create_session(
+    channel="room",
+    agent_uid="1",
+    remote_uids=["100"],
+    name="my-agent",
+)
 ```
 
 ## Methods

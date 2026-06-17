@@ -32,7 +32,7 @@ def main() -> None:
 
     # In BYOK mode, each vendor carries its own credentials.
     agent = (
-        Agent(client=client, name="support-assistant")
+        Agent(client=client)
         .with_stt(
             DeepgramSTT(
                 api_key=os.environ["DEEPGRAM_API_KEY"],
@@ -65,6 +65,7 @@ def main() -> None:
         channel="support-room-123",
         agent_uid="1",
         remote_uids=["100"],
+        name="support-assistant",
         idle_timeout=120,
     )
 

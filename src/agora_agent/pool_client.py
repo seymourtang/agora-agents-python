@@ -409,7 +409,10 @@ class Agora(BaseAgora, typing.Generic[_AreaT]):
         ...
 
     def create_agent(self, *args: typing.Any, **kwargs: typing.Any) -> RegionalAgent:
-        """Create an area-aware agent for IDE-friendly vendor suggestions."""
+        """Create an area-aware agent for IDE-friendly vendor suggestions.
+
+        Pass the agent instance name later via ``agent.create_session(name=...)``.
+        """
         agent_cls = CNAgent if self.area_scope == "cn" else GlobalAgent
         kwargs.setdefault("client", self)
         return agent_cls(*args, **kwargs)
@@ -765,7 +768,10 @@ class AsyncAgora(BaseAsyncAgora, typing.Generic[_AreaT]):
         ...
 
     def create_agent(self, *args: typing.Any, **kwargs: typing.Any) -> RegionalAgent:
-        """Create an area-aware agent for IDE-friendly vendor suggestions."""
+        """Create an area-aware agent for IDE-friendly vendor suggestions.
+
+        Pass the agent instance name later via ``agent.create_session(name=...)``.
+        """
         agent_cls = CNAgent if self.area_scope == "cn" else GlobalAgent
         kwargs.setdefault("client", self)
         return agent_cls(*args, **kwargs)
