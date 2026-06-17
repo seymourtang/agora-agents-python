@@ -1,5 +1,6 @@
 import pytest
 from types import SimpleNamespace
+from typing import Any, Dict, List
 
 from agora_agent.agentkit import Agent, AgentSession, validate_avatar_config
 from agora_agent.agentkit.avatar_types import is_sensetime_avatar
@@ -35,7 +36,7 @@ def _session(agent):
     )
 
 
-def _scene_list() -> list[dict]:
+def _scene_list() -> List[Dict[str, Any]]:
     return [{"digital_role": {"face_feature_id": "role-1"}}]
 
 
