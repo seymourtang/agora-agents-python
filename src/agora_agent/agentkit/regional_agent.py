@@ -14,9 +14,9 @@ from .vendors.cn import (
     CosyVoiceTTS,
     DeepSeekLLM,
     FengmingSTT,
-    MiniMaxTTS as CNMiniMaxTTS,
-    MicrosoftSTT as CNMicrosoftSTT,
-    MicrosoftTTS as CNMicrosoftTTS,
+    MiniMaxTTS as MiniMaxCNTTS,
+    MicrosoftSTT as MicrosoftCNSTT,
+    MicrosoftTTS as MicrosoftCNTTS,
     SenseTimeAvatar,
     StepFunTTS,
     TencentLLM,
@@ -68,8 +68,8 @@ from .vendors.avatar import AkoolAvatar, AnamAvatar, GenericAvatar, HeyGenAvatar
 if typing.TYPE_CHECKING:
     from ..pool_client import Agora, AsyncAgora
 
-CNSTT = typing.Union[TencentSTT, FengmingSTT, CNMicrosoftSTT, XfyunSTT, XfyunBigModelSTT, XfyunDialectSTT]
-CNTTS = typing.Union[CNMiniMaxTTS, TencentTTS, BytedanceTTS, CNMicrosoftTTS, CosyVoiceTTS, BytedanceDuplexTTS, StepFunTTS]
+CNSTT = typing.Union[TencentSTT, FengmingSTT, MicrosoftCNSTT, XfyunSTT, XfyunBigModelSTT, XfyunDialectSTT]
+CNTTS = typing.Union[MiniMaxCNTTS, TencentTTS, BytedanceTTS, MicrosoftCNTTS, CosyVoiceTTS, BytedanceDuplexTTS, StepFunTTS]
 CNLLM = typing.Union[AliyunLLM, BytedanceLLM, DeepSeekLLM, TencentLLM]
 CNAvatar = SenseTimeAvatar
 

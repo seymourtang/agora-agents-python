@@ -13,19 +13,19 @@ All vendor classes are available from `agora_agent`:
 from agora_agent import OpenAI, ElevenLabsTTS, DeepgramTTS, DeepgramSTT, OpenAIRealtime, XaiGrok, GenericAvatar
 ```
 
-## Area-aware vendor factories
+## Area-aware vendor classes
 
-If you want IDE completion and runtime validation to narrow vendor availability after selecting `area`, construct vendors from `client.vendors.*` instead of importing vendor classes directly.
+Construct vendors directly from `agora_agent`, then bind a client with `Agent(client=client, ...)`. The bound client validates that each vendor is available in the selected `area`.
 
-| Area | `client.vendors.stt` | `client.vendors.llm` | `client.vendors.tts` | `client.vendors.avatar` |
+| Area | STT classes | LLM classes | TTS classes | Avatar classes |
 |---|---|---|---|---|
-| `Area.US`, `Area.EU`, `Area.AP` | `deepgram`, `speechmatics`, `microsoft`, `openai`, `google`, `amazon`, `assemblyai`, `ares`, `sarvam` | `openai`, `azure`, `anthropic`, `gemini`, `groq`, `vertexai`, `bedrock`, `dify`, `custom` | `elevenlabs`, `microsoft`, `openai`, `cartesia`, `google`, `amazon`, `deepgram`, `humeai`, `rime`, `fishaudio`, `minimax`, `murf`, `sarvam` | `liveavatar`, `heygen`, `akool`, `anam`, `generic` |
-| `Area.CN` | `fengming`, `tencent`, `microsoft`, `xfyun`, `xfyun_bigmodel`, `xfyun_dialect` | `aliyun`, `bytedance`, `deepseek`, `tencent` | `minimax`, `tencent`, `bytedance`, `microsoft`, `cosyvoice`, `bytedance_duplex`, `stepfun` | `sensetime` |
+| `Area.US`, `Area.EU`, `Area.AP` | `DeepgramSTT`, `SpeechmaticsSTT`, `MicrosoftSTT`, `OpenAISTT`, `GoogleSTT`, `AmazonSTT`, `AssemblyAISTT`, `AresSTT`, `SarvamSTT` | `OpenAI`, `AzureOpenAI`, `Anthropic`, `Gemini`, `Groq`, `VertexAILLM`, `AmazonBedrock`, `Dify`, `CustomLLM` | `ElevenLabsTTS`, `MicrosoftTTS`, `OpenAITTS`, `CartesiaTTS`, `GoogleTTS`, `AmazonTTS`, `DeepgramTTS`, `HumeAITTS`, `RimeTTS`, `FishAudioTTS`, `MiniMaxTTS`, `MurfTTS`, `SarvamTTS` | `LiveAvatarAvatar`, `HeyGenAvatar`, `AkoolAvatar`, `AnamAvatar`, `GenericAvatar` |
+| `Area.CN` | `FengmingSTT`, `TencentSTT`, `MicrosoftCNSTT`, `XfyunSTT`, `XfyunBigModelSTT`, `XfyunDialectSTT` | `AliyunLLM`, `BytedanceLLM`, `DeepSeekLLM`, `TencentLLM` | `MiniMaxCNTTS`, `TencentTTS`, `BytedanceTTS`, `MicrosoftCNTTS`, `CosyVoiceTTS`, `BytedanceDuplexTTS`, `StepFunTTS` | `SenseTimeAvatar` |
 
 Global example:
 
 ```python
-from agora_agent import Agora, Area
+from agora_agent import Agora, Area, DeepgramSTT, MiniMaxTTS, OpenAI
 
 client = Agora(
     area=Area.US,
@@ -33,9 +33,9 @@ client = Agora(
     app_certificate="your-app-certificate",
 )
 
-stt = client.vendors.stt.deepgram(model="nova-3", language="en-US")
-llm = client.vendors.llm.openai(model="gpt-4o-mini")
-tts = client.vendors.tts.minimax(
+stt = DeepgramSTT(model="nova-3", language="en-US")
+llm = OpenAI(model="gpt-4o-mini")
+tts = MiniMaxTTS(
     model="speech_2_6_turbo",
     voice_id="English_captivating_female1",
 )
@@ -46,7 +46,7 @@ CN example:
 ```python
 import os
 
-from agora_agent import Agora, Area
+from agora_agent import Agora, Area, AliyunLLM, FengmingSTT, MiniMaxCNTTS
 
 client = Agora(
     area=Area.CN,
@@ -54,13 +54,13 @@ client = Agora(
     app_certificate="your-app-certificate",
 )
 
-stt = client.vendors.stt.fengming()
-llm = client.vendors.llm.aliyun(
+stt = FengmingSTT()
+llm = AliyunLLM(
     base_url="https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
     model="qwen-plus",
     api_key=os.environ["ALIYUN_API_KEY"],
 )
-tts = client.vendors.tts.minimax(
+tts = MiniMaxCNTTS(
     key=os.environ["MINIMAX_API_KEY"],
     model="speech-01-turbo",
     voice_id="female-shaonv",
@@ -488,7 +488,7 @@ All CN LLM helpers reuse the `OpenAI`-compatible shape and set a different vendo
 
 ### CN TTS Vendors
 
-CN TTS helpers reuse shared vendor names where possible. `client.vendors.tts.minimax(...)` and `client.vendors.tts.microsoft(...)` resolve to the CN-specific implementations when `area=Area.CN`.
+CN TTS classes use explicit names when they differ from the global implementations. Use `MiniMaxCNTTS` and `MicrosoftCNTTS` for the CN-specific variants.
 
 All CN TTS vendor classes support `skip_patterns` and `additional_params`.
 

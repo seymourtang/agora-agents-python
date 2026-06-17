@@ -11,7 +11,6 @@ import typing_extensions
 
 from .agentkit.regional_agent import CNAgent, GlobalAgent, RegionalAgent
 from .agentkit.region_validation import validate_agent_region_compatibility
-from .agentkit.vendors.namespaces import CNVendors, GlobalVendors
 from .agentkit.vendors.region import AreaScope, area_to_scope
 from .client import Agora as BaseAgora
 from .client import AsyncAgora as BaseAsyncAgora
@@ -23,8 +22,6 @@ _AUTH_MODE = typing.Literal["app-credentials", "basic", "token"]
 _DEBUG_LOGGER = logging.getLogger("agora_agent")
 _AreaT = typing.TypeVar("_AreaT", bound=Area)
 _GlobalArea = typing_extensions.Literal[Area.US, Area.EU, Area.AP]
-_GLOBAL_VENDORS = GlobalVendors()
-_CN_VENDORS = CNVendors()
 
 
 def _redact_headers(headers: typing.Mapping[str, str]) -> typing.Dict[str, str]:
@@ -400,13 +397,6 @@ class Agora(BaseAgora, typing.Generic[_AreaT]):
         """Return the vendor scope implied by the configured area."""
         return area_to_scope(self._area)
 
-    @property
-    def vendors(self) -> typing.Union[CNVendors, GlobalVendors]:
-        """Return the vendor catalog for the configured area."""
-        if area_to_scope(self._area) == "cn":
-            return _CN_VENDORS
-        return _GLOBAL_VENDORS
-
     @typing.overload
     def create_agent(self: "Agora[typing_extensions.Literal[Area.CN]]", *args: typing.Any, **kwargs: typing.Any) -> CNAgent:
         ...
@@ -764,13 +754,6 @@ class AsyncAgora(BaseAsyncAgora, typing.Generic[_AreaT]):
         """Return the vendor scope implied by the configured area."""
         return area_to_scope(self._area)
 
-    @property
-    def vendors(self) -> typing.Union[CNVendors, GlobalVendors]:
-        """Return the vendor catalog for the configured area."""
-        if area_to_scope(self._area) == "cn":
-            return _CN_VENDORS
-        return _GLOBAL_VENDORS
-
     @typing.overload
     def create_agent(self: "AsyncAgora[typing_extensions.Literal[Area.CN]]", *args: typing.Any, **kwargs: typing.Any) -> CNAgent:
         ...
@@ -862,27 +845,19 @@ class AsyncAgora(BaseAsyncAgora, typing.Generic[_AreaT]):
 
 
 class CNAgora(Agora[typing_extensions.Literal[Area.CN]]):
-    @property
-    def vendors(self) -> CNVendors:
-        return _CN_VENDORS
+    pass
 
 
 class GlobalAgoraClient(Agora[_GlobalArea]):
-    @property
-    def vendors(self) -> GlobalVendors:
-        return _GLOBAL_VENDORS
+    pass
 
 
 class CNAsyncAgora(AsyncAgora[typing_extensions.Literal[Area.CN]]):
-    @property
-    def vendors(self) -> CNVendors:
-        return _CN_VENDORS
+    pass
 
 
 class GlobalAsyncAgoraClient(AsyncAgora[_GlobalArea]):
-    @property
-    def vendors(self) -> GlobalVendors:
-        return _GLOBAL_VENDORS
+    pass
 
 
 AgentClient = Agora

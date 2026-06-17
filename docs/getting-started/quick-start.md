@@ -16,7 +16,7 @@ This guide starts with the standard AgentKit path:
 ## Sync example
 
 ```python
-from agora_agent import Agent, Agora, Area
+from agora_agent import Agent, Agora, Area, DeepgramSTT, MiniMaxTTS, OpenAI
 
 
 def main() -> None:
@@ -28,14 +28,14 @@ def main() -> None:
 
     agent = (
         Agent(client=client, name="support-assistant")
-        .with_stt(client.vendors.stt.deepgram(model="nova-3", language="en"))
-        .with_llm(client.vendors.llm.openai(
+        .with_stt(DeepgramSTT(model="nova-3", language="en"))
+        .with_llm(OpenAI(
             model="gpt-4o-mini",
             system_messages=[{"role": "system", "content": "You are a concise support voice assistant."}],
             greeting_message="Hello! How can I help you today?",
             max_history=10,
         ))
-        .with_tts(client.vendors.tts.minimax(model="speech_2_6_turbo", voice_id="English_captivating_female1"))
+        .with_tts(MiniMaxTTS(model="speech_2_6_turbo", voice_id="English_captivating_female1"))
     )
 
     session = agent.create_session(
@@ -60,7 +60,7 @@ if __name__ == "__main__":
 
 1. `Agora` runs in app-credentials mode when you pass `app_id` and `app_certificate` only.
 2. `Agent(client=client, ...)` binds the authenticated client once and reuses it when you later create sessions.
-3. `client.vendors.*` selects the ASR, LLM, and TTS stack. Leave vendor credentials unset for supported Agora-managed global models, or provide keys when you want BYOK. CN MiniMax TTS typically includes `key`.
+3. `Agent(client=client, ...)` binds the area-aware client once, and direct vendor classes such as `DeepgramSTT(...)`, `OpenAI(...)`, and `MiniMaxTTS(...)` are validated against that area. Leave vendor credentials unset for supported Agora-managed global models, or provide keys when you want BYOK. CN MiniMax TTS typically includes `key`.
 4. `session.start()` generates the required auth tokens and returns the unique agent session ID.
 
 ## Async applications

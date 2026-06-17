@@ -21,12 +21,12 @@ client = Agora(
 
 agent = (
     Agent(client=client)
-    .with_stt(client.vendors.stt.deepgram(model="nova-3"))
-    .with_llm(client.vendors.llm.openai(
+    .with_stt(DeepgramSTT(model="nova-3"))
+    .with_llm(OpenAI(
         model="gpt-4o-mini",
         system_messages=[{"role": "system", "content": "Be concise."}],
     ))
-    .with_tts(client.vendors.tts.minimax(model="speech_2_6_turbo", voice_id="English_captivating_female1"))
+    .with_tts(MiniMaxTTS(model="speech_2_6_turbo", voice_id="English_captivating_female1"))
 )
 
 session = agent.create_session(

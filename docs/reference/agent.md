@@ -8,7 +8,7 @@ description: Full API reference for the Python Agent builder class.
 
 **Import:** `from agora_agent import Agent`
 
-If you want vendor availability to come from the client, prefer `Agora` + `Agent` with `client.vendors.*`:
+Bind the client once on `Agent(client=client, ...)`, then pass vendor classes directly. The bound client still enforces area compatibility:
 
 <!-- snippet: fragment -->
 ```python
@@ -75,9 +75,9 @@ Set the LLM vendor for cascading flow.
 
 <!-- snippet: fragment -->
 ```python
-from agora_agent import Agora, Area, Agent
+from agora_agent import Agora, Area, Agent, OpenAI
 client = Agora(area=Area.US, app_id='your-app-id', app_certificate='your-app-certificate')
-agent = Agent(client=client).with_llm(client.vendors.llm.openai(model='gpt-4o-mini'))
+agent = Agent(client=client).with_llm(OpenAI(model='gpt-4o-mini'))
 ```
 
 ### `with_tts(vendor: BaseTTS) -> Agent`
@@ -86,9 +86,9 @@ Set the TTS vendor. Records the vendor's `sample_rate` for avatar validation.
 
 <!-- snippet: fragment -->
 ```python
-from agora_agent import Agora, Area, Agent
+from agora_agent import Agora, Area, Agent, ElevenLabsTTS
 client = Agora(area=Area.US, app_id='your-app-id', app_certificate='your-app-certificate')
-agent = Agent(client=client).with_tts(client.vendors.tts.elevenlabs(key='your-key', model_id='eleven_flash_v2_5', voice_id='your-voice-id', base_url='wss://api.elevenlabs.io/v1'))
+agent = Agent(client=client).with_tts(ElevenLabsTTS(key='your-key', model_id='eleven_flash_v2_5', voice_id='your-voice-id', base_url='wss://api.elevenlabs.io/v1'))
 ```
 
 ### `with_stt(vendor: BaseSTT) -> Agent`
@@ -97,9 +97,9 @@ Set the STT (ASR) vendor.
 
 <!-- snippet: fragment -->
 ```python
-from agora_agent import Agora, Area, Agent
+from agora_agent import Agora, Area, Agent, DeepgramSTT
 client = Agora(area=Area.US, app_id='your-app-id', app_certificate='your-app-certificate')
-agent = Agent(client=client).with_stt(client.vendors.stt.deepgram(api_key='your-key', language='en-US'))
+agent = Agent(client=client).with_stt(DeepgramSTT(api_key='your-key', language='en-US'))
 ```
 
 ### `with_mllm(vendor: BaseMLLM) -> Agent`

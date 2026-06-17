@@ -35,17 +35,17 @@ client = Agora(
 
 ## Area-aware vendor hints
 
-Use `client.vendors.*` when you want IDE auto-complete and runtime validation to narrow vendor choices after selecting `area`, and pass `client` into `Agent(client=client, ...)`.
+Bind `client` into `Agent(client=client, ...)` and construct vendors directly with SDK classes. The bound client still validates that each vendor is available in the selected `area`.
 
-| Client area | STT helpers | LLM helpers | TTS helpers | Avatar helpers |
+| Client area | STT classes | LLM classes | TTS classes | Avatar classes |
 |---|---|---|---|---|
-| `Area.US`, `Area.EU`, `Area.AP` | `deepgram`, `speechmatics`, `microsoft`, `openai`, `google`, `amazon`, `assemblyai`, `ares`, `sarvam` | `openai`, `azure`, `anthropic`, `gemini`, `groq`, `vertexai`, `bedrock`, `dify`, `custom` | `elevenlabs`, `microsoft`, `openai`, `cartesia`, `google`, `amazon`, `deepgram`, `humeai`, `rime`, `fishaudio`, `minimax`, `murf`, `sarvam` | `liveavatar`, `heygen`, `akool`, `anam`, `generic` |
-| `Area.CN` | `fengming`, `tencent`, `microsoft`, `xfyun`, `xfyun_bigmodel`, `xfyun_dialect` | `aliyun`, `bytedance`, `deepseek`, `tencent` | `minimax`, `tencent`, `bytedance`, `microsoft`, `cosyvoice`, `bytedance_duplex`, `stepfun` | `sensetime` |
+| `Area.US`, `Area.EU`, `Area.AP` | `DeepgramSTT`, `SpeechmaticsSTT`, `MicrosoftSTT`, `OpenAISTT`, `GoogleSTT`, `AmazonSTT`, `AssemblyAISTT`, `AresSTT`, `SarvamSTT` | `OpenAI`, `AzureOpenAI`, `Anthropic`, `Gemini`, `Groq`, `VertexAILLM`, `AmazonBedrock`, `Dify`, `CustomLLM` | `ElevenLabsTTS`, `MicrosoftTTS`, `OpenAITTS`, `CartesiaTTS`, `GoogleTTS`, `AmazonTTS`, `DeepgramTTS`, `HumeAITTS`, `RimeTTS`, `FishAudioTTS`, `MiniMaxTTS`, `MurfTTS`, `SarvamTTS` | `LiveAvatarAvatar`, `HeyGenAvatar`, `AkoolAvatar`, `AnamAvatar`, `GenericAvatar` |
+| `Area.CN` | `FengmingSTT`, `TencentSTT`, `MicrosoftCNSTT`, `XfyunSTT`, `XfyunBigModelSTT`, `XfyunDialectSTT` | `AliyunLLM`, `BytedanceLLM`, `DeepSeekLLM`, `TencentLLM` | `MiniMaxCNTTS`, `TencentTTS`, `BytedanceTTS`, `MicrosoftCNTTS`, `CosyVoiceTTS`, `BytedanceDuplexTTS`, `StepFunTTS` | `SenseTimeAvatar` |
 
 Global client example:
 
 ```python
-from agora_agent import Agent, Agora, Area
+from agora_agent import Agent, Agora, Area, DeepgramSTT, MiniMaxTTS, OpenAI
 
 client = Agora(
     area=Area.US,
@@ -59,9 +59,9 @@ agent = (
         name="global-agent",
         turn_detection={"language": "en-US"},
     )
-    .with_stt(client.vendors.stt.deepgram(model="nova-3", language="en-US"))
-    .with_llm(client.vendors.llm.openai(model="gpt-4o-mini"))
-    .with_tts(client.vendors.tts.minimax(
+    .with_stt(DeepgramSTT(model="nova-3", language="en-US"))
+    .with_llm(OpenAI(model="gpt-4o-mini"))
+    .with_tts(MiniMaxTTS(
         model="speech_2_6_turbo",
         voice_id="English_captivating_female1",
     ))
@@ -79,7 +79,7 @@ CN client example:
 ```python
 import os
 
-from agora_agent import Agent, Agora, Area
+from agora_agent import Agent, Agora, Area, AliyunLLM, FengmingSTT, MiniMaxCNTTS
 
 client = Agora(
     area=Area.CN,
@@ -93,13 +93,13 @@ agent = (
         name="cn-agent",
         turn_detection={"language": "zh-CN"},
     )
-    .with_stt(client.vendors.stt.fengming())
-    .with_llm(client.vendors.llm.aliyun(
+    .with_stt(FengmingSTT())
+    .with_llm(AliyunLLM(
         base_url="https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
         model="qwen-plus",
         api_key=os.environ["ALIYUN_API_KEY"],
     ))
-    .with_tts(client.vendors.tts.minimax(
+    .with_tts(MiniMaxCNTTS(
         key=os.environ["MINIMAX_API_KEY"],
         model="speech-01-turbo",
         voice_id="female-shaonv",
@@ -138,7 +138,7 @@ Note: `Area.CN` uses `sd-rtn.com` as the primary suffix and the `/cn/api/convers
 If a request fails, call `client.next_region()` to cycle to the next domain prefix, then retry:
 
 ```python
-from agora_agent import Agent, Agora, Area
+from agora_agent import Agent, Agora, Area, DeepgramSTT, ElevenLabsTTS, OpenAI
 
 client = Agora(
     area=Area.EU,
@@ -148,20 +148,20 @@ client = Agora(
 
 agent = (
     Agent(client=client, name="failover-demo")
-    .with_llm(client.vendors.llm.openai(
+    .with_llm(OpenAI(
         api_key="your-openai-key",
         base_url="https://api.openai.com/v1/chat/completions",
         model="gpt-4o-mini",
         system_messages=[{"role": "system", "content": "You are helpful."}],
     ))
-    .with_tts(client.vendors.tts.elevenlabs(
+    .with_tts(ElevenLabsTTS(
         key="your-elevenlabs-key",
         model_id="eleven_flash_v2_5",
         voice_id="your-voice-id",
         base_url="wss://api.elevenlabs.io/v1",
         sample_rate=24000,
     ))
-    .with_stt(client.vendors.stt.deepgram(
+    .with_stt(DeepgramSTT(
         api_key="your-deepgram-key",
         model="nova-2",
     ))

@@ -17,7 +17,7 @@ User audio → STT → LLM → TTS → Agent audio
 ### Sync
 
 ```python
-from agora_agent import Agent, Agora, Area
+from agora_agent import Agent, Agora, Area, DeepgramSTT, ElevenLabsTTS, OpenAI
 
 client = Agora(
     area=Area.US,
@@ -27,14 +27,14 @@ client = Agora(
 
 agent = (
     Agent(client=client, name='assistant')
-    .with_llm(client.vendors.llm.openai(
+    .with_llm(OpenAI(
         api_key='your-openai-key',
         base_url='https://api.openai.com/v1/chat/completions',
         model='gpt-4o-mini',
         system_messages=[{'role': 'system', 'content': 'You are a friendly customer support agent.'}],
     ))
-    .with_tts(client.vendors.tts.elevenlabs(key='your-elevenlabs-key', model_id='eleven_flash_v2_5', voice_id='your-voice-id', base_url='wss://api.elevenlabs.io/v1', sample_rate=24000))
-    .with_stt(client.vendors.stt.deepgram(api_key='your-deepgram-key', language='en-US', model='nova-2'))
+    .with_tts(ElevenLabsTTS(key='your-elevenlabs-key', model_id='eleven_flash_v2_5', voice_id='your-voice-id', base_url='wss://api.elevenlabs.io/v1', sample_rate=24000))
+    .with_stt(DeepgramSTT(api_key='your-deepgram-key', language='en-US', model='nova-2'))
 )
 
 session = agent.create_session(channel='support-room', agent_uid='1', remote_uids=['100'])
@@ -48,7 +48,7 @@ session.stop()
 
 ```python
 import asyncio
-from agora_agent import Agent, AsyncAgora, Area
+from agora_agent import Agent, AsyncAgora, Area, DeepgramSTT, ElevenLabsTTS, OpenAI
 
 async def main():
     client = AsyncAgora(
@@ -59,14 +59,14 @@ async def main():
 
     agent = (
         Agent(client=client, name='assistant')
-        .with_llm(client.vendors.llm.openai(
+        .with_llm(OpenAI(
             api_key='your-openai-key',
             base_url='https://api.openai.com/v1/chat/completions',
             model='gpt-4o-mini',
             system_messages=[{'role': 'system', 'content': 'You are a friendly customer support agent.'}],
         ))
-        .with_tts(client.vendors.tts.elevenlabs(key='your-elevenlabs-key', model_id='eleven_flash_v2_5', voice_id='your-voice-id', base_url='wss://api.elevenlabs.io/v1', sample_rate=24000))
-        .with_stt(client.vendors.stt.deepgram(api_key='your-deepgram-key', language='en-US', model='nova-2'))
+        .with_tts(ElevenLabsTTS(key='your-elevenlabs-key', model_id='eleven_flash_v2_5', voice_id='your-voice-id', base_url='wss://api.elevenlabs.io/v1', sample_rate=24000))
+        .with_stt(DeepgramSTT(api_key='your-deepgram-key', language='en-US', model='nova-2'))
     )
 
     session = agent.create_session(channel='support-room', agent_uid='1', remote_uids=['100'])

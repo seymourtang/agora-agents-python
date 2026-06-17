@@ -30,6 +30,10 @@ from agora_agent import (
     Agent,
     Agora,
     Area,
+    DeepgramSTT,
+    OpenAI,
+    MiniMaxTTS,
+    ElevenLabsTTS,
     expires_in_hours,
 )
 
@@ -52,12 +56,12 @@ def start_conversation() -> str:
     )
 
     agent = Agent(client=client, name=f"conversation-{int(time.time())}", turn_detection={"language": "en-US"}).with_stt(
-        client.vendors.stt.deepgram(
+        DeepgramSTT(
             model="nova-3",
             language="en",
         )
     ).with_llm(
-        client.vendors.llm.openai(
+        OpenAI(
             model="gpt-4o-mini",
             system_messages=[{"role": "system", "content": AGENT_PROMPT}],
             greeting_message=GREETING,
@@ -70,7 +74,7 @@ def start_conversation() -> str:
             },
         )
     ).with_tts(
-        client.vendors.tts.minimax(
+        MiniMaxTTS(
             model="speech_2_6_turbo",
             voice_id="English_captivating_female1",
         )
@@ -94,7 +98,7 @@ def start_conversation() -> str:
 
 ### Regional agent builders
 
-Use `client.vendors.*` so vendor availability follows `client.area`. The Quick Start above is the global (`Area.US`) pattern; CN uses a different vendor catalog. See [`docs/guides/regional-routing.md`](./docs/guides/regional-routing.md) for regional examples.
+Bind the client once with `Agent(client=client, ...)` and pass vendor classes directly such as `OpenAI(...)` or `MiniMaxTTS(...)`. The bound client still enforces area compatibility, so global-only vendors are rejected for `Area.CN` and vice versa. See [`docs/guides/regional-routing.md`](./docs/guides/regional-routing.md) for regional examples.
 
 ## AI Studio pipeline IDs
 
@@ -133,13 +137,13 @@ Use the same `Agent` builder shape, but provide credentials explicitly when you 
 
 ```python
 agent = Agent(client=client, turn_detection={"language": "en-US"}).with_stt(
-    client.vendors.stt.deepgram(
+    DeepgramSTT(
         api_key=os.environ["DEEPGRAM_API_KEY"],
         model="nova-3",
         language="en",
     )
 ).with_llm(
-    client.vendors.llm.openai(
+    OpenAI(
         api_key=os.environ["OPENAI_API_KEY"],
         base_url="https://api.openai.com/v1/chat/completions",
         model="gpt-4o-mini",
@@ -150,7 +154,7 @@ agent = Agent(client=client, turn_detection={"language": "en-US"}).with_stt(
         top_p=0.95,
     )
 ).with_tts(
-    client.vendors.tts.elevenlabs(
+    ElevenLabsTTS(
         key=os.environ["ELEVENLABS_API_KEY"],
         model_id="eleven_flash_v2_5",
         voice_id=os.environ["ELEVENLABS_VOICE_ID"],

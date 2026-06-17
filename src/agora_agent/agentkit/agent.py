@@ -7,6 +7,8 @@ import warnings
 
 if typing.TYPE_CHECKING:
     from .agent_session import AgentSession, AsyncAgentSession
+    from ..core.domain import Area
+    from ..pool_client import Agora, AsyncAgora
 
 from ..agents.types.start_agents_request_properties import StartAgentsRequestProperties
 from ..agents.types.start_agents_request_properties_avatar import StartAgentsRequestPropertiesAvatar
@@ -77,6 +79,7 @@ from ..agent_management.types.agent_think_agent_management_response import (
     AgentThinkAgentManagementResponse,
 )
 from ..core.pydantic_utilities import parse_obj_as
+from .region_validation import validate_agent_region_vendor
 from .vendors.base import BaseAvatar, BaseLLM, BaseMLLM, BaseSTT, BaseTTS
 
 # Top-level aliases
@@ -335,6 +338,72 @@ class Agent:
     ... )
     """
 
+    if typing.TYPE_CHECKING:
+        _GlobalArea = typing_extensions.Literal[Area.US, Area.EU, Area.AP]
+
+        @typing.overload
+        def __new__(
+            cls,
+            client: "Agora[typing_extensions.Literal[Area.CN]]",
+            *args: typing.Any,
+            **kwargs: typing.Any,
+        ) -> "CNAgent":
+            ...
+
+        @typing.overload
+        def __new__(
+            cls,
+            client: "Agora[_GlobalArea]",
+            *args: typing.Any,
+            **kwargs: typing.Any,
+        ) -> "GlobalAgent":
+            ...
+
+        @typing.overload
+        def __new__(
+            cls,
+            client: "AsyncAgora[typing_extensions.Literal[Area.CN]]",
+            *args: typing.Any,
+            **kwargs: typing.Any,
+        ) -> "CNAgent":
+            ...
+
+        @typing.overload
+        def __new__(
+            cls,
+            client: "AsyncAgora[_GlobalArea]",
+            *args: typing.Any,
+            **kwargs: typing.Any,
+        ) -> "GlobalAgent":
+            ...
+
+        @typing.overload
+        def __new__(
+            cls,
+            client: typing.Optional[typing.Any] = None,
+            *args: typing.Any,
+            **kwargs: typing.Any,
+        ) -> "Agent":
+            ...
+
+    def __new__(
+        cls,
+        client: typing.Optional[typing.Any] = None,
+        *args: typing.Any,
+        **kwargs: typing.Any,
+    ) -> "Agent":
+        if cls is Agent and client is not None:
+            area_scope = getattr(client, "area_scope", None)
+            if area_scope == "cn":
+                from .regional_agent import CNAgent
+
+                cls = CNAgent
+            elif area_scope == "global":
+                from .regional_agent import GlobalAgent
+
+                cls = GlobalAgent
+        return typing.cast("Agent", super().__new__(cls))
+
     def __init__(
         self,
         client: typing.Optional[typing.Any] = None,
@@ -380,9 +449,24 @@ class Agent:
         self._filler_words = filler_words
         self._greeting_configs = greeting_configs
 
+    def _validate_vendor_for_bound_client(
+        self,
+        category: str,
+        vendor: typing.Any,
+        config: typing.Dict[str, typing.Any],
+    ) -> None:
+        if self._client is None:
+            return
+        area = getattr(self._client, "area", None)
+        if area is None:
+            return
+        validate_agent_region_vendor(category, vendor, config, area)
+
     def with_llm(self, vendor: BaseLLM) -> "Agent":
+        config = vendor.to_config()
+        self._validate_vendor_for_bound_client("llm", vendor, config)
         new_agent = self._clone()
-        new_agent._llm = vendor.to_config()
+        new_agent._llm = config
         return new_agent
 
     def with_tts(self, vendor: BaseTTS) -> "Agent":
@@ -397,14 +481,18 @@ class Agent:
                 f"but TTS is configured with {sample_rate} Hz. "
                 f"Please update your TTS sample_rate to {self._avatar_required_sample_rate}."
             )
+        config = vendor.to_config()
+        self._validate_vendor_for_bound_client("tts", vendor, config)
         new_agent = self._clone()
-        new_agent._tts = vendor.to_config()
+        new_agent._tts = config
         new_agent._tts_sample_rate = sample_rate
         return new_agent
 
     def with_stt(self, vendor: BaseSTT) -> "Agent":
+        config = vendor.to_config()
+        self._validate_vendor_for_bound_client("asr", vendor, config)
         new_agent = self._clone()
-        new_agent._stt = vendor.to_config()
+        new_agent._stt = config
         return new_agent
 
     def with_mllm(self, vendor: BaseMLLM) -> "Agent":
@@ -449,8 +537,10 @@ class Agent:
                 f"but TTS is configured with {self._tts_sample_rate} Hz. "
                 f"Please update your TTS sample_rate to {required_sample_rate}."
             )
+        config = vendor.to_config()
+        self._validate_vendor_for_bound_client("avatar", vendor, config)
         new_agent = self._clone()
-        new_agent._avatar = vendor.to_config()
+        new_agent._avatar = config
         new_agent._avatar_required_sample_rate = required_sample_rate
         return new_agent
 

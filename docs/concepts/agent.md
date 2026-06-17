@@ -12,12 +12,12 @@ The `Agent` class is a fluent builder for configuring AI agent properties. It co
 
 <!-- snippet: executable -->
 ```python
-from agora_agent import Agent, Agora, Area
+from agora_agent import Agent, Agora, Area, OpenAI
 
 client = Agora(area=Area.US, app_id='your-app-id', app_certificate='your-app-certificate')
 
 agent = Agent(client=client, name='support-assistant').with_llm(
-    client.vendors.llm.openai(
+    OpenAI(
         api_key='your-openai-key',
         base_url='https://api.openai.com/v1/chat/completions',
         model='gpt-4o-mini',
@@ -81,20 +81,20 @@ Each `with_*` method returns a **new** `Agent` instance — the original is unch
 
 <!-- snippet: executable -->
 ```python
-from agora_agent import Agent, Agora, Area
+from agora_agent import Agent, Agora, Area, DeepgramSTT, ElevenLabsTTS, OpenAI
 
 client = Agora(area=Area.US, app_id='your-app-id', app_certificate='your-app-certificate')
 
 agent = (
     Agent(client=client, name='my-agent')
-    .with_llm(client.vendors.llm.openai(
+    .with_llm(OpenAI(
         api_key='your-openai-key',
         base_url='https://api.openai.com/v1/chat/completions',
         model='gpt-4o-mini',
         system_messages=[{'role': 'system', 'content': 'You are a helpful assistant.'}],
     ))
-    .with_tts(client.vendors.tts.elevenlabs(key='your-elevenlabs-key', model_id='eleven_flash_v2_5', voice_id='your-voice-id', base_url='wss://api.elevenlabs.io/v1'))
-    .with_stt(client.vendors.stt.deepgram(api_key='your-deepgram-key', language='en-US'))
+    .with_tts(ElevenLabsTTS(key='your-elevenlabs-key', model_id='eleven_flash_v2_5', voice_id='your-voice-id', base_url='wss://api.elevenlabs.io/v1'))
+    .with_stt(DeepgramSTT(api_key='your-deepgram-key', language='en-US'))
 )
 ```
 
@@ -104,20 +104,20 @@ Because each `with_*` call returns a new `Agent`, you can build a base configura
 
 <!-- snippet: executable -->
 ```python
-from agora_agent import Agent, Agora, Area
+from agora_agent import Agent, Agora, Area, DeepgramSTT, ElevenLabsTTS, OpenAI
 
 client = Agora(area=Area.US, app_id='your-app-id', app_certificate='your-app-certificate')
 
 base = (
     Agent(client=client)
-    .with_llm(client.vendors.llm.openai(
+    .with_llm(OpenAI(
         api_key='your-openai-key',
         base_url='https://api.openai.com/v1/chat/completions',
         model='gpt-4o-mini',
         system_messages=[{'role': 'system', 'content': 'You are a helpful assistant.'}],
     ))
-    .with_tts(client.vendors.tts.elevenlabs(key='your-elevenlabs-key', model_id='eleven_flash_v2_5', voice_id='your-voice-id', base_url='wss://api.elevenlabs.io/v1'))
-    .with_stt(client.vendors.stt.deepgram(api_key='your-deepgram-key', language='en-US'))
+    .with_tts(ElevenLabsTTS(key='your-elevenlabs-key', model_id='eleven_flash_v2_5', voice_id='your-voice-id', base_url='wss://api.elevenlabs.io/v1'))
+    .with_stt(DeepgramSTT(api_key='your-deepgram-key', language='en-US'))
 )
 
 # Same agent config, different channels

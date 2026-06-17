@@ -20,7 +20,7 @@ Typical reasons:
 ```python
 import os
 
-from agora_agent import Agent, Agora, Area
+from agora_agent import Agent, Agora, Area, DeepgramSTT, ElevenLabsTTS, OpenAI
 
 
 def main() -> None:
@@ -34,14 +34,14 @@ def main() -> None:
     agent = (
         Agent(client=client, name="support-assistant")
         .with_stt(
-            client.vendors.stt.deepgram(
+            DeepgramSTT(
                 api_key=os.environ["DEEPGRAM_API_KEY"],
                 model="nova-3",
                 language="en-US",
             )
         )
         .with_llm(
-            client.vendors.llm.openai(
+            OpenAI(
                 api_key=os.environ["OPENAI_API_KEY"],
                 base_url="https://api.openai.com/v1/chat/completions",
                 model="gpt-4o-mini",
@@ -51,7 +51,7 @@ def main() -> None:
             )
         )
         .with_tts(
-            client.vendors.tts.elevenlabs(
+            ElevenLabsTTS(
                 key=os.environ["ELEVENLABS_API_KEY"],
                 model_id="eleven_flash_v2_5",
                 voice_id=os.environ["ELEVENLABS_VOICE_ID"],

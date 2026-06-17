@@ -2,9 +2,14 @@ import pytest
 
 from agora_agent import (
     AgentClient,
+    Agent,
     Area,
     AgoraAgent,
     DeepgramSTT,
+    MiniMaxCNTTS,
+    MiniMaxTTS,
+    OpenAI,
+    TencentSTT,
 )
 
 
@@ -16,13 +21,6 @@ def test_cn_client_exposes_cn_vendor_catalog() -> None:
     client = _client(Area.CN)
 
     assert client.area_scope == "cn"
-    assert client.vendors.stt.tencent is not None
-    assert client.vendors.tts.bytedance is not None
-    assert client.vendors.llm.deepseek is not None
-    assert client.vendors.avatar.sensetime is not None
-    assert not hasattr(client.vendors.stt, "deepgram")
-    assert client.vendors.stt.xfyun is not client.vendors.stt.xfyun_bigmodel
-    assert client.vendors.stt.xfyun is not client.vendors.stt.xfyun_dialect
     assert client.create_agent().__class__.__name__ == "CNAgent"
 
 
@@ -30,21 +28,7 @@ def test_global_client_exposes_global_vendor_catalog() -> None:
     client = _client(Area.US)
 
     assert client.area_scope == "global"
-    assert client.vendors.stt.deepgram is not None
-    assert client.vendors.tts.elevenlabs is not None
-    assert client.vendors.llm.openai is not None
-    assert client.vendors.avatar.liveavatar is not None
-    assert not hasattr(client.vendors.avatar, "sensetime")
     assert client.create_agent().__class__.__name__ == "GlobalAgent"
-
-
-def test_shared_vendor_names_use_distinct_cn_and_global_classes() -> None:
-    cn_client = _client(Area.CN)
-    global_client = _client(Area.US)
-
-    assert cn_client.vendors.tts.minimax is not global_client.vendors.tts.minimax
-    assert cn_client.vendors.tts.microsoft is not global_client.vendors.tts.microsoft
-    assert cn_client.vendors.stt.microsoft is not global_client.vendors.stt.microsoft
 
 
 def test_regional_agent_builder_preserves_agent_kwargs() -> None:
@@ -57,32 +41,47 @@ def test_regional_agent_builder_preserves_agent_kwargs() -> None:
     assert global_agent.name == "us-support"
 
 
+def test_agent_constructor_auto_selects_area_aware_subclass() -> None:
+    cn_agent = Agent(client=_client(Area.CN), name="cn-support")
+    global_agent = Agent(client=_client(Area.US), name="us-support")
+
+    assert cn_agent.__class__.__name__ == "CNAgent"
+    assert global_agent.__class__.__name__ == "GlobalAgent"
+
+
 def test_cn_client_rejects_global_only_vendor() -> None:
     client = _client(Area.CN)
-    agent = AgoraAgent(client=client, name="cn-agent").with_stt(
-        DeepgramSTT(api_key="dg-key", model="nova-2", language="en-US")
-    )
-
     with pytest.raises(ValueError, match="area scope 'cn'"):
-        agent.create_session(
-            channel="room",
-            token="rtc-token",
-            agent_uid="1",
-            remote_uids=["100"],
-        ).start()
+        AgoraAgent(client=client, name="cn-agent").with_stt(
+            DeepgramSTT(api_key="dg-key", model="nova-2", language="en-US")
+        )
 
 
 def test_global_client_rejects_cn_only_vendor() -> None:
     client = _client(Area.US)
-    tencent_stt = __import__("agora_agent").TencentSTT(
+    tencent_stt = TencentSTT(
         key="sec", app_id="appid", secret="secret", engine_model_type="16k_zh", voice_id="voice"
     )
-    agent = AgoraAgent(client=client, name="global-agent").with_stt(tencent_stt)
-
     with pytest.raises(ValueError, match="area scope 'global'"):
-        agent.create_session(
-            channel="room",
-            token="rtc-token",
-            agent_uid="1",
-            remote_uids=["100"],
-        ).start()
+        AgoraAgent(client=client, name="global-agent").with_stt(tencent_stt)
+
+
+def test_direct_import_vendors_work_with_bound_global_client() -> None:
+    agent = (
+        Agent(client=_client(Area.US), name="global-agent")
+        .with_stt(DeepgramSTT(model="nova-3", language="en-US"))
+        .with_llm(OpenAI(model="gpt-4o-mini"))
+        .with_tts(MiniMaxTTS(model="speech_2_6_turbo", voice_id="English_captivating_female1"))
+    )
+
+    assert agent.__class__.__name__ == "GlobalAgent"
+
+
+def test_direct_import_cn_vendors_work_with_bound_cn_client() -> None:
+    agent = (
+        Agent(client=_client(Area.CN), name="cn-agent")
+        .with_stt(TencentSTT(key="sec", app_id="appid", secret="secret", engine_model_type="16k_zh", voice_id="voice"))
+        .with_tts(MiniMaxCNTTS(key="mm-key", model="speech-01-turbo", voice_id="female-shaonv"))
+    )
+
+    assert agent.__class__.__name__ == "CNAgent"
