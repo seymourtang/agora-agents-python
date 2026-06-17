@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [v2.3.0] — 2026-06-17
+
+### Added
+
+- **CN vendor support** — Area-aware `Agora`/`AsyncAgora` clients and `Agent` builders (`CNAgent`/`GlobalAgent`) with a CN vendor catalog and CN/global API routing. The bound client does not enforce area/vendor compatibility, so CN and global vendors can be mixed.
+- **SenseTime avatar** — Added `SenseTimeAvatar` configuration and validation.
+
+### Changed
+
+- **`turn_detection` accepts a dict** — `Agent(turn_detection=...)` now also accepts a plain mapping in addition to the typed config; it is coerced into the request model when the start request is built.
+
+### Fixed
+
+- **Python 3.8 compatibility** — Replaced PEP 585 builtin generics (`list[...]`) in the new vendor models with `typing` equivalents so pydantic can build the models on Python 3.8.
+
 ## [v2.2.0] — 2026-06-05
 
 ### Added
