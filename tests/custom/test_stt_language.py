@@ -14,6 +14,7 @@ from agora_agent import (
     SpeechmaticsSTT,
     TurnDetectionConfig,
 )
+from test_helpers import test_client
 
 
 def dump(value):
@@ -24,7 +25,7 @@ def dump(value):
 
 def base_agent() -> Agent:
     return (
-        Agent()
+        Agent(test_client())
         .with_llm(OpenAI(api_key="llm-key", model="gpt-4o-mini", base_url="https://api.openai.com/v1/chat/completions"))
         .with_tts(ElevenLabsTTS(key="tts-key", voice_id="voice", model_id="eleven_flash_v2_5", base_url="wss://api.elevenlabs.io/v1"))
     )
@@ -61,7 +62,7 @@ def test_provider_language_does_not_set_turn_detection_language() -> None:
 
 def test_turn_detection_language_can_differ_from_provider_language() -> None:
     props = properties(
-        Agent(turn_detection=TurnDetectionConfig(language="fr-FR"))
+        Agent(test_client(), turn_detection=TurnDetectionConfig(language="fr-FR"))
         .with_llm(OpenAI(api_key="llm-key", model="gpt-4o-mini", base_url="https://api.openai.com/v1/chat/completions"))
         .with_tts(ElevenLabsTTS(key="tts-key", voice_id="voice", model_id="eleven_flash_v2_5", base_url="wss://api.elevenlabs.io/v1"))
         .with_stt(SpeechmaticsSTT(api_key="stt-key", language="en"))
@@ -74,7 +75,7 @@ def test_turn_detection_language_can_differ_from_provider_language() -> None:
 
 def test_invalid_turn_detection_language_is_rejected() -> None:
     with pytest.raises(ValueError, match="Invalid turn_detection.language: xx"):
-        properties(Agent(turn_detection=TurnDetectionConfig(language="xx")))  # type: ignore[arg-type]
+        properties(Agent(test_client(), turn_detection=TurnDetectionConfig(language="xx")))  # type: ignore[arg-type]
 
 
 def test_default_turn_detection_language_is_sent_without_stt() -> None:
@@ -176,7 +177,7 @@ def test_stt_vendor_params_match_documented_shapes() -> None:
 
 def test_assemblyai_params_stay_nested_and_asr_language_comes_from_turn_detection() -> None:
     props = properties(
-        Agent(turn_detection=TurnDetectionConfig(language="fr-FR"))
+        Agent(test_client(), turn_detection=TurnDetectionConfig(language="fr-FR"))
         .with_llm(OpenAI(api_key="llm-key", model="gpt-4o-mini", base_url="https://api.openai.com/v1/chat/completions"))
         .with_tts(ElevenLabsTTS(key="tts-key", voice_id="voice", model_id="eleven_flash_v2_5", base_url="wss://api.elevenlabs.io/v1"))
         .with_stt(AssemblyAISTT(api_key="assembly-key", language="en-US", uri="wss://example.test/ws"))

@@ -6,14 +6,26 @@ description: Full API reference for the Python Agent builder class.
 
 # Agent Reference
 
-**Import:** `from agora_agent import Agent`
+**Import:** `from agora_agent import Agent, CNAgent, GlobalAgent`
+
+Bind the client on every `Agent` builder via `Agent(client=client, ...)`, then pass vendor classes directly. The bound client sets the API routing region and provides area-specific IDE hints via `CNAgent` / `GlobalAgent`:
+
+> **`client` is required.** `create_session()` and `create_async_session()` raise `ValueError` if no client was bound on the agent.
+
+<!-- snippet: fragment -->
+```python
+from agora_agent import Agent, Agora, Area
+
+client = Agora(area=Area.US, app_id="...", app_certificate="...")
+agent = Agent(client=client)
+```
 
 ## Constructor
 
 <!-- snippet: fragment -->
 ```python
 Agent(
-    name: Optional[str] = None,
+    client: Agora | AsyncAgora,
     instructions: Optional[str] = None,
     turn_detection: Optional[TurnDetectionConfig] = None,
     interruption: Optional[InterruptionConfig] = None,
@@ -33,7 +45,7 @@ Agent(
 
 | Parameter | Type | Default | Description |
 |---|---|---|---|
-| `name` | `Optional[str]` | `None` | Agent name, used as default session name |
+| `client` | `Agora` / `AsyncAgora` | — | **Required.** Authenticated client used by `create_session()` and `create_async_session()` |
 | `instructions` | `Optional[str]` | `None` | Deprecated. Use LLM vendor `system_messages` instead. |
 | `turn_detection` | `Optional[TurnDetectionConfig]` | `None` | Interaction language and turn detection configuration |
 | `interruption` | `Optional[InterruptionConfig]` | `None` | Unified interruption control configuration |
@@ -63,8 +75,9 @@ Set the LLM vendor for cascading flow.
 
 <!-- snippet: fragment -->
 ```python
-from agora_agent import OpenAI
-agent = Agent().with_llm(OpenAI(api_key='your-key', base_url='https://api.openai.com/v1/chat/completions', model='gpt-4o-mini'))
+from agora_agent import Agora, Area, Agent, OpenAI
+client = Agora(area=Area.US, app_id='your-app-id', app_certificate='your-app-certificate')
+agent = Agent(client=client).with_llm(OpenAI(model='gpt-4o-mini'))
 ```
 
 ### `with_tts(vendor: BaseTTS) -> Agent`
@@ -73,8 +86,9 @@ Set the TTS vendor. Records the vendor's `sample_rate` for avatar validation.
 
 <!-- snippet: fragment -->
 ```python
-from agora_agent import ElevenLabsTTS
-agent = Agent().with_tts(ElevenLabsTTS(key='your-key', model_id='eleven_flash_v2_5', voice_id='your-voice-id', base_url='wss://api.elevenlabs.io/v1'))
+from agora_agent import Agora, Area, Agent, ElevenLabsTTS
+client = Agora(area=Area.US, app_id='your-app-id', app_certificate='your-app-certificate')
+agent = Agent(client=client).with_tts(ElevenLabsTTS(key='your-key', model_id='eleven_flash_v2_5', voice_id='your-voice-id', base_url='wss://api.elevenlabs.io/v1'))
 ```
 
 ### `with_stt(vendor: BaseSTT) -> Agent`
@@ -83,8 +97,9 @@ Set the STT (ASR) vendor.
 
 <!-- snippet: fragment -->
 ```python
-from agora_agent import DeepgramSTT
-agent = Agent().with_stt(DeepgramSTT(api_key='your-key', language='en-US'))
+from agora_agent import Agora, Area, Agent, DeepgramSTT
+client = Agora(area=Area.US, app_id='your-app-id', app_certificate='your-app-certificate')
+agent = Agent(client=client).with_stt(DeepgramSTT(api_key='your-key', language='en-US'))
 ```
 
 ### `with_mllm(vendor: BaseMLLM) -> Agent`
@@ -93,8 +108,10 @@ Set the MLLM vendor for multimodal flow. Calling `with_mllm()` automatically set
 
 <!-- snippet: fragment -->
 ```python
-from agora_agent import OpenAIRealtime
-agent = Agent().with_mllm(OpenAIRealtime(api_key='your-key'))
+from agora_agent import Agent, Agora, Area, OpenAIRealtime
+
+client = Agora(area=Area.US, app_id='your-app-id', app_certificate='your-app-certificate')
+agent = Agent(client=client).with_mllm(OpenAIRealtime(api_key='your-key'))
 ```
 
 ### `with_avatar(vendor: BaseAvatar) -> Agent`
@@ -142,10 +159,6 @@ Deprecated. Configure `system_messages` on the LLM vendor instead.
 ### `with_greeting(greeting: str) -> Agent`
 
 Deprecated. Configure `greeting_message` on the LLM or MLLM vendor instead.
-
-### `with_name(name: str) -> Agent`
-
-Override the agent name.
 
 ### `with_sal(config: SalConfig) -> Agent`
 
@@ -198,7 +211,6 @@ Set filler words configuration (played while waiting for LLM response).
 <!-- snippet: fragment -->
 ```python
 create_session(
-    client: Any,
     channel: str,
     agent_uid: str,
     remote_uids: List[str],
@@ -212,15 +224,14 @@ create_session(
 ) -> AgentSession
 ```
 
-Creates an `AgentSession` bound to the given client and channel.
+Creates an `AgentSession` using the client already bound to `Agent(client=...)`. Pass the agent instance name with the `name` parameter.
 
 | Parameter | Type | Required | Description |
 |---|---|---|---|
-| `client` | `Agora` or `AsyncAgora` | Yes | Authenticated client |
 | `channel` | `str` | Yes | Channel name |
 | `agent_uid` | `str` | Yes | UID for the agent |
 | `remote_uids` | `List[str]` | Yes | UIDs of remote participants |
-| `name` | `Optional[str]` | No | Session name (defaults to agent name) |
+| `name` | `Optional[str]` | No | Session name sent to the Start Agent API (defaults to `agent-{timestamp}` if omitted) |
 | `token` | `Optional[str]` | No | Pre-built RTC+RTM token |
 | `expires_in` | `Optional[int]` | No | Token lifetime in seconds (default: `86400` = 24 h, Agora max). Only applies when the token is auto-generated. Use `expires_in_hours()` or `expires_in_minutes()` for clarity. Valid range: 1–86400. |
 | `idle_timeout` | `Optional[int]` | No | Idle timeout in seconds |
@@ -230,7 +241,51 @@ Creates an `AgentSession` bound to the given client and channel.
 
 `pipeline_id` is sent as the top-level `/join` field `pipeline_id`, not inside `properties`.
 
+`create_session()` requires that the agent was constructed with `client=...`. If no client is bound, it raises `ValueError`.
+
+Example:
+
+```python
+import time
+session = agent.create_session(
+    channel=f"demo-channel-{int(time.time())}",
+    agent_uid="1",
+    remote_uids=["100"],
+    name=f"conversation-{int(time.time())}",
+)
+```
+
 **Returns:** `AgentSession`
+
+## `create_async_session()`
+
+Same parameters and behavior as `create_session()`, but returns `AsyncAgentSession` for `asyncio` applications.
+
+<!-- snippet: fragment -->
+```python
+import time
+
+session = agent.create_async_session(
+    channel=f"demo-channel-{int(time.time())}",
+    agent_uid="1",
+    remote_uids=["100"],
+    name=f"conversation-{int(time.time())}",
+)
+agent_id = await session.start()
+```
+
+**Returns:** `AsyncAgentSession`
+
+Requires `client=...` on the agent builder, same as `create_session()`.
+
+When you omit credentials for supported Agora-managed global models, AgentKit sends the matching Agora-managed configuration automatically:
+
+- Deepgram STT: `nova-2`, `nova-3`
+- OpenAI LLM: `gpt-4o-mini`, `gpt-4.1-mini`, `gpt-5-nano`, `gpt-5-mini`
+- OpenAI TTS: `tts-1`
+- MiniMax TTS: `speech-2.6-turbo`, `speech-2.8-turbo`, `speech_2_6_turbo`, `speech_2_8_turbo`
+
+If you provide your own vendor API key for those same models, AgentKit keeps the request in BYOK mode.
 
 ## `to_properties()`
 
@@ -257,7 +312,6 @@ to_properties(
 
 | Property | Type | Description |
 |---|---|---|
-| `name` | `Optional[str]` | Agent name |
 | `instructions` | `Optional[str]` | Deprecated Agent-level system prompt |
 | `greeting` | `Optional[str]` | Deprecated Agent-level greeting message |
 | `failure_message` | `Optional[str]` | Deprecated Agent-level failure message |

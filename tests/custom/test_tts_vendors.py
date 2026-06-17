@@ -79,12 +79,43 @@ def test_tts_vendor_params_match_generated_core_shapes() -> None:
         "provider": "CUSTOM_VOICE",
     }
 
-    assert MiniMaxTTS(key="minimax-key", group_id="group", model="speech-02-turbo", voice_id="voice", url="wss://api-uw.minimax.io/ws/v1/t2a_v2").to_config()["params"] == {
+    assert MiniMaxTTS(key="minimax-key", group_id="group", model="speech-02-turbo", voice_id="voice").to_config()["params"] == {
         "model": "speech-02-turbo",
         "key": "minimax-key",
         "group_id": "group",
         "voice_setting": {"voice_id": "voice"},
-        "url": "wss://api-uw.minimax.io/ws/v1/t2a_v2",
+    }
+
+    assert MiniMaxTTS(
+        key="minimax-key",
+        group_id="group",
+        model="speech-01-turbo",
+        voice_id="female-shaonv",
+        speed=1,
+        vol=1,
+        pitch=0,
+        emotion="happy",
+        latex_read=True,
+        english_normalization=True,
+        sample_rate=16000,
+        pronunciation_dict={"tone": ["example/(ex1)(am2)(ple0)", "message/(mes1)(sage4)"]},
+        language_boost="auto",
+    ).to_config()["params"] == {
+        "model": "speech-01-turbo",
+        "key": "minimax-key",
+        "group_id": "group",
+        "voice_setting": {
+            "voice_id": "female-shaonv",
+            "speed": 1,
+            "vol": 1,
+            "pitch": 0,
+            "emotion": "happy",
+            "latex_read": True,
+            "english_normalization": True,
+        },
+        "audio_setting": {"sample_rate": 16000},
+        "pronunciation_dict": {"tone": ["example/(ex1)(am2)(ple0)", "message/(mes1)(sage4)"]},
+        "language_boost": "auto",
     }
 
     assert SarvamTTS(key="sarvam-key", speaker="anushka", target_language_code="en-IN", sample_rate=24000).to_config()["params"] == {
@@ -123,8 +154,20 @@ def test_tts_managed_mode_validation_matches_core_shapes() -> None:
     with pytest.raises(Exception, match="OpenAITTS requires api_key"):
         OpenAITTS(voice="coral", model="tts-1-hd")
 
-    with pytest.raises(Exception, match="MiniMaxTTS requires key unless using a supported Agora-managed model"):
+    with pytest.raises(Exception, match="MiniMaxTTS requires key unless using a supported Agora-managed model|MiniMaxTTS requires exactly one of voice_id or timber_weights"):
         MiniMaxTTS(model="unsupported-model")
+
+    with pytest.raises(Exception, match="MiniMaxTTS requires exactly one of voice_id or timber_weights"):
+        MiniMaxTTS(key="minimax-key", group_id="group", model="speech-01-turbo")
+
+    with pytest.raises(Exception, match="MiniMaxTTS requires exactly one of voice_id or timber_weights"):
+        MiniMaxTTS(
+            key="minimax-key",
+            group_id="group",
+            model="speech-01-turbo",
+            voice_id="voice",
+            timber_weights=[{"voice_id": "voice-2", "weight": 1}],
+        )
 
 
 def test_tts_wire_serialization_applies_fern_aliases() -> None:

@@ -19,7 +19,7 @@ pip install agora-agents
 
 ## Quick Start
 
-Start with the `Agent` builder: create a client with app credentials, choose your ASR, LLM, and TTS providers, then start a session. Omit vendor API keys for supported Agora-managed models, or provide keys when you want BYOK.
+Start with the `Agent` builder: create a client with app credentials, pass it to `Agent(client=client, ...)`, choose your ASR, LLM, and TTS providers, then start a session. Omit vendor API keys for supported Agora-managed global models, or provide keys when you want BYOK.
 Set Agora interaction language with `turn_detection.language`; provider-specific STT language values remain under `asr.params`. Ares uses only the REST `asr.language` value sourced from `turn_detection.language`.
 
 ```python
@@ -31,8 +31,8 @@ from agora_agent import (
     Agora,
     Area,
     DeepgramSTT,
-    MiniMaxTTS,
     OpenAI,
+    MiniMaxTTS,
     expires_in_hours,
 )
 
@@ -54,7 +54,7 @@ def start_conversation() -> str:
         app_certificate=app_certificate,
     )
 
-    agent = Agent(name=f"conversation-{int(time.time())}", turn_detection={"language": "en-US"}).with_stt(
+    agent = Agent(client=client, turn_detection={"language": "en-US"}).with_stt(
         DeepgramSTT(
             model="nova-3",
             language="en",
@@ -80,10 +80,10 @@ def start_conversation() -> str:
     )
 
     session = agent.create_session(
-        client,
         channel=f"demo-channel-{int(time.time())}",
         agent_uid="123456",
         remote_uids=["*"],
+        name=f"conversation-{int(time.time())}",
         idle_timeout=30,
         expires_in=expires_in_hours(1),
         debug=False,
@@ -94,35 +94,42 @@ def start_conversation() -> str:
 
 ### Why no token or vendor key in the example?
 
-`Agora` generates the required ConvoAI REST auth and RTC join tokens automatically when you provide `app_id` and `app_certificate`. For supported Agora-managed models, leave vendor API keys unset; provide keys when you want BYOK.
+`Agora` generates the required ConvoAI REST auth and RTC join tokens automatically when you provide `app_id` and `app_certificate`. For supported Agora-managed global models, leave vendor API keys unset; provide keys when you want BYOK. CN MiniMax TTS is not Agora-managed in the same way and typically includes `key`.
+
+### Regional agent builders
+
+Bind the client once with `Agent(client=client, ...)` and pass vendor classes directly such as `OpenAI(...)` or `MiniMaxTTS(...)`. The bound client selects the API routing region and provides IDE hints via `CNAgent` / `GlobalAgent`, but does not restrict which vendor classes you can use. See `[docs/guides/regional-routing.md](./docs/guides/regional-routing.md)` for regional examples.
 
 ## AI Studio pipeline IDs
 
 Use `pipeline_id` when you want a published AI Studio pipeline to provide the base agent configuration:
 
 ```python
+import time
+# client = Agora(area=Area.US, app_id="...", app_certificate="...")
 agent = Agent(
-    name="support",
+    client=client,
     pipeline_id="studio-pipeline-id",
 )
 
 session = agent.create_session(
-    client,
-    channel="support-room",
+    channel=f"demo-channel-{int(time.time())}",
     agent_uid="1",
     remote_uids=["100"],
+    name=f"conversation-{int(time.time())}",
 )
 ```
 
 You can override it per session:
 
 ```python
+import time
 session = agent.create_session(
-    client,
-    channel="support-room",
+    channel=f"demo-channel-{int(time.time())}",
     agent_uid="1",
     remote_uids=["100"],
     pipeline_id="session-pipeline-id",
+    name=f"conversation-{int(time.time())}",
 )
 ```
 
@@ -133,7 +140,7 @@ AgentKit sends the resolved value as the top-level `/join` field `pipeline_id`, 
 Use the same `Agent` builder shape, but provide credentials explicitly when you want vendor-managed billing and routing instead of Agora-managed models.
 
 ```python
-agent = Agent(turn_detection={"language": "en-US"}).with_stt(
+agent = Agent(client=client, turn_detection={"language": "en-US"}).with_stt(
     DeepgramSTT(
         api_key=os.environ["DEEPGRAM_API_KEY"],
         model="nova-3",
@@ -151,12 +158,11 @@ agent = Agent(turn_detection={"language": "en-US"}).with_stt(
         top_p=0.95,
     )
 ).with_tts(
-    MiniMaxTTS(
-        key=os.environ["MINIMAX_API_KEY"],
-        group_id=os.environ["MINIMAX_GROUP_ID"],
-        model="speech_2_6_turbo",
-        voice_id="English_captivating_female1",
-        url="wss://api-uw.minimax.io/ws/v1/t2a_v2",
+    ElevenLabsTTS(
+        key=os.environ["ELEVENLABS_API_KEY"],
+        model_id="eleven_flash_v2_5",
+        voice_id=os.environ["ELEVENLABS_VOICE_ID"],
+        base_url="wss://api.elevenlabs.io/v1",
     )
 )
 ```
@@ -174,15 +180,30 @@ If you want to bring your own vendor credentials instead of using Agora-managed 
 Use `with_mllm()` for OpenAI Realtime, Gemini Live, Vertex AI, or xAI Grok. No STT, LLM, or TTS vendor is needed when MLLM mode is enabled.
 
 ```python
-from agora_agent import Agent, OpenAIRealtime
+from agora_agent import Agent, Agora, Area, OpenAIRealtime
+import time
 
-agent = Agent(name="realtime-assistant").with_mllm(
+client = Agora(
+    area=Area.US,
+    app_id=os.environ["AGORA_APP_ID"],
+    app_certificate=os.environ["AGORA_APP_CERTIFICATE"],
+)
+
+agent = Agent(client=client).with_mllm(
     OpenAIRealtime(
         api_key=os.environ["OPENAI_API_KEY"],
         model="gpt-4o-realtime-preview",
         greeting_message="Hello! Ready to chat.",
     )
 )
+
+session = agent.create_session(
+    channel=f"demo-channel-{int(time.time())}",
+    agent_uid="1",
+    remote_uids=["*"],
+    name=f"conversation-{int(time.time())}",
+)
+session.start()
 ```
 
 See the [MLLM Flow guide](./docs/guides/mllm-flow.md) for full examples with Gemini Live and Vertex AI.

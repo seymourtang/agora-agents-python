@@ -21,6 +21,7 @@ Typical reasons:
 import os
 
 from agora_agent import Agent, Agora, Area, DeepgramSTT, ElevenLabsTTS, OpenAI
+import time
 
 
 def main() -> None:
@@ -32,7 +33,7 @@ def main() -> None:
 
     # In BYOK mode, each vendor carries its own credentials.
     agent = (
-        Agent(name="support-assistant")
+        Agent(client=client)
         .with_stt(
             DeepgramSTT(
                 api_key=os.environ["DEEPGRAM_API_KEY"],
@@ -62,10 +63,10 @@ def main() -> None:
     )
 
     session = agent.create_session(
-        client,
-        channel="support-room-123",
+        channel=f"demo-channel-{int(time.time())}",
         agent_uid="1",
         remote_uids=["100"],
+        name=f"conversation-{int(time.time())}",
         idle_timeout=120,
     )
 
@@ -81,5 +82,5 @@ if __name__ == "__main__":
 
 ## Builder-managed vs BYOK
 
-- Builder without vendor keys: supported Agora-managed models
+- Builder without vendor keys: supported Agora-managed global models
 - BYOK: your keys and full vendor control

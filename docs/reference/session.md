@@ -17,7 +17,7 @@ from agora_agent import AgentSession, AsyncAgentSession
 
 ## Constructor
 
-Sessions are normally created via `Agent.create_session()`. Direct construction is available for advanced use:
+Sessions are normally created via `Agent(client=client, ...).create_session()`. The agent builder must have a bound client. Direct `AgentSession` construction is available for advanced use:
 
 <!-- snippet: fragment -->
 ```python
@@ -48,7 +48,7 @@ AgentSession(
 | `client` | `Agora` or `AsyncAgora` | Yes | Authenticated client |
 | `agent` | `Agent` | Yes | Agent configuration |
 | `app_id` | `str` | Yes | Agora App ID |
-| `name` | `str` | Yes | Session name |
+| `name` | `str` | Yes | Agent instance name sent to the Start Agent API |
 | `channel` | `str` | Yes | Channel name |
 | `agent_uid` | `str` | Yes | UID for the agent |
 | `remote_uids` | `List[str]` | Yes | UIDs of remote participants |
@@ -63,6 +63,19 @@ AgentSession(
 | `warn` | `Optional[Callable[[str], None]]` | No | Custom warning sink |
 
 `pipeline_id` is sent as the top-level `/join` field `pipeline_id`, not inside `properties`. If unset, `AgentSession.start()` uses the agent-level value from `Agent(..., pipeline_id=...)`.
+
+For normal SDK usage, prefer binding the client on the agent first. Pass the agent instance name via `create_session(name=...)`:
+
+```python
+import time
+agent = Agent(client=client)
+session = agent.create_session(
+    channel=f"demo-channel-{int(time.time())}",
+    agent_uid="1",
+    remote_uids=["100"],
+    name=f"conversation-{int(time.time())}",
+)
+```
 
 ## Methods
 
@@ -250,6 +263,23 @@ Remove a previously registered event handler.
 ```python
 session.off('started', my_handler)
 ```
+
+## Presets and BYOK
+
+Prefer configuring vendors on the `Agent` builder. When you omit credentials for supported Agora-managed global models, AgentKit sends the matching Agora-managed configuration at session start. CN MiniMax TTS is not Agora-managed in the same way and typically includes `key`.
+
+`preset` is an advanced session option for project-specific settings, not for selecting Agora-managed models. Most applications should use the builder instead.
+
+- Omit vendor credentials on the builder for supported Agora-managed global models.
+- Provide vendor API keys when you want BYOK.
+- Pass `preset` on `agent.create_session(...)` only when you need to access specific project-specific settings.
+
+Supported Agora-managed models:
+
+- Deepgram STT: `nova-2`, `nova-3`
+- OpenAI LLM: `gpt-4o-mini`, `gpt-4.1-mini`, `gpt-5-nano`, `gpt-5-mini`
+- OpenAI TTS: `tts-1`
+- MiniMax TTS: `speech-2.6-turbo`, `speech-2.8-turbo`, `speech_2_6_turbo`, `speech_2_8_turbo`
 
 ## Properties
 

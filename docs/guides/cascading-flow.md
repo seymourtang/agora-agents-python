@@ -17,7 +17,8 @@ User audio → STT → LLM → TTS → Agent audio
 ### Sync
 
 ```python
-from agora_agent import Agent, Agora, Area, OpenAI, ElevenLabsTTS, DeepgramSTT
+from agora_agent import Agent, Agora, Area, DeepgramSTT, ElevenLabsTTS, OpenAI
+import time
 
 client = Agora(
     area=Area.US,
@@ -26,7 +27,7 @@ client = Agora(
 )
 
 agent = (
-    Agent(name='assistant')
+    Agent(client=client)
     .with_llm(OpenAI(
         api_key='your-openai-key',
         base_url='https://api.openai.com/v1/chat/completions',
@@ -37,7 +38,7 @@ agent = (
     .with_stt(DeepgramSTT(api_key='your-deepgram-key', language='en-US', model='nova-2'))
 )
 
-session = agent.create_session(client, channel='support-room', agent_uid='1', remote_uids=['100'])
+session = agent.create_session(channel=f"demo-channel-{int(time.time())}", agent_uid='1', remote_uids=['100'], name=f"conversation-{int(time.time())}")
 agent_id = session.start()
 session.say('Welcome! How can I assist you today?')
 # ... agent listens and responds automatically ...
@@ -48,7 +49,8 @@ session.stop()
 
 ```python
 import asyncio
-from agora_agent import Agent, AsyncAgora, Area, OpenAI, ElevenLabsTTS, DeepgramSTT
+from agora_agent import Agent, AsyncAgora, Area, DeepgramSTT, ElevenLabsTTS, OpenAI
+import time
 
 async def main():
     client = AsyncAgora(
@@ -58,7 +60,7 @@ async def main():
         )
 
     agent = (
-        Agent(name='assistant')
+        Agent(client=client)
         .with_llm(OpenAI(
             api_key='your-openai-key',
             base_url='https://api.openai.com/v1/chat/completions',
@@ -69,7 +71,7 @@ async def main():
         .with_stt(DeepgramSTT(api_key='your-deepgram-key', language='en-US', model='nova-2'))
     )
 
-    session = agent.create_session(client, channel='support-room', agent_uid='1', remote_uids=['100'])
+    session = agent.create_session(channel=f"demo-channel-{int(time.time())}", agent_uid='1', remote_uids=['100'], name=f"conversation-{int(time.time())}")
     agent_id = await session.start()
     await session.say('Welcome! How can I assist you today?')
     # ... agent listens and responds automatically ...
@@ -84,6 +86,7 @@ This combination keeps everything within the Azure ecosystem:
 
 ```python
 from agora_agent import Agent, Agora, Area, AzureOpenAI, MicrosoftTTS, MicrosoftSTT
+import time
 
 client = Agora(
     area=Area.EU,
@@ -92,7 +95,7 @@ client = Agora(
 )
 
 agent = (
-    Agent(name='azure-agent')
+    Agent(client=client)
     .with_llm(AzureOpenAI(
         api_key='your-azure-key',
         endpoint='https://your-resource.openai.azure.com',
@@ -112,7 +115,7 @@ agent = (
     ))
 )
 
-session = agent.create_session(client, channel='enterprise-room', agent_uid='1', remote_uids=['100'])
+session = agent.create_session(channel=f"demo-channel-{int(time.time())}", agent_uid='1', remote_uids=['100'], name=f"conversation-{int(time.time())}")
 agent_id = session.start()
 session.say('Hello! I am your enterprise assistant.')
 session.stop()
@@ -140,7 +143,11 @@ llm = OpenAI(
 Configure greetings on the LLM vendor so message ownership stays with the LLM configuration:
 
 ```python
-agent = Agent(name='greeter').with_llm(OpenAI(
+from agora_agent import Agent, Agora, Area, OpenAI
+
+client = Agora(area=Area.US, app_id='your-app-id', app_certificate='your-app-certificate')
+
+agent = Agent(client=client).with_llm(OpenAI(
     api_key='your-openai-key',
     base_url='https://api.openai.com/v1/chat/completions',
     model='gpt-4o-mini',

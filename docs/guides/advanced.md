@@ -12,6 +12,7 @@ Enable HTTP request/response logging by passing `debug=True` when creating the c
 
 ```python
 from agora_agent import Agora, Area
+import time
 
 client = Agora(
     area=Area.US,
@@ -20,7 +21,13 @@ client = Agora(
     debug=True,
 )
 # All requests (including session.start()) will be logged
-session = agent.create_session(client, ...)
+session = agent.create_session(
+    channel=f"demo-channel-{int(time.time())}",
+    agent_uid="1",
+    remote_uids=["100"],
+    name=f"conversation-{int(time.time())}",
+    debug=True,
+)
 session.start()  # Logs: HTTP request POST .../agents/start ...
 ```
 

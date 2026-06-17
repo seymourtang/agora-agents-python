@@ -12,6 +12,7 @@ from agora_agent.agentkit import (
 )
 import pytest
 
+from agora_agent import AgentClient, Area
 from agora_agent.agentkit.vendors import (
     AkoolAvatar,
     ElevenLabsTTS,
@@ -19,6 +20,7 @@ from agora_agent.agentkit.vendors import (
     OpenAI,
     OpenAIRealtime,
 )
+from test_helpers import test_client
 
 
 def _parameter(config, key):
@@ -55,13 +57,13 @@ def test_model_copy_helper_supports_pydantic_v1_copy_api():
 
 
 def test_with_audio_scenario_sets_session_parameter():
-    agent = Agent(name="test").with_audio_scenario("chorus")
+    agent = Agent(test_client()).with_audio_scenario("chorus")
 
     assert _parameter(agent.config, "audio_scenario") == "chorus"
 
 
 def test_with_audio_scenario_preserves_existing_parameters():
-    agent = Agent(name="test", parameters={"enable_metrics": True}).with_audio_scenario(
+    agent = Agent(test_client(), parameters={"enable_metrics": True}).with_audio_scenario(
         "chorus"
     )
 
@@ -70,7 +72,7 @@ def test_with_audio_scenario_preserves_existing_parameters():
 
 
 def test_enable_rtm_defaults_data_channel_to_rtm():
-    properties = Agent(name="test", advanced_features={"enable_rtm": True}).to_properties(
+    properties = Agent(test_client(), advanced_features={"enable_rtm": True}).to_properties(
         channel="room",
         agent_uid="1",
         remote_uids=["100"],
@@ -79,11 +81,37 @@ def test_enable_rtm_defaults_data_channel_to_rtm():
     )
 
     assert properties.parameters.data_channel == "rtm"
+    assert properties.parameters.audio_scenario == "default"
+
+
+def test_audio_scenario_defaults_to_default():
+    properties = Agent(test_client()).to_properties(
+        channel="room",
+        agent_uid="1",
+        remote_uids=["100"],
+        token="token",
+        skip_vendor_validation=True,
+    )
+
+    assert properties.parameters.audio_scenario == "default"
+
+
+def test_audio_scenario_preserves_explicit_value():
+    properties = Agent(test_client(), parameters={"enable_metrics": True}).to_properties(
+        channel="room",
+        agent_uid="1",
+        remote_uids=["100"],
+        token="token",
+        skip_vendor_validation=True,
+    )
+
+    assert properties.parameters.enable_metrics is True
+    assert properties.parameters.audio_scenario == "default"
 
 
 def test_enable_rtm_preserves_explicit_data_channel():
     properties = Agent(
-        name="test",
+        test_client(),
         advanced_features={"enable_rtm": True},
         parameters={"data_channel": "datastream"},
     ).to_properties(
@@ -99,7 +127,7 @@ def test_enable_rtm_preserves_explicit_data_channel():
 
 def test_vendor_config_takes_priority_over_agent_level_convenience_fields():
     agent = (
-        Agent(name="test")
+        Agent(test_client())
         .with_llm(
             OpenAI(
                 model="gpt-4o-mini",
@@ -127,7 +155,7 @@ def test_vendor_config_takes_priority_over_agent_level_convenience_fields():
 
 
 def test_avatar_sample_rate_validation_works_when_tts_added_after_avatar():
-    agent = Agent(name="test").with_avatar(
+    agent = Agent(test_client()).with_avatar(
         LiveAvatarAvatar(api_key="avatar-key", quality="medium", agora_uid="2")
     )
 
@@ -139,7 +167,7 @@ def test_avatar_sample_rate_validation_works_when_tts_added_after_avatar():
 
 def test_avatar_sample_rate_validation_uses_wrapper_sample_rate():
     agent = (
-        Agent(name="test")
+        Agent(test_client())
         .with_avatar(AkoolAvatar(api_key="avatar-key"))
         .with_tts(
             ElevenLabsTTS(key="tts-key", model_id="model", voice_id="voice", base_url="wss://api.elevenlabs.io/v1", sample_rate=16000)
@@ -152,7 +180,7 @@ def test_avatar_sample_rate_validation_uses_wrapper_sample_rate():
 def test_with_mllm_removes_deprecated_advanced_features_enable_mllm():
     properties = (
         Agent(
-            name="test",
+            test_client(),
             advanced_features={"enable_mllm": True, "enable_rtm": True},
             greeting="hello from agent",
             failure_message="try again",
@@ -179,9 +207,17 @@ def test_with_mllm_removes_deprecated_advanced_features_enable_mllm():
     assert af_dump.get("enable_rtm") is True
 
 
+def test_bound_client_allows_region_incompatible_llm_at_builder_time():
+    client = AgentClient(area=Area.CN, app_id="0" * 32, app_certificate="1" * 32)
+
+    agent = Agent(client=client).with_llm(OpenAI(model="gpt-4o-mini"))
+    assert agent.__class__.__name__ == "CNAgent"
+    assert agent.llm["style"] == "openai"
+
+
 def test_to_properties_rejects_mllm_with_enabled_avatar():
     agent = (
-        Agent(name="test")
+        Agent(test_client())
         .with_mllm(OpenAIRealtime(api_key="mllm-key"))
         .with_avatar(
             LiveAvatarAvatar(
@@ -207,7 +243,7 @@ def test_to_properties_mllm_with_avatar_fires_before_token_generation():
     clear, actionable error even when app_id/app_certificate are empty.
     """
     agent = (
-        Agent(name="test")
+        Agent(test_client())
         .with_mllm(OpenAIRealtime(api_key="mllm-key"))
         .with_avatar(
             LiveAvatarAvatar(
@@ -231,7 +267,7 @@ def test_to_properties_mllm_with_avatar_fires_before_token_generation():
 
 def test_to_properties_rejects_mllm_with_default_enabled_avatar():
     """Avatar with no `enable` field should be treated as enabled."""
-    agent = Agent(name="test").with_mllm(OpenAIRealtime(api_key="mllm-key"))
+    agent = Agent(test_client()).with_mllm(OpenAIRealtime(api_key="mllm-key"))
     agent._avatar = {  # noqa: SLF001
         "vendor": "liveavatar",
         "params": {
@@ -253,7 +289,7 @@ def test_to_properties_rejects_mllm_with_default_enabled_avatar():
 
 def test_to_properties_allows_mllm_with_disabled_avatar_and_no_tts():
     properties = (
-        Agent(name="test")
+        Agent(test_client())
         .with_mllm(OpenAIRealtime(api_key="mllm-key"))
         .with_avatar(
             LiveAvatarAvatar(
@@ -281,7 +317,7 @@ def test_to_properties_allows_mllm_with_disabled_avatar_and_no_tts():
 
 def test_to_properties_mllm_without_tts_or_llm_succeeds():
     properties = (
-        Agent(name="test")
+        Agent(test_client())
         .with_mllm(OpenAIRealtime(api_key="mllm-key"))
         .to_properties(
             channel="room",

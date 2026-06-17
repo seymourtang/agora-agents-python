@@ -15,7 +15,13 @@ from ..agent_management.types.agent_think_agent_management_response import (
     AgentThinkAgentManagementResponse as AgentThinkResponse,
 )
 from ..agents.types.get_turns_agents_response import GetTurnsAgentsResponse
-from .agent import Agent, GetTurnsOptions, SayOptions, ThinkOptions, _start_properties_from_mapping
+from .agent import (
+    Agent,
+    GetTurnsOptions,
+    SayOptions,
+    ThinkOptions,
+    _start_properties_from_mapping,
+)
 from .avatar_types import (
     is_akool_avatar,
     is_anam_avatar,
@@ -24,6 +30,7 @@ from .avatar_types import (
     is_heygen_avatar,
     is_live_avatar_avatar,
     is_rtc_avatar,
+    is_sensetime_avatar,
     validate_avatar_config,
     validate_tts_sample_rate,
 )
@@ -44,7 +51,7 @@ class _AgentSessionRequiredOptions(typing.TypedDict, total=True):
     client: typing.Any
     agent: Agent
     app_id: str
-    name: str
+    name: str  # Agent instance name sent to the Start Agent API.
     channel: str
     agent_uid: str
     remote_uids: typing.List[str]
@@ -56,6 +63,10 @@ class AgentSessionOptions(_AgentSessionRequiredOptions, total=False):
     Required fields
     ---------------
     client, agent, app_id, name, channel, agent_uid, remote_uids
+
+    ``name`` is the agent instance identifier for the Start Agent API. Prefer
+    passing it through :meth:`Agent.create_session` rather than constructing
+    :class:`AgentSession` directly.
 
     Optional fields
     ---------------
@@ -118,7 +129,9 @@ class _AgentSessionBase:
         self._warn = warn or warnings.warn
         self._agent_id: typing.Optional[str] = None
         self._status: str = "idle"
-        self._event_handlers: typing.Dict[str, typing.List[typing.Callable[..., None]]] = {}
+        self._event_handlers: typing.Dict[
+            str, typing.List[typing.Callable[..., None]]
+        ] = {}
 
     # ------------------------------------------------------------------
     # Public read-only properties
@@ -172,7 +185,9 @@ class _AgentSessionBase:
             self._client, "app_certificate", self._app_certificate
         )
         if not app_certificate:
-            raise RuntimeError("app_certificate is required for app-credentials auth mode")
+            raise RuntimeError(
+                "app_certificate is required for app-credentials auth mode"
+            )
         token = generate_convo_ai_token(
             app_id=app_id,
             app_certificate=app_certificate,
@@ -205,6 +220,7 @@ class _AgentSessionBase:
             or is_akool_avatar(avatar)
             or is_anam_avatar(avatar)
             or is_generic_avatar(avatar)
+            or is_sensetime_avatar(avatar)
         ):
             validate_avatar_config(avatar)
 
@@ -234,7 +250,9 @@ class _AgentSessionBase:
                 "Akool requires 16,000 Hz. Please ensure your TTS provider is configured for 16kHz."
             )
 
-    def _enrich_avatar_for_session(self, properties: typing.Dict[str, typing.Any]) -> None:
+    def _enrich_avatar_for_session(
+        self, properties: typing.Dict[str, typing.Any]
+    ) -> None:
         avatar = properties.get("avatar")
         if not isinstance(avatar, dict) or avatar.get("enable", True) is False:
             return
@@ -255,7 +273,9 @@ class _AgentSessionBase:
             return
 
         if not params.get("agora_uid"):
-            validate_avatar_config(avatar, require_session_fields=is_generic_avatar(avatar))
+            validate_avatar_config(
+                avatar, require_session_fields=is_generic_avatar(avatar)
+            )
             return
 
         if not params.get("agora_token"):
@@ -287,7 +307,11 @@ class _AgentSessionBase:
         if hasattr(value, "model_dump"):
             return value.model_dump(exclude_none=True)
         if isinstance(value, dict):
-            return {k: _AgentSessionBase._dump_model(v) for k, v in value.items() if v is not None}
+            return {
+                k: _AgentSessionBase._dump_model(v)
+                for k, v in value.items()
+                if v is not None
+            }
         if isinstance(value, list):
             return [_AgentSessionBase._dump_model(item) for item in value]
         return value
@@ -334,10 +358,15 @@ class _AgentSessionBase:
         if self._agent.llm is not None:
             llm = dict(self._agent.llm)
             if self._agent.instructions is not None and "system_messages" not in llm:
-                llm["system_messages"] = [{"role": "system", "content": self._agent.instructions}]
+                llm["system_messages"] = [
+                    {"role": "system", "content": self._agent.instructions}
+                ]
             if self._agent.greeting is not None and "greeting_message" not in llm:
                 llm["greeting_message"] = self._agent.greeting
-            if self._agent.greeting_configs is not None and "greeting_configs" not in llm:
+            if (
+                self._agent.greeting_configs is not None
+                and "greeting_configs" not in llm
+            ):
                 llm["greeting_configs"] = self._dump_model(self._agent.greeting_configs)
             if self._agent.failure_message is not None and "failure_message" not in llm:
                 llm["failure_message"] = self._agent.failure_message
@@ -345,7 +374,10 @@ class _AgentSessionBase:
                 llm["max_history"] = self._agent.max_history
             properties["llm"] = llm
         if self._agent.stt is not None:
-            properties["asr"] = self._dump_model(self._agent.stt)
+            turn_detection = properties.get("turn_detection") or {}
+            properties["asr"] = self._dump_model(
+                self._agent._resolve_asr_config(turn_detection)  # noqa: SLF001
+            )
 
         return properties
 
@@ -395,7 +427,9 @@ class _AgentSessionBase:
         pipeline_id: typing.Optional[str],
     ) -> typing.Tuple[typing.Set[str], typing.Set[str]]:
         skip_categories: typing.Set[str] = set()
-        allow_missing_categories: typing.Set[str] = {"asr", "llm", "tts"} if pipeline_id else set()
+        allow_missing_categories: typing.Set[str] = (
+            {"asr", "llm", "tts"} if pipeline_id else set()
+        )
 
         preset = normalize_preset_input(self._preset)
         if preset:
@@ -423,7 +457,11 @@ class _AgentSessionBase:
 
     @staticmethod
     def _response_turns(response: typing.Any) -> typing.List[typing.Any]:
-        turns = response.get("turns") if isinstance(response, dict) else getattr(response, "turns", None)
+        turns = (
+            response.get("turns")
+            if isinstance(response, dict)
+            else getattr(response, "turns", None)
+        )
         return list(turns or [])
 
     @staticmethod
@@ -433,7 +471,9 @@ class _AgentSessionBase:
         return getattr(response, "pagination", None)
 
     @classmethod
-    def _with_all_turns(cls, first_response: typing.Any, turns: typing.List[typing.Any]) -> GetTurnsAgentsResponse:
+    def _with_all_turns(
+        cls, first_response: typing.Any, turns: typing.List[typing.Any]
+    ) -> GetTurnsAgentsResponse:
         data = cls._dump_model(first_response)
         if not isinstance(data, dict):
             data = {}
@@ -493,9 +533,14 @@ class AgentSession(_AgentSessionBase):
     >>> from agora_agent import Agora, Area, Agent, OpenAI, ElevenLabsTTS
     >>>
     >>> client = Agora(area=Area.US, app_id="...", app_certificate="...")
-    >>> agent = Agent(name="assistant", instructions="You are a helpful voice assistant.")
+    >>> agent = Agent(client=client, instructions="You are a helpful voice assistant.")
     >>> agent = agent.with_llm(OpenAI(api_key="...", base_url="https://api.openai.com/v1/chat/completions", model="gpt-4")).with_tts(ElevenLabsTTS(key="...", model_id="...", voice_id="...", base_url="wss://api.elevenlabs.io/v1"))
-    >>> session = agent.create_session(client, channel="room-123", agent_uid="1", remote_uids=["100"])
+    >>> session = agent.create_session(
+    ...     channel="room-123",
+    ...     agent_uid="1",
+    ...     remote_uids=["100"],
+    ...     name="assistant",
+    ... )
     >>> agent_id = session.start()
     >>> session.say("Hello!")
     >>> session.stop()
@@ -523,7 +568,11 @@ class AgentSession(_AgentSessionBase):
         self._status = "starting"
 
         try:
-            pipeline_id = self._pipeline_id if self._pipeline_id is not None else self._agent.pipeline_id
+            pipeline_id = (
+                self._pipeline_id
+                if self._pipeline_id is not None
+                else self._agent.pipeline_id
+            )
             if self._token:
                 token_opts: typing.Dict[str, typing.Any] = {"token": self._token}
             else:
@@ -533,7 +582,9 @@ class AgentSession(_AgentSessionBase):
                     "expires_in": self._expires_in,
                 }
 
-            skip_categories, allow_missing_categories = self._vendor_validation_categories(pipeline_id)
+            skip_categories, allow_missing_categories = (
+                self._vendor_validation_categories(pipeline_id)
+            )
             properties = self._build_start_properties(
                 token_opts,
                 skip_vendor_validation_categories=skip_categories,
@@ -546,13 +597,16 @@ class AgentSession(_AgentSessionBase):
 
             if self._debug:
                 print("[Agora Debug] Starting agent session...")
-                print("[Agora Debug] Request:", {
-                    "appid": self._app_id,
-                    "name": self._name,
-                    "preset": resolved_preset,
-                    "pipeline_id": pipeline_id,
-                    "properties": resolved_properties,
-                })
+                print(
+                    "[Agora Debug] Request:",
+                    {
+                        "appid": self._app_id,
+                        "name": self._name,
+                        "preset": resolved_preset,
+                        "pipeline_id": pipeline_id,
+                        "properties": resolved_properties,
+                    },
+                )
 
             request_properties = self._request_properties_for_start(
                 resolved_properties,
@@ -569,7 +623,9 @@ class AgentSession(_AgentSessionBase):
                 request_options=self._request_options(),
             )
 
-            self._agent_id = response.agent_id if hasattr(response, "agent_id") else None
+            self._agent_id = (
+                response.agent_id if hasattr(response, "agent_id") else None
+            )
             self._status = "running"
             self._emit("started", {"agent_id": self._agent_id})
             return self._agent_id or ""
@@ -644,7 +700,10 @@ class AgentSession(_AgentSessionBase):
             kwargs["interruptable"] = interruptable
 
         self._client.agents.speak(
-            self._app_id, self._agent_id, request_options=self._request_options(), **kwargs
+            self._app_id,
+            self._agent_id,
+            request_options=self._request_options(),
+            **kwargs,
         )
 
     def interrupt(self) -> None:
@@ -765,7 +824,9 @@ class AgentSession(_AgentSessionBase):
             **kwargs,
         )
 
-    def get_all_turns(self, *, page_size: typing.Optional[int] = None) -> GetTurnsAgentsResponse:
+    def get_all_turns(
+        self, *, page_size: typing.Optional[int] = None
+    ) -> GetTurnsAgentsResponse:
         """Get all turn analytics pages for this session.
 
         Raises ``RuntimeError`` if the server's pagination metadata is missing
@@ -776,7 +837,10 @@ class AgentSession(_AgentSessionBase):
         all_turns = self._response_turns(response)
         pagination = self._response_pagination(response)
         current_page = self._page_value(pagination, "page_index") or 1
-        while pagination is not None and self._page_value(pagination, "is_last_page") is False:
+        while (
+            pagination is not None
+            and self._page_value(pagination, "is_last_page") is False
+        ):
             total_pages = self._page_value(pagination, "total_pages")
             returned_index = self._page_value(pagination, "page_index")
             if returned_index is None and total_pages is None:
@@ -790,17 +854,26 @@ class AgentSession(_AgentSessionBase):
             response = self.get_turns(page_index=next_page, page_size=page_size)
             all_turns.extend(self._response_turns(response))
             pagination = self._response_pagination(response)
-            returned_index = self._page_value(pagination, "page_index") if pagination else None
+            returned_index = (
+                self._page_value(pagination, "page_index") if pagination else None
+            )
             if returned_index is not None:
-                if returned_index <= current_page and self._page_value(pagination, "is_last_page") is not True:
+                if (
+                    returned_index <= current_page
+                    and self._page_value(pagination, "is_last_page") is not True
+                ):
                     raise RuntimeError(
                         f"get_all_turns pagination did not advance: requested page {next_page}, "
                         f"received page {returned_index}."
                     )
                 current_page = returned_index
             else:
-                total_pages = self._page_value(pagination, "total_pages") if pagination else None
-                is_last_page = self._page_value(pagination, "is_last_page") if pagination else None
+                total_pages = (
+                    self._page_value(pagination, "total_pages") if pagination else None
+                )
+                is_last_page = (
+                    self._page_value(pagination, "is_last_page") if pagination else None
+                )
                 if total_pages is None and is_last_page is not True:
                     raise RuntimeError(
                         "get_all_turns pagination cannot continue: response must include "
@@ -821,9 +894,14 @@ class AsyncAgentSession(_AgentSessionBase):
     >>> from agora_agent import AsyncAgora, Area, Agent, OpenAI, ElevenLabsTTS
     >>>
     >>> client = AsyncAgora(area=Area.US, app_id="...", app_certificate="...")
-    >>> agent = Agent(name="assistant", instructions="You are helpful.")
+    >>> agent = Agent(client=client, instructions="You are helpful.")
     >>> agent = agent.with_llm(OpenAI(api_key="...", base_url="https://api.openai.com/v1/chat/completions", model="gpt-4")).with_tts(ElevenLabsTTS(key="...", model_id="...", voice_id="...", base_url="wss://api.elevenlabs.io/v1"))
-    >>> session = agent.create_async_session(client, channel="room-123", agent_uid="1", remote_uids=["100"])
+    >>> session = agent.create_async_session(
+    ...     channel="room-123",
+    ...     agent_uid="1",
+    ...     remote_uids=["100"],
+    ...     name="assistant",
+    ... )
     >>> agent_id = await session.start()
     >>> await session.say("Hello!")
     >>> await session.stop()
@@ -851,7 +929,11 @@ class AsyncAgentSession(_AgentSessionBase):
         self._status = "starting"
 
         try:
-            pipeline_id = self._pipeline_id if self._pipeline_id is not None else self._agent.pipeline_id
+            pipeline_id = (
+                self._pipeline_id
+                if self._pipeline_id is not None
+                else self._agent.pipeline_id
+            )
             if self._token:
                 token_opts: typing.Dict[str, typing.Any] = {"token": self._token}
             else:
@@ -861,7 +943,9 @@ class AsyncAgentSession(_AgentSessionBase):
                     "expires_in": self._expires_in,
                 }
 
-            skip_categories, allow_missing_categories = self._vendor_validation_categories(pipeline_id)
+            skip_categories, allow_missing_categories = (
+                self._vendor_validation_categories(pipeline_id)
+            )
             properties = self._build_start_properties(
                 token_opts,
                 skip_vendor_validation_categories=skip_categories,
@@ -874,13 +958,16 @@ class AsyncAgentSession(_AgentSessionBase):
 
             if self._debug:
                 print("[Agora Debug] Starting agent session...")
-                print("[Agora Debug] Request:", {
-                    "appid": self._app_id,
-                    "name": self._name,
-                    "preset": resolved_preset,
-                    "pipeline_id": pipeline_id,
-                    "properties": resolved_properties,
-                })
+                print(
+                    "[Agora Debug] Request:",
+                    {
+                        "appid": self._app_id,
+                        "name": self._name,
+                        "preset": resolved_preset,
+                        "pipeline_id": pipeline_id,
+                        "properties": resolved_properties,
+                    },
+                )
 
             request_properties = self._request_properties_for_start(
                 resolved_properties,
@@ -897,7 +984,9 @@ class AsyncAgentSession(_AgentSessionBase):
                 request_options=self._request_options(),
             )
 
-            self._agent_id = response.agent_id if hasattr(response, "agent_id") else None
+            self._agent_id = (
+                response.agent_id if hasattr(response, "agent_id") else None
+            )
             self._status = "running"
             self._emit("started", {"agent_id": self._agent_id})
             return self._agent_id or ""
@@ -972,7 +1061,10 @@ class AsyncAgentSession(_AgentSessionBase):
             kwargs["interruptable"] = interruptable
 
         await self._client.agents.speak(
-            self._app_id, self._agent_id, request_options=self._request_options(), **kwargs
+            self._app_id,
+            self._agent_id,
+            request_options=self._request_options(),
+            **kwargs,
         )
 
     async def interrupt(self) -> None:
@@ -1093,7 +1185,9 @@ class AsyncAgentSession(_AgentSessionBase):
             **kwargs,
         )
 
-    async def get_all_turns(self, *, page_size: typing.Optional[int] = None) -> GetTurnsAgentsResponse:
+    async def get_all_turns(
+        self, *, page_size: typing.Optional[int] = None
+    ) -> GetTurnsAgentsResponse:
         """Get all turn analytics pages for this session.
 
         Raises ``RuntimeError`` if the server's pagination metadata is missing
@@ -1104,7 +1198,10 @@ class AsyncAgentSession(_AgentSessionBase):
         all_turns = self._response_turns(response)
         pagination = self._response_pagination(response)
         current_page = self._page_value(pagination, "page_index") or 1
-        while pagination is not None and self._page_value(pagination, "is_last_page") is False:
+        while (
+            pagination is not None
+            and self._page_value(pagination, "is_last_page") is False
+        ):
             total_pages = self._page_value(pagination, "total_pages")
             returned_index = self._page_value(pagination, "page_index")
             if returned_index is None and total_pages is None:
@@ -1118,17 +1215,26 @@ class AsyncAgentSession(_AgentSessionBase):
             response = await self.get_turns(page_index=next_page, page_size=page_size)
             all_turns.extend(self._response_turns(response))
             pagination = self._response_pagination(response)
-            returned_index = self._page_value(pagination, "page_index") if pagination else None
+            returned_index = (
+                self._page_value(pagination, "page_index") if pagination else None
+            )
             if returned_index is not None:
-                if returned_index <= current_page and self._page_value(pagination, "is_last_page") is not True:
+                if (
+                    returned_index <= current_page
+                    and self._page_value(pagination, "is_last_page") is not True
+                ):
                     raise RuntimeError(
                         f"get_all_turns pagination did not advance: requested page {next_page}, "
                         f"received page {returned_index}."
                     )
                 current_page = returned_index
             else:
-                total_pages = self._page_value(pagination, "total_pages") if pagination else None
-                is_last_page = self._page_value(pagination, "is_last_page") if pagination else None
+                total_pages = (
+                    self._page_value(pagination, "total_pages") if pagination else None
+                )
+                is_last_page = (
+                    self._page_value(pagination, "is_last_page") if pagination else None
+                )
                 if total_pages is None and is_last_page is not True:
                     raise RuntimeError(
                         "get_all_turns pagination cannot continue: response must include "
