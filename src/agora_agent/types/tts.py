@@ -9,7 +9,10 @@ import typing_extensions
 from ..core.pydantic_utilities import IS_PYDANTIC_V2
 from ..core.unchecked_base_model import UncheckedBaseModel, UnionMetadata
 from .amazon_tts_params import AmazonTtsParams
+from .bytedance_duplex_tts_params import BytedanceDuplexTtsParams
+from .bytedance_tts_params import BytedanceTtsParams
 from .cartesia_tts_params import CartesiaTtsParams
+from .cosyvoice_tts_params import CosyvoiceTtsParams
 from .deepgram_tts_params import DeepgramTtsParams
 from .eleven_labs_tts_params import ElevenLabsTtsParams
 from .fish_audio_tts_params import FishAudioTtsParams
@@ -21,11 +24,13 @@ from .murf_tts_params import MurfTtsParams
 from .open_ai_tts_params import OpenAiTtsParams
 from .rime_tts_params import RimeTtsParams
 from .sarvam_tts_params import SarvamTtsParams
+from .stepfun_tts_params import StepfunTtsParams
+from .tencent_tts_params import TencentTtsParams
 
 
 class Tts_Tencent(UncheckedBaseModel):
     vendor: typing.Literal["tencent"] = "tencent"
-    params: typing.Dict[str, typing.Any]
+    params: TencentTtsParams
     skip_patterns: typing.Optional[typing.List[int]] = None
 
     if IS_PYDANTIC_V2:
@@ -40,52 +45,7 @@ class Tts_Tencent(UncheckedBaseModel):
 
 class Tts_Bytedance(UncheckedBaseModel):
     vendor: typing.Literal["bytedance"] = "bytedance"
-    params: typing.Dict[str, typing.Any]
-    skip_patterns: typing.Optional[typing.List[int]] = None
-
-    if IS_PYDANTIC_V2:
-        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
-    else:
-
-        class Config:
-            frozen = True
-            smart_union = True
-            extra = pydantic.Extra.allow
-
-
-class Tts_BytedanceDuplex(UncheckedBaseModel):
-    vendor: typing.Literal["bytedance_duplex"] = "bytedance_duplex"
-    params: typing.Dict[str, typing.Any]
-    skip_patterns: typing.Optional[typing.List[int]] = None
-
-    if IS_PYDANTIC_V2:
-        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
-    else:
-
-        class Config:
-            frozen = True
-            smart_union = True
-            extra = pydantic.Extra.allow
-
-
-class Tts_Cosyvoice(UncheckedBaseModel):
-    vendor: typing.Literal["cosyvoice"] = "cosyvoice"
-    params: typing.Dict[str, typing.Any]
-    skip_patterns: typing.Optional[typing.List[int]] = None
-
-    if IS_PYDANTIC_V2:
-        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
-    else:
-
-        class Config:
-            frozen = True
-            smart_union = True
-            extra = pydantic.Extra.allow
-
-
-class Tts_Stepfun(UncheckedBaseModel):
-    vendor: typing.Literal["stepfun"] = "stepfun"
-    params: typing.Dict[str, typing.Any]
+    params: BytedanceTtsParams
     skip_patterns: typing.Optional[typing.List[int]] = None
 
     if IS_PYDANTIC_V2:
@@ -293,8 +253,55 @@ class Tts_Deepgram(UncheckedBaseModel):
             extra = pydantic.Extra.allow
 
 
+class Tts_Cosyvoice(UncheckedBaseModel):
+    vendor: typing.Literal["cosyvoice"] = "cosyvoice"
+    params: CosyvoiceTtsParams
+    skip_patterns: typing.Optional[typing.List[int]] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow
+
+
+class Tts_BytedanceDuplex(UncheckedBaseModel):
+    vendor: typing.Literal["bytedance_duplex"] = "bytedance_duplex"
+    params: BytedanceDuplexTtsParams
+    skip_patterns: typing.Optional[typing.List[int]] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow
+
+
+class Tts_Stepfun(UncheckedBaseModel):
+    vendor: typing.Literal["stepfun"] = "stepfun"
+    params: StepfunTtsParams
+    skip_patterns: typing.Optional[typing.List[int]] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow
+
+
 Tts = typing_extensions.Annotated[
     typing.Union[
+        Tts_Tencent,
+        Tts_Bytedance,
         Tts_Microsoft,
         Tts_Elevenlabs,
         Tts_Minimax,
@@ -308,10 +315,8 @@ Tts = typing_extensions.Annotated[
         Tts_Amazon,
         Tts_Sarvam,
         Tts_Deepgram,
-        Tts_Tencent,
-        Tts_Bytedance,
-        Tts_BytedanceDuplex,
         Tts_Cosyvoice,
+        Tts_BytedanceDuplex,
         Tts_Stepfun,
     ],
     UnionMetadata(discriminant="vendor"),
