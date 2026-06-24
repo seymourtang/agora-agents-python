@@ -19,6 +19,7 @@ from .open_ai_asr_params import OpenAiAsrParams
 from .sarvam_asr_params import SarvamAsrParams
 from .speechmatics_asr_params import SpeechmaticsAsrParams
 from .tencent_asr_params import TencentAsrParams
+from .x_ai_asr_params import XAiAsrParams
 from .xfyun_asr_params import XfyunAsrParams
 from .xfyun_bigmodel_asr_params import XfyunBigmodelAsrParams
 from .xfyun_dialect_asr_params import XfyunDialectAsrParams
@@ -189,6 +190,21 @@ class Asr_Sarvam(UncheckedBaseModel):
             extra = pydantic.Extra.allow
 
 
+class Asr_Xai(UncheckedBaseModel):
+    vendor: typing.Literal["xai"] = "xai"
+    language: typing.Optional[AsrLanguage] = None
+    params: XAiAsrParams
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow
+
+
 class Asr_Xfyun(UncheckedBaseModel):
     vendor: typing.Literal["xfyun"] = "xfyun"
     language: typing.Optional[AsrLanguage] = None
@@ -247,6 +263,7 @@ Asr = typing_extensions.Annotated[
         Asr_Assemblyai,
         Asr_Speechmatics,
         Asr_Sarvam,
+        Asr_Xai,
         Asr_Xfyun,
         Asr_XfyunBigmodel,
         Asr_XfyunDialect,

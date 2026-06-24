@@ -59,6 +59,13 @@ class StartAgentsRequestPropertiesParameters(UncheckedBaseModel):
     - `aiserver`: Optimized for interactions between the user and the conversational AI agent in terms of latency and network resilience.
     """
 
+    opt_out: typing.Optional[bool] = pydantic.Field(default=None)
+    """
+    Whether to disable data retention for the current session:
+    - `false`: Default. Session data retention remains enabled.
+    - `true`: Disables session data retention. When disabled, historical session content cannot be used for troubleshooting, effectiveness review, or agent optimization.
+    """
+
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
     else:

@@ -5,6 +5,7 @@ import typing
 import pydantic
 from ..core.pydantic_utilities import IS_PYDANTIC_V2
 from ..core.unchecked_base_model import UncheckedBaseModel
+from .llm_greeting_configs import LlmGreetingConfigs
 from .llm_params import LlmParams
 from .llm_style import LlmStyle
 
@@ -70,6 +71,11 @@ class Llm(UncheckedBaseModel):
     Agent greeting.
     """
 
+    greeting_audio_url: typing.Optional[str] = pydantic.Field(default=None)
+    """
+    Publicly accessible greeting audio URL.
+    """
+
     failure_message: typing.Optional[str] = pydantic.Field(default=None)
     """
     Prompt for agent activation failure.
@@ -90,7 +96,7 @@ class Llm(UncheckedBaseModel):
     Whether to handle empty Gemini responses.
     """
 
-    greeting_configs: typing.Optional[typing.Dict[str, typing.Any]] = pydantic.Field(default=None)
+    greeting_configs: typing.Optional[LlmGreetingConfigs] = pydantic.Field(default=None)
     """
     Agent greeting broadcast configuration.
     """

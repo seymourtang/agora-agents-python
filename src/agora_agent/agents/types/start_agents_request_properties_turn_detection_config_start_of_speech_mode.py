@@ -3,5 +3,5 @@
 import typing
 
 StartAgentsRequestPropertiesTurnDetectionConfigStartOfSpeechMode = typing.Union[
-    typing.Literal["vad", "keywords", "disabled"], typing.Any
+    typing.Literal["vad", "keywords", "disabled", "manual"], typing.Any
 ]

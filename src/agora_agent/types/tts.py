@@ -16,6 +16,7 @@ from .cosyvoice_tts_params import CosyvoiceTtsParams
 from .deepgram_tts_params import DeepgramTtsParams
 from .eleven_labs_tts_params import ElevenLabsTtsParams
 from .fish_audio_tts_params import FishAudioTtsParams
+from .generic_tts_params import GenericTtsParams
 from .google_tts_params import GoogleTtsParams
 from .hume_ai_tts_params import HumeAiTtsParams
 from .microsoft_tts_params import MicrosoftTtsParams
@@ -26,6 +27,7 @@ from .rime_tts_params import RimeTtsParams
 from .sarvam_tts_params import SarvamTtsParams
 from .stepfun_tts_params import StepfunTtsParams
 from .tencent_tts_params import TencentTtsParams
+from .x_ai_tts_params import XAiTtsParams
 
 
 class Tts_Tencent(UncheckedBaseModel):
@@ -238,6 +240,38 @@ class Tts_Sarvam(UncheckedBaseModel):
             extra = pydantic.Extra.allow
 
 
+class Tts_Generic(UncheckedBaseModel):
+    vendor: typing.Literal["generic"] = "generic"
+    url: str
+    headers: typing.Dict[str, str]
+    params: GenericTtsParams
+    skip_patterns: typing.Optional[typing.List[int]] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow
+
+
+class Tts_Xai(UncheckedBaseModel):
+    vendor: typing.Literal["xai"] = "xai"
+    params: XAiTtsParams
+    skip_patterns: typing.Optional[typing.List[int]] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow
+
+
 class Tts_Deepgram(UncheckedBaseModel):
     vendor: typing.Literal["deepgram"] = "deepgram"
     params: DeepgramTtsParams
@@ -314,6 +348,8 @@ Tts = typing_extensions.Annotated[
         Tts_Google,
         Tts_Amazon,
         Tts_Sarvam,
+        Tts_Generic,
+        Tts_Xai,
         Tts_Deepgram,
         Tts_Cosyvoice,
         Tts_BytedanceDuplex,

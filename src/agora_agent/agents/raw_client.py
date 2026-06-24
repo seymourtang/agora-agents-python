@@ -15,7 +15,6 @@ from .types.get_agents_response import GetAgentsResponse
 from .types.get_history_agents_response import GetHistoryAgentsResponse
 from .types.get_turns_agents_response import GetTurnsAgentsResponse
 from .types.interrupt_agents_response import InterruptAgentsResponse
-from .types.list_agents_request_state import ListAgentsRequestState
 from .types.list_agents_response import ListAgentsResponse
 from .types.list_agents_response_data_list_item import ListAgentsResponseDataListItem
 from .types.speak_agents_request_priority import SpeakAgentsRequestPriority
@@ -115,7 +114,7 @@ class RawAgentsClient:
         channel: typing.Optional[str] = None,
         from_time: typing.Optional[float] = None,
         to_time: typing.Optional[float] = None,
-        state: typing.Optional[ListAgentsRequestState] = None,
+        state: typing.Optional[str] = None,
         limit: typing.Optional[int] = None,
         cursor: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
@@ -137,8 +136,8 @@ class RawAgentsClient:
         to_time : typing.Optional[float]
             The end timestamp (in seconds) for the query. Default is current time.
 
-        state : typing.Optional[ListAgentsRequestState]
-            The agent state to filter by. Only one state can be specified per query:
+        state : typing.Optional[str]
+            The agent state filter. You can specify one or more agent states as a comma-separated list in a single request, for example `state=0,1,2`:
             - `IDLE` (0): Agent is idle.
             - `STARTING` (1): The agent is being started.
             - `RUNNING` (2): The agent is running.
@@ -656,7 +655,7 @@ class AsyncRawAgentsClient:
         channel: typing.Optional[str] = None,
         from_time: typing.Optional[float] = None,
         to_time: typing.Optional[float] = None,
-        state: typing.Optional[ListAgentsRequestState] = None,
+        state: typing.Optional[str] = None,
         limit: typing.Optional[int] = None,
         cursor: typing.Optional[str] = None,
         request_options: typing.Optional[RequestOptions] = None,
@@ -678,8 +677,8 @@ class AsyncRawAgentsClient:
         to_time : typing.Optional[float]
             The end timestamp (in seconds) for the query. Default is current time.
 
-        state : typing.Optional[ListAgentsRequestState]
-            The agent state to filter by. Only one state can be specified per query:
+        state : typing.Optional[str]
+            The agent state filter. You can specify one or more agent states as a comma-separated list in a single request, for example `state=0,1,2`:
             - `IDLE` (0): Agent is idle.
             - `STARTING` (1): The agent is being started.
             - `RUNNING` (2): The agent is running.

@@ -3,5 +3,5 @@
 import typing
 
 StartAgentsRequestPropertiesTurnDetectionConfigEndOfSpeechMode = typing.Union[
-    typing.Literal["vad", "semantic"], typing.Any
+    typing.Literal["vad", "semantic", "manual"], typing.Any
 ]
