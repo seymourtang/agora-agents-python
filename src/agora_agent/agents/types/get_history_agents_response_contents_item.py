@@ -21,6 +21,21 @@ class GetHistoryAgentsResponseContentsItem(UncheckedBaseModel):
     Message content.
     """
 
+    speech_start_ms: typing.Optional[int] = pydantic.Field(default=None)
+    """
+    The start timestamp of the speech segment in milliseconds, relative to the beginning of the current session. Returned only when `llm.vendor='custom'`.
+    """
+
+    speech_end_ms: typing.Optional[int] = pydantic.Field(default=None)
+    """
+    The end timestamp of the speech segment in milliseconds, relative to the beginning of the current session. Returned only when `llm.vendor='custom'`.
+    """
+
+    speech_algorithmic_delay: typing.Optional[int] = pydantic.Field(default=None)
+    """
+    The total delay in milliseconds introduced by audio processing algorithms, including noise reduction, background voice suppression, and voiceprint locking, after audio is captured from the user's microphone. Use this value to align timestamps with cloud recording audio. Returned only when `llm.vendor='custom'`, `contents[].role='user'`, and actual voice input is present.
+    """
+
     if IS_PYDANTIC_V2:
         model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
     else:

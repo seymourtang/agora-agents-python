@@ -3,5 +3,5 @@
 import typing
 
 StartAgentsRequestPropertiesAvatarVendor = typing.Union[
-    typing.Literal["akool", "liveavatar", "anam", "generic", "sensetime", "heygen"], typing.Any
+    typing.Literal["akool", "liveavatar", "anam", "generic", "sensetime", "spatius", "heygen"], typing.Any
 ]

@@ -26,6 +26,7 @@ class StartAgentsRequestPropertiesAvatar(UncheckedBaseModel):
     - `anam`: Anam (Beta)
     - `generic`: Generic (Beta)
     - `sensetime`: SenseTime Avatar
+    - `spatius`: Spatius Avatar
     """
 
     params: typing.Optional[typing.Dict[str, typing.Any]] = pydantic.Field(default=None)

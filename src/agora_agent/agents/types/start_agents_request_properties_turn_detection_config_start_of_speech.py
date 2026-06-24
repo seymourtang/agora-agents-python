@@ -30,6 +30,7 @@ class StartAgentsRequestPropertiesTurnDetectionConfigStartOfSpeech(UncheckedBase
     - `vad`: Based on VAD (Voice Activity Detection). Uses audio signal detection.
     - `keywords`: Deprecated. Use `interruption.mode = "keywords"` instead.
     - `disabled`: Deprecated. Use `interruption.enable = false` with `interruption.disabled_config.strategy` to configure the handling strategy.
+    - `manual`: The client explicitly submits the start of the user turn through signaling.
     """
 
     vad_config: typing.Optional[StartAgentsRequestPropertiesTurnDetectionConfigStartOfSpeechVadConfig] = pydantic.Field(

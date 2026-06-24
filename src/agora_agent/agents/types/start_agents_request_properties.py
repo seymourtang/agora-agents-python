@@ -54,7 +54,7 @@ class StartAgentsRequestProperties(UncheckedBaseModel):
 
     idle_timeout: typing.Optional[int] = pydantic.Field(default=None)
     """
-    Sets the timeout after all the users specified in `remote_rtc_uids` are detected to have left the channel. When the timeout value is exceeded, the agent automatically stops and exits the channel. A value of `0` means that the agent does not exit until it is stopped manually.
+    Sets the timeout after all the users specified in `remote_rtc_uids` are detected to have left the channel. When the timeout value is exceeded, the agent automatically stops and exits the channel. A value of `0` disables exit due to channel idle timeout only; it does not allow the agent to run indefinitely. Regardless of this value, the maximum runtime of a single task is 72 hours, after which the agent automatically exits.
     """
 
     geofence: typing.Optional[StartAgentsRequestPropertiesGeofence] = pydantic.Field(default=None)

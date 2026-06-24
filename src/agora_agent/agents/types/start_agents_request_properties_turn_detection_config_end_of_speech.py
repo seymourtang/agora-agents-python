@@ -26,6 +26,7 @@ class StartAgentsRequestPropertiesTurnDetectionConfigEndOfSpeech(UncheckedBaseMo
     End of speech detection mode:
     - `vad`: Based on VAD (Voice Activity Detection). Detects silence duration.
     - `semantic`: Based on semantic triggering. Uses semantic understanding to determine when conversation ends.
+    - `manual`: The client explicitly submits the end of the user turn through signaling.
     """
 
     vad_config: typing.Optional[StartAgentsRequestPropertiesTurnDetectionConfigEndOfSpeechVadConfig] = pydantic.Field(
