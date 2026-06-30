@@ -100,6 +100,8 @@ def validate_avatar_config(
         params = config.get("params", {})
         if not params.get("api_key"):
             raise ValueError("Anam avatar requires api_key")
+        if not params.get("avatar_id"):
+            raise ValueError("Anam avatar requires avatar_id")
     elif is_generic_avatar(config):
         params = config.get("params", {})
         if not params.get("api_key"):

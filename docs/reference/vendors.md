@@ -829,7 +829,7 @@ Same options as `HeyGenAvatar`, but serializes `vendor: "liveavatar"`. `agora_to
 | Parameter | Type | Required | Default | Description |
 |---|---|---|---|---|
 | `api_key` | `str` | Yes | — | Anam API key |
-| `persona_id` | `str` | No | `None` | Persona ID |
+| `avatar_id` | `str` | Yes | — | Anam avatar ID |
 | `enable` | `bool` | No | `True` | Enable or disable the avatar |
 
 ### `GenericAvatar`

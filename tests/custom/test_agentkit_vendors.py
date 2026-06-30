@@ -3,6 +3,7 @@ from pydantic import ValidationError
 
 from agora_agent.agentkit import LlmGreetingConfigs
 from agora_agent.agentkit.vendors import (
+    AnamAvatar,
     GenericAvatar,
     GenericTTS,
     OpenAI,
@@ -68,6 +69,27 @@ def test_generic_avatar_omits_session_enriched_fields_when_unset():
             "agora_uid": "2",
         },
     }
+
+
+def test_anam_avatar_serializes_avatar_id() -> None:
+    config = AnamAvatar(
+        api_key="anam-key",
+        avatar_id="anam-avatar-1",
+    ).to_config()
+
+    assert config == {
+        "enable": True,
+        "vendor": "anam",
+        "params": {
+            "api_key": "anam-key",
+            "avatar_id": "anam-avatar-1",
+        },
+    }
+
+
+def test_anam_avatar_requires_avatar_id() -> None:
+    with pytest.raises(ValidationError):
+        AnamAvatar(api_key="anam-key")
 
 
 def test_vertex_ai_explicit_fields_override_additional_params():

@@ -181,7 +181,7 @@ class AnamAvatarOptions(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     api_key: str = Field(..., description="Anam API key")
-    persona_id: Optional[str] = Field(default=None, description="Anam persona ID")
+    avatar_id: str = Field(..., description="Anam avatar ID")
     enable: Optional[bool] = Field(default=None, description="Enable avatar (default: true)")
     additional_params: Optional[Dict[str, Any]] = Field(default=None, description="Additional vendor-specific parameters")
 
@@ -197,10 +197,9 @@ class AnamAvatar(BaseAvatar):
     def to_config(self) -> Dict[str, Any]:
         params: Dict[str, Any] = {
             "api_key": self.options.api_key,
+            "avatar_id": self.options.avatar_id,
         }
 
-        if self.options.persona_id is not None:
-            params["persona_id"] = self.options.persona_id
         if self.options.additional_params is not None:
             params = {**self.options.additional_params, **params}
 
