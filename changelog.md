@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [v2.4.0] — 2026-06-30
+
+### Added
+
+- **Area-aware default ASR vendor selection** — The default ASR vendor is now chosen based on the client area, with updated documentation and tests.
+- **New engine API vendors** — Adapted agentkit to the new engine API vendors, with refreshed vendor and regional routing guides.
+
+### Changed
+
+- **Gemini / Vertex LLM configuration** — Aligned Gemini and Vertex LLM config handling; the URL is now always included in Gemini and Vertex LLM configurations, and `project_id`, `location`, and `adc_credentials_string` are passed under `params` in the VertexAI configuration.
+
+### Fixed
+
+- **Avatar configurations** — `SenseTimeAvatar` now treats `sceneList` as optional, and `AnamAvatar` requires `avatar_id` instead of `persona_id`.
+
 ## [v2.3.0] — 2026-06-17
 
 ### Added
