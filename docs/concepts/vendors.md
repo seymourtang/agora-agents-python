@@ -24,7 +24,7 @@ Used with `agent.with_llm()` for the cascading flow (ASR → LLM → TTS).
 | `OpenAI` | OpenAI | `model` for Agora-managed global models; `api_key`, `base_url`, `model` for BYOK |
 | `AzureOpenAI` | Azure OpenAI | `api_key`, `model`, `endpoint`, `deployment_name` |
 | `Anthropic` | Anthropic | `api_key`, `model`, `url`, `headers`, `max_tokens` |
-| `Gemini` | Google Gemini | `api_key`, `model` |
+| `Gemini` | Google Gemini | `api_key`, `model`; optional `url` |
 | `Groq` | Groq | `api_key`, `model`, `base_url` |
 | `VertexAILLM` | Google Vertex AI | `api_key`, `model`, `project_id`, `location` |
 | `AmazonBedrock` | Amazon Bedrock | `access_key`, `secret_key`, `region`, `model` |

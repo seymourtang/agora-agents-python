@@ -176,6 +176,7 @@ llm = Anthropic(
 |---|---|---|---|---|
 | `api_key` | `str` | Yes | — | Google AI API key |
 | `model` | `str` | Yes | — | Model name |
+| `url` | `str` | No | `None` | Custom Gemini `streamGenerateContent` URL. When omitted, the SDK constructs one from `model` and `api_key`. |
 | `temperature` | `float` | No | `None` | Sampling temperature (0.0–2.0) |
 | `top_p` | `float` | No | `None` | Nucleus sampling (0.0–1.0) |
 | `top_k` | `int` | No | `None` | Top-k sampling |
@@ -194,7 +195,10 @@ llm = Anthropic(
 ```python
 from agora_agent import Gemini
 
-llm = Gemini(api_key='your-google-key', model='gemini-2.0-flash-exp')
+llm = Gemini(
+    api_key='your-google-key',
+    model='gemini-2.0-flash-exp',
+)
 ```
 
 ### Other LLM vendors
