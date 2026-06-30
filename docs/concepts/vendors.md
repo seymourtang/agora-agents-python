@@ -165,7 +165,7 @@ Used with `agent.with_avatar()` in the cascading ASR + LLM + TTS pipeline. Some 
 | `HeyGenAvatar` | HeyGen (deprecated alias) | `api_key`, `quality`, `agora_uid` | 24000 Hz |
 | `LiveAvatarAvatar` | LiveAvatar | `api_key`, `quality`, `agora_uid` | 24000 Hz |
 | `AkoolAvatar` | Akool | `api_key` | 16000 Hz |
-| `AnamAvatar` | Anam | `api_key` | None |
+| `AnamAvatar` | Anam | `api_key`, `avatar_id` | None |
 | `GenericAvatar` | Generic Avatar | `api_key`, `api_base_url`, `avatar_id`, `agora_uid` | None |
 | `SenseTimeAvatar` | SenseTime (CN) | `agora_uid`, `app_key`, `sceneList` | None |
 | `SpatiusAvatar` | Spatius (CN) | `spatius_api_key`, `spatius_app_id`, `spatius_avatar_id`, `agora_uid` | Optional avatar-declared sample rate |
