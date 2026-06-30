@@ -898,9 +898,15 @@ def test_byok_anthropic_llm_params() -> None:
 
 
 def test_byok_gemini_llm_params() -> None:
-    agent = Agent(test_client()).with_llm(Gemini(api_key="gemini-key", model="gemini-2.0-flash"))
+    agent = Agent(test_client()).with_llm(
+        Gemini(
+            api_key="gemini-key",
+            model="gemini-2.0-flash",
+        )
+    )
     props = build_properties(agent, allow_missing={"asr", "tts"})
-    assert props["llm"]["api_key"] == "gemini-key"
+    assert "api_key" not in props["llm"]
+    assert props["llm"]["url"] == "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:streamGenerateContent?alt=sse&key=gemini-key"
     assert props["llm"]["style"] == "gemini"
     assert props["llm"]["params"]["model"] == "gemini-2.0-flash"
 

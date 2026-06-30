@@ -304,8 +304,10 @@ class Gemini(BaseLLM):
             params["max_output_tokens"] = self.options.max_output_tokens
 
         config: Dict[str, Any] = {
-            "url": self.options.url or "https://generativelanguage.googleapis.com/v1beta/models",
-            "api_key": self.options.api_key,
+            "url": self.options.url or (
+                f"https://generativelanguage.googleapis.com/v1beta/models/"
+                f"{self.options.model}:streamGenerateContent?alt=sse&key={self.options.api_key}"
+            ),
             "params": params,
             "style": "gemini",
             "input_modalities": self.options.input_modalities or ["text"],
@@ -394,7 +396,9 @@ class VertexAILLM(BaseLLM):
                 f"{self.options.project_id}/locations/{self.options.location}/"
                 f"publishers/google/models/{self.options.model}:streamGenerateContent?alt=sse"
             )
-        return Gemini(**options).to_config()
+        config = Gemini(**options).to_config()
+        config["api_key"] = self.options.api_key
+        return config
 
 
 class AmazonBedrockOptions(BaseModel):

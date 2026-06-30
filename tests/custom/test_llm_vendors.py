@@ -69,6 +69,32 @@ def test_vertex_ai_llm_includes_project_routing() -> None:
     assert "location" not in config.get("params", {})
 
 
+def test_vertex_ai_llm_preserves_explicit_url() -> None:
+    config = VertexAILLM(
+        api_key="vertex-token",
+        model="gemini-2.0-flash",
+        project_id="project",
+        location="us-central1",
+        url="https://vertex.example.com/custom-endpoint",
+    ).to_config()
+
+    assert config["url"] == "https://vertex.example.com/custom-endpoint"
+    assert config["api_key"] == "vertex-token"
+    assert config["params"]["model"] == "gemini-2.0-flash"
+
+
+def test_gemini_constructs_url_from_api_key_and_model() -> None:
+    config = Gemini(
+        api_key="google-key",
+        model="gemini-2.0-flash",
+    ).to_config()
+
+    assert config["url"] == "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:streamGenerateContent?alt=sse&key=google-key"
+    assert "api_key" not in config
+    assert config["style"] == "gemini"
+    assert config["params"]["model"] == "gemini-2.0-flash"
+
+
 def test_amazon_bedrock_serializes_as_bedrock_style() -> None:
     config = AmazonBedrock(
         access_key="aws-access",
