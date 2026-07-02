@@ -10,7 +10,7 @@ from .stt import BaseSTT as _BaseSTTCompat
 from .tts import BaseTTS as _BaseTTSCompat
 
 
-class TencentSTTOptions(BaseModel):
+class TencentSTT(_BaseSTTCompat):
     model_config = ConfigDict(extra="forbid")
 
     key: str = Field(..., description="Tencent ASR secret key")
@@ -20,36 +20,28 @@ class TencentSTTOptions(BaseModel):
     voice_id: str = Field(..., description="Tencent ASR voice id")
     additional_params: Optional[Dict[str, Any]] = Field(default=None)
 
-
-class TencentSTT(_BaseSTTCompat):
-    def __init__(self, **kwargs: Any):
-        self.options = TencentSTTOptions(**kwargs)
-
     def to_config(self) -> Dict[str, Any]:
-        params: Dict[str, Any] = dict(self.options.additional_params or {})
+        params: Dict[str, Any] = dict(self.additional_params or {})
         params.update(
             {
-                "key": self.options.key,
-                "app_id": self.options.app_id,
-                "secret": self.options.secret,
-                "engine_model_type": self.options.engine_model_type,
-                "voice_id": self.options.voice_id,
+                "key": self.key,
+                "app_id": self.app_id,
+                "secret": self.secret,
+                "engine_model_type": self.engine_model_type,
+                "voice_id": self.voice_id,
             }
         )
         return {"vendor": "tencent", "params": params}
 
 
 class FengmingSTT(_BaseSTTCompat):
-    def __init__(self, **kwargs: Any):
-        if kwargs:
-            unexpected = ", ".join(sorted(kwargs))
-            raise TypeError(f"FengmingSTT does not accept parameters: {unexpected}")
+    model_config = ConfigDict(extra="forbid")
 
     def to_config(self) -> Dict[str, Any]:
         return {"vendor": "fengming"}
 
 
-class XfyunSTTOptions(BaseModel):
+class XfyunSTT(_BaseSTTCompat):
     model_config = ConfigDict(extra="forbid")
 
     api_key: Optional[str] = Field(default=None, description="Xfyun ASR API key")
@@ -58,28 +50,23 @@ class XfyunSTTOptions(BaseModel):
     language: Optional[str] = Field(default=None, description="Xfyun ASR language")
     additional_params: Optional[Dict[str, Any]] = Field(default=None)
 
-
-class XfyunSTT(_BaseSTTCompat):
-    def __init__(self, **kwargs: Any):
-        self.options = XfyunSTTOptions(**kwargs)
-
     def to_config(self) -> Dict[str, Any]:
-        params: Dict[str, Any] = dict(self.options.additional_params or {})
-        if self.options.api_key is not None:
-            params["api_key"] = self.options.api_key
-        if self.options.app_id is not None:
-            params["app_id"] = self.options.app_id
-        if self.options.api_secret is not None:
-            params["api_secret"] = self.options.api_secret
-        if self.options.language is not None:
-            params["language"] = self.options.language
+        params: Dict[str, Any] = dict(self.additional_params or {})
+        if self.api_key is not None:
+            params["api_key"] = self.api_key
+        if self.app_id is not None:
+            params["app_id"] = self.app_id
+        if self.api_secret is not None:
+            params["api_secret"] = self.api_secret
+        if self.language is not None:
+            params["language"] = self.language
         return {
             "vendor": "xfyun",
             "params": params,
         }
 
 
-class XfyunBigModelSTTOptions(BaseModel):
+class XfyunBigModelSTT(_BaseSTTCompat):
     model_config = ConfigDict(extra="forbid")
 
     api_key: Optional[str] = Field(default=None, description="Xfyun BigModel ASR API key")
@@ -89,30 +76,25 @@ class XfyunBigModelSTTOptions(BaseModel):
     language: Optional[str] = Field(default=None, description="Xfyun BigModel ASR language")
     additional_params: Optional[Dict[str, Any]] = Field(default=None)
 
-
-class XfyunBigModelSTT(_BaseSTTCompat):
-    def __init__(self, **kwargs: Any):
-        self.options = XfyunBigModelSTTOptions(**kwargs)
-
     def to_config(self) -> Dict[str, Any]:
-        params: Dict[str, Any] = dict(self.options.additional_params or {})
-        if self.options.api_key is not None:
-            params["api_key"] = self.options.api_key
-        if self.options.app_id is not None:
-            params["app_id"] = self.options.app_id
-        if self.options.api_secret is not None:
-            params["api_secret"] = self.options.api_secret
-        if self.options.language_name is not None:
-            params["language_name"] = self.options.language_name
-        if self.options.language is not None:
-            params["language"] = self.options.language
+        params: Dict[str, Any] = dict(self.additional_params or {})
+        if self.api_key is not None:
+            params["api_key"] = self.api_key
+        if self.app_id is not None:
+            params["app_id"] = self.app_id
+        if self.api_secret is not None:
+            params["api_secret"] = self.api_secret
+        if self.language_name is not None:
+            params["language_name"] = self.language_name
+        if self.language is not None:
+            params["language"] = self.language
         return {
             "vendor": "xfyun_bigmodel",
             "params": params,
         }
 
 
-class XfyunDialectSTTOptions(BaseModel):
+class XfyunDialectSTT(_BaseSTTCompat):
     model_config = ConfigDict(extra="forbid")
 
     app_id: Optional[str] = Field(default=None, description="Xfyun Dialect ASR app id")
@@ -121,28 +103,23 @@ class XfyunDialectSTTOptions(BaseModel):
     language: Optional[str] = Field(default=None, description="Xfyun Dialect ASR language")
     additional_params: Optional[Dict[str, Any]] = Field(default=None)
 
-
-class XfyunDialectSTT(_BaseSTTCompat):
-    def __init__(self, **kwargs: Any):
-        self.options = XfyunDialectSTTOptions(**kwargs)
-
     def to_config(self) -> Dict[str, Any]:
-        params: Dict[str, Any] = dict(self.options.additional_params or {})
-        if self.options.app_id is not None:
-            params["app_id"] = self.options.app_id
-        if self.options.access_key_id is not None:
-            params["access_key_id"] = self.options.access_key_id
-        if self.options.access_key_secret is not None:
-            params["access_key_secret"] = self.options.access_key_secret
-        if self.options.language is not None:
-            params["language"] = self.options.language
+        params: Dict[str, Any] = dict(self.additional_params or {})
+        if self.app_id is not None:
+            params["app_id"] = self.app_id
+        if self.access_key_id is not None:
+            params["access_key_id"] = self.access_key_id
+        if self.access_key_secret is not None:
+            params["access_key_secret"] = self.access_key_secret
+        if self.language is not None:
+            params["language"] = self.language
         return {
             "vendor": "xfyun_dialect",
             "params": params,
         }
 
 
-class MicrosoftSTTOptions(BaseModel):
+class MicrosoftSTT(_BaseSTTCompat):
     model_config = ConfigDict(extra="forbid")
 
     key: str = Field(..., description="Azure subscription key")
@@ -151,20 +128,15 @@ class MicrosoftSTTOptions(BaseModel):
     phrase_list: Optional[List[str]] = Field(default=None, description="Microsoft ASR phrase list")
     additional_params: Optional[Dict[str, Any]] = Field(default=None)
 
-
-class MicrosoftSTT(_BaseSTTCompat):
-    def __init__(self, **kwargs: Any):
-        self.options = MicrosoftSTTOptions(**kwargs)
-
     def to_config(self) -> Dict[str, Any]:
-        params: Dict[str, Any] = dict(self.options.additional_params or {})
+        params: Dict[str, Any] = dict(self.additional_params or {})
         params.update({
-            "key": self.options.key,
-            "region": self.options.region,
-            "language": self.options.language,
+            "key": self.key,
+            "region": self.region,
+            "language": self.language,
         })
-        if self.options.phrase_list is not None:
-            params["phrase_list"] = self.options.phrase_list
+        if self.phrase_list is not None:
+            params["phrase_list"] = self.phrase_list
         return {
             "vendor": "microsoft",
             "params": params,

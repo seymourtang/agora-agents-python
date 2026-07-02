@@ -102,6 +102,7 @@ def test_heygen_avatar_golden() -> None:
 
 def test_fengming_rejects_kwargs() -> None:
     import pytest
-    with pytest.raises(TypeError):
+    from pydantic import ValidationError
+    with pytest.raises(ValidationError):
         FengmingSTT(unexpected="x")
     assert FengmingSTT().to_config() == {"vendor": "fengming"}

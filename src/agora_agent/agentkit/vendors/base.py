@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Optional
 
+from pydantic import BaseModel
 from typing_extensions import Literal
 
 # Supported sample rates across all TTS providers.
@@ -49,7 +50,7 @@ class BaseTTS(ABC):
         """The configured sample rate in Hz, or ``None`` if not explicitly set."""
 
 
-class BaseSTT(ABC):
+class BaseSTT(BaseModel, ABC):
     """Abstract base class for all STT vendor implementations.
 
     Subclasses must implement :meth:`to_config` to return a dict that maps to
