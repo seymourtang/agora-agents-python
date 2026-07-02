@@ -128,11 +128,13 @@ def test_dify_serializes_conversation_fields() -> None:
 
 
 def test_llm_vendors_reject_missing_required_models() -> None:
+    # These intentionally omit the required `model` to assert it raises; the top-level
+    # vendor types are now real, so mypy needs the call-arg ignores.
     with pytest.raises(Exception, match="model"):
-        OpenAI(api_key="openai-key", base_url="https://api.openai.com/v1/chat/completions")
+        OpenAI(api_key="openai-key", base_url="https://api.openai.com/v1/chat/completions")  # type: ignore[call-arg]
 
     with pytest.raises(Exception, match="model"):
-        Anthropic(
+        Anthropic(  # type: ignore[call-arg]
             api_key="anthropic-key",
             url="https://api.anthropic.com/v1/messages",
             headers={"anthropic-version": "2023-06-01"},
@@ -140,16 +142,16 @@ def test_llm_vendors_reject_missing_required_models() -> None:
         )
 
     with pytest.raises(Exception, match="model"):
-        Gemini(api_key="google-key")
+        Gemini(api_key="google-key")  # type: ignore[call-arg]
 
     with pytest.raises(Exception, match="model"):
-        Groq(api_key="groq-key", base_url="https://api.groq.com/openai/v1/chat/completions")
+        Groq(api_key="groq-key", base_url="https://api.groq.com/openai/v1/chat/completions")  # type: ignore[call-arg]
 
     with pytest.raises(Exception, match="model"):
-        VertexAILLM(api_key="vertex-token", project_id="project", location="us-central1")
+        VertexAILLM(api_key="vertex-token", project_id="project", location="us-central1")  # type: ignore[call-arg]
 
     with pytest.raises(Exception, match="model"):
-        AmazonBedrock(access_key="aws-access", secret_key="aws-secret", region="us-east-1")
+        AmazonBedrock(access_key="aws-access", secret_key="aws-secret", region="us-east-1")  # type: ignore[call-arg]
 
 
 def test_openai_managed_mode_is_restricted_to_supported_models() -> None:

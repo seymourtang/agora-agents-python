@@ -2,15 +2,21 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import ConfigDict, Field, model_validator
 
 from .avatar import BaseAvatar
-from .llm import OpenAI
+from .base import BaseLLM
+from .llm import (
+    _OPENAI_MANAGED_MODELS,
+    LlmGreetingConfigs,
+    _dump_optional_model,
+    _ensure_mcp_transport,
+)
 from .stt import BaseSTT as _BaseSTTCompat
 from .tts import BaseTTS as _BaseTTSCompat
 
 
-class TencentSTTOptions(BaseModel):
+class TencentSTT(_BaseSTTCompat):
     model_config = ConfigDict(extra="forbid")
 
     key: str = Field(..., description="Tencent ASR secret key")
@@ -20,36 +26,28 @@ class TencentSTTOptions(BaseModel):
     voice_id: str = Field(..., description="Tencent ASR voice id")
     additional_params: Optional[Dict[str, Any]] = Field(default=None)
 
-
-class TencentSTT(_BaseSTTCompat):
-    def __init__(self, **kwargs: Any):
-        self.options = TencentSTTOptions(**kwargs)
-
     def to_config(self) -> Dict[str, Any]:
-        params: Dict[str, Any] = dict(self.options.additional_params or {})
+        params: Dict[str, Any] = dict(self.additional_params or {})
         params.update(
             {
-                "key": self.options.key,
-                "app_id": self.options.app_id,
-                "secret": self.options.secret,
-                "engine_model_type": self.options.engine_model_type,
-                "voice_id": self.options.voice_id,
+                "key": self.key,
+                "app_id": self.app_id,
+                "secret": self.secret,
+                "engine_model_type": self.engine_model_type,
+                "voice_id": self.voice_id,
             }
         )
         return {"vendor": "tencent", "params": params}
 
 
 class FengmingSTT(_BaseSTTCompat):
-    def __init__(self, **kwargs: Any):
-        if kwargs:
-            unexpected = ", ".join(sorted(kwargs))
-            raise TypeError(f"FengmingSTT does not accept parameters: {unexpected}")
+    model_config = ConfigDict(extra="forbid")
 
     def to_config(self) -> Dict[str, Any]:
         return {"vendor": "fengming"}
 
 
-class XfyunSTTOptions(BaseModel):
+class XfyunSTT(_BaseSTTCompat):
     model_config = ConfigDict(extra="forbid")
 
     api_key: Optional[str] = Field(default=None, description="Xfyun ASR API key")
@@ -58,28 +56,23 @@ class XfyunSTTOptions(BaseModel):
     language: Optional[str] = Field(default=None, description="Xfyun ASR language")
     additional_params: Optional[Dict[str, Any]] = Field(default=None)
 
-
-class XfyunSTT(_BaseSTTCompat):
-    def __init__(self, **kwargs: Any):
-        self.options = XfyunSTTOptions(**kwargs)
-
     def to_config(self) -> Dict[str, Any]:
-        params: Dict[str, Any] = dict(self.options.additional_params or {})
-        if self.options.api_key is not None:
-            params["api_key"] = self.options.api_key
-        if self.options.app_id is not None:
-            params["app_id"] = self.options.app_id
-        if self.options.api_secret is not None:
-            params["api_secret"] = self.options.api_secret
-        if self.options.language is not None:
-            params["language"] = self.options.language
+        params: Dict[str, Any] = dict(self.additional_params or {})
+        if self.api_key is not None:
+            params["api_key"] = self.api_key
+        if self.app_id is not None:
+            params["app_id"] = self.app_id
+        if self.api_secret is not None:
+            params["api_secret"] = self.api_secret
+        if self.language is not None:
+            params["language"] = self.language
         return {
             "vendor": "xfyun",
             "params": params,
         }
 
 
-class XfyunBigModelSTTOptions(BaseModel):
+class XfyunBigModelSTT(_BaseSTTCompat):
     model_config = ConfigDict(extra="forbid")
 
     api_key: Optional[str] = Field(default=None, description="Xfyun BigModel ASR API key")
@@ -89,30 +82,25 @@ class XfyunBigModelSTTOptions(BaseModel):
     language: Optional[str] = Field(default=None, description="Xfyun BigModel ASR language")
     additional_params: Optional[Dict[str, Any]] = Field(default=None)
 
-
-class XfyunBigModelSTT(_BaseSTTCompat):
-    def __init__(self, **kwargs: Any):
-        self.options = XfyunBigModelSTTOptions(**kwargs)
-
     def to_config(self) -> Dict[str, Any]:
-        params: Dict[str, Any] = dict(self.options.additional_params or {})
-        if self.options.api_key is not None:
-            params["api_key"] = self.options.api_key
-        if self.options.app_id is not None:
-            params["app_id"] = self.options.app_id
-        if self.options.api_secret is not None:
-            params["api_secret"] = self.options.api_secret
-        if self.options.language_name is not None:
-            params["language_name"] = self.options.language_name
-        if self.options.language is not None:
-            params["language"] = self.options.language
+        params: Dict[str, Any] = dict(self.additional_params or {})
+        if self.api_key is not None:
+            params["api_key"] = self.api_key
+        if self.app_id is not None:
+            params["app_id"] = self.app_id
+        if self.api_secret is not None:
+            params["api_secret"] = self.api_secret
+        if self.language_name is not None:
+            params["language_name"] = self.language_name
+        if self.language is not None:
+            params["language"] = self.language
         return {
             "vendor": "xfyun_bigmodel",
             "params": params,
         }
 
 
-class XfyunDialectSTTOptions(BaseModel):
+class XfyunDialectSTT(_BaseSTTCompat):
     model_config = ConfigDict(extra="forbid")
 
     app_id: Optional[str] = Field(default=None, description="Xfyun Dialect ASR app id")
@@ -121,28 +109,23 @@ class XfyunDialectSTTOptions(BaseModel):
     language: Optional[str] = Field(default=None, description="Xfyun Dialect ASR language")
     additional_params: Optional[Dict[str, Any]] = Field(default=None)
 
-
-class XfyunDialectSTT(_BaseSTTCompat):
-    def __init__(self, **kwargs: Any):
-        self.options = XfyunDialectSTTOptions(**kwargs)
-
     def to_config(self) -> Dict[str, Any]:
-        params: Dict[str, Any] = dict(self.options.additional_params or {})
-        if self.options.app_id is not None:
-            params["app_id"] = self.options.app_id
-        if self.options.access_key_id is not None:
-            params["access_key_id"] = self.options.access_key_id
-        if self.options.access_key_secret is not None:
-            params["access_key_secret"] = self.options.access_key_secret
-        if self.options.language is not None:
-            params["language"] = self.options.language
+        params: Dict[str, Any] = dict(self.additional_params or {})
+        if self.app_id is not None:
+            params["app_id"] = self.app_id
+        if self.access_key_id is not None:
+            params["access_key_id"] = self.access_key_id
+        if self.access_key_secret is not None:
+            params["access_key_secret"] = self.access_key_secret
+        if self.language is not None:
+            params["language"] = self.language
         return {
             "vendor": "xfyun_dialect",
             "params": params,
         }
 
 
-class MicrosoftSTTOptions(BaseModel):
+class MicrosoftSTT(_BaseSTTCompat):
     model_config = ConfigDict(extra="forbid")
 
     key: str = Field(..., description="Azure subscription key")
@@ -151,27 +134,22 @@ class MicrosoftSTTOptions(BaseModel):
     phrase_list: Optional[List[str]] = Field(default=None, description="Microsoft ASR phrase list")
     additional_params: Optional[Dict[str, Any]] = Field(default=None)
 
-
-class MicrosoftSTT(_BaseSTTCompat):
-    def __init__(self, **kwargs: Any):
-        self.options = MicrosoftSTTOptions(**kwargs)
-
     def to_config(self) -> Dict[str, Any]:
-        params: Dict[str, Any] = dict(self.options.additional_params or {})
+        params: Dict[str, Any] = dict(self.additional_params or {})
         params.update({
-            "key": self.options.key,
-            "region": self.options.region,
-            "language": self.options.language,
+            "key": self.key,
+            "region": self.region,
+            "language": self.language,
         })
-        if self.options.phrase_list is not None:
-            params["phrase_list"] = self.options.phrase_list
+        if self.phrase_list is not None:
+            params["phrase_list"] = self.phrase_list
         return {
             "vendor": "microsoft",
             "params": params,
         }
 
 
-class TencentTTSOptions(BaseModel):
+class TencentTTS(_BaseTTSCompat):
     model_config = ConfigDict(extra="forbid")
 
     app_id: str = Field(..., description="Tencent TTS app id")
@@ -185,14 +163,9 @@ class TencentTTSOptions(BaseModel):
     additional_params: Optional[Dict[str, Any]] = Field(default=None, description="Additional Tencent TTS params")
     skip_patterns: Optional[List[int]] = Field(default=None)
 
-
-class TencentTTS(_BaseTTSCompat):
-    def __init__(self, **kwargs: Any):
-        self.options = TencentTTSOptions(**kwargs)
-
     @property
     def sample_rate(self) -> Optional[int]:
-        audio_setting = (self.options.additional_params or {}).get("audio_setting")
+        audio_setting = (self.additional_params or {}).get("audio_setting")
         if isinstance(audio_setting, dict):
             sample_rate = audio_setting.get("sample_rate")
             if isinstance(sample_rate, int):
@@ -200,34 +173,34 @@ class TencentTTS(_BaseTTSCompat):
         return None
 
     def to_config(self) -> Dict[str, Any]:
-        params: Dict[str, Any] = dict(self.options.additional_params or {})
+        params: Dict[str, Any] = dict(self.additional_params or {})
         params.update(
             {
-                "app_id": self.options.app_id,
-                "secret_id": self.options.secret_id,
-                "secret_key": self.options.secret_key,
-                "voice_type": self.options.voice_type,
+                "app_id": self.app_id,
+                "secret_id": self.secret_id,
+                "secret_key": self.secret_key,
+                "voice_type": self.voice_type,
             }
         )
-        if self.options.volume is not None:
-            params["volume"] = self.options.volume
-        if self.options.speed is not None:
-            params["speed"] = self.options.speed
-        if self.options.emotion_category is not None:
-            params["emotion_category"] = self.options.emotion_category
-        if self.options.emotion_intensity is not None:
-            params["emotion_intensity"] = self.options.emotion_intensity
+        if self.volume is not None:
+            params["volume"] = self.volume
+        if self.speed is not None:
+            params["speed"] = self.speed
+        if self.emotion_category is not None:
+            params["emotion_category"] = self.emotion_category
+        if self.emotion_intensity is not None:
+            params["emotion_intensity"] = self.emotion_intensity
 
         result: Dict[str, Any] = {
             "vendor": "tencent",
             "params": params,
         }
-        if self.options.skip_patterns is not None:
-            result["skip_patterns"] = self.options.skip_patterns
+        if self.skip_patterns is not None:
+            result["skip_patterns"] = self.skip_patterns
         return result
 
 
-class BytedanceTTSOptions(BaseModel):
+class BytedanceTTS(_BaseTTSCompat):
     model_config = ConfigDict(extra="forbid")
 
     token: str = Field(..., description="Bytedance TTS auth token")
@@ -241,14 +214,9 @@ class BytedanceTTSOptions(BaseModel):
     additional_params: Optional[Dict[str, Any]] = Field(default=None, description="Additional Bytedance TTS params")
     skip_patterns: Optional[List[int]] = Field(default=None)
 
-
-class BytedanceTTS(_BaseTTSCompat):
-    def __init__(self, **kwargs: Any):
-        self.options = BytedanceTTSOptions(**kwargs)
-
     @property
     def sample_rate(self) -> Optional[int]:
-        audio_setting = (self.options.additional_params or {}).get("audio_setting")
+        audio_setting = (self.additional_params or {}).get("audio_setting")
         if isinstance(audio_setting, dict):
             sample_rate = audio_setting.get("sample_rate")
             if isinstance(sample_rate, int):
@@ -256,34 +224,34 @@ class BytedanceTTS(_BaseTTSCompat):
         return None
 
     def to_config(self) -> Dict[str, Any]:
-        params: Dict[str, Any] = dict(self.options.additional_params or {})
+        params: Dict[str, Any] = dict(self.additional_params or {})
         params.update(
             {
-                "token": self.options.token,
-                "app_id": self.options.app_id,
-                "cluster": self.options.cluster,
-                "voice_type": self.options.voice_type,
+                "token": self.token,
+                "app_id": self.app_id,
+                "cluster": self.cluster,
+                "voice_type": self.voice_type,
             }
         )
-        if self.options.speed_ratio is not None:
-            params["speed_ratio"] = self.options.speed_ratio
-        if self.options.volume_ratio is not None:
-            params["volume_ratio"] = self.options.volume_ratio
-        if self.options.pitch_ratio is not None:
-            params["pitch_ratio"] = self.options.pitch_ratio
-        if self.options.emotion is not None:
-            params["emotion"] = self.options.emotion
+        if self.speed_ratio is not None:
+            params["speed_ratio"] = self.speed_ratio
+        if self.volume_ratio is not None:
+            params["volume_ratio"] = self.volume_ratio
+        if self.pitch_ratio is not None:
+            params["pitch_ratio"] = self.pitch_ratio
+        if self.emotion is not None:
+            params["emotion"] = self.emotion
 
         result: Dict[str, Any] = {
             "vendor": "bytedance",
             "params": params,
         }
-        if self.options.skip_patterns is not None:
-            result["skip_patterns"] = self.options.skip_patterns
+        if self.skip_patterns is not None:
+            result["skip_patterns"] = self.skip_patterns
         return result
 
 
-class BytedanceDuplexTTSOptions(BaseModel):
+class BytedanceDuplexTTS(_BaseTTSCompat):
     model_config = ConfigDict(extra="forbid")
 
     token: str = Field(..., description="Bytedance Duplex TTS auth token")
@@ -292,14 +260,9 @@ class BytedanceDuplexTTSOptions(BaseModel):
     additional_params: Optional[Dict[str, Any]] = Field(default=None, description="Additional Bytedance Duplex TTS params")
     skip_patterns: Optional[List[int]] = Field(default=None)
 
-
-class BytedanceDuplexTTS(_BaseTTSCompat):
-    def __init__(self, **kwargs: Any):
-        self.options = BytedanceDuplexTTSOptions(**kwargs)
-
     @property
     def sample_rate(self) -> Optional[int]:
-        audio_setting = (self.options.additional_params or {}).get("audio_setting")
+        audio_setting = (self.additional_params or {}).get("audio_setting")
         if isinstance(audio_setting, dict):
             sample_rate = audio_setting.get("sample_rate")
             if isinstance(sample_rate, int):
@@ -307,12 +270,12 @@ class BytedanceDuplexTTS(_BaseTTSCompat):
         return None
 
     def to_config(self) -> Dict[str, Any]:
-        params: Dict[str, Any] = dict(self.options.additional_params or {})
+        params: Dict[str, Any] = dict(self.additional_params or {})
         params.update(
             {
-                "token": self.options.token,
-                "app_id": self.options.app_id,
-                "speaker": self.options.speaker,
+                "token": self.token,
+                "app_id": self.app_id,
+                "speaker": self.speaker,
             }
         )
 
@@ -320,12 +283,12 @@ class BytedanceDuplexTTS(_BaseTTSCompat):
             "vendor": "bytedance_duplex",
             "params": params,
         }
-        if self.options.skip_patterns is not None:
-            result["skip_patterns"] = self.options.skip_patterns
+        if self.skip_patterns is not None:
+            result["skip_patterns"] = self.skip_patterns
         return result
 
 
-class CosyVoiceTTSOptions(BaseModel):
+class CosyVoiceTTS(_BaseTTSCompat):
     model_config = ConfigDict(extra="forbid")
 
     api_key: Optional[str] = Field(default=None, description="CosyVoice API key")
@@ -335,16 +298,11 @@ class CosyVoiceTTSOptions(BaseModel):
     additional_params: Optional[Dict[str, Any]] = Field(default=None, description="CosyVoice TTS params from REST doc")
     skip_patterns: Optional[List[int]] = Field(default=None)
 
-
-class CosyVoiceTTS(_BaseTTSCompat):
-    def __init__(self, **kwargs: Any):
-        self.options = CosyVoiceTTSOptions(**kwargs)
-
     @property
-    def sample_rate(self) -> Optional[int]:
-        if self.options.sample_rate is not None:
-            return self.options.sample_rate
-        audio_setting = (self.options.additional_params or {}).get("audio_setting")
+    def resolved_sample_rate(self) -> Optional[int]:
+        if self.sample_rate is not None:
+            return self.sample_rate
+        audio_setting = (self.additional_params or {}).get("audio_setting")
         if isinstance(audio_setting, dict):
             sample_rate = audio_setting.get("sample_rate")
             if isinstance(sample_rate, int):
@@ -352,25 +310,25 @@ class CosyVoiceTTS(_BaseTTSCompat):
         return None
 
     def to_config(self) -> Dict[str, Any]:
-        params: Dict[str, Any] = dict(self.options.additional_params or {})
-        if self.options.api_key is not None:
-            params["api_key"] = self.options.api_key
-        if self.options.model is not None:
-            params["model"] = self.options.model
-        if self.options.sample_rate is not None:
-            params["sample_rate"] = self.options.sample_rate
-        if self.options.voice is not None:
-            params["voice"] = self.options.voice
+        params: Dict[str, Any] = dict(self.additional_params or {})
+        if self.api_key is not None:
+            params["api_key"] = self.api_key
+        if self.model is not None:
+            params["model"] = self.model
+        if self.sample_rate is not None:
+            params["sample_rate"] = self.sample_rate
+        if self.voice is not None:
+            params["voice"] = self.voice
         result: Dict[str, Any] = {
             "vendor": "cosyvoice",
             "params": params,
         }
-        if self.options.skip_patterns is not None:
-            result["skip_patterns"] = self.options.skip_patterns
+        if self.skip_patterns is not None:
+            result["skip_patterns"] = self.skip_patterns
         return result
 
 
-class StepFunTTSOptions(BaseModel):
+class StepFunTTS(_BaseTTSCompat):
     model_config = ConfigDict(extra="forbid")
 
     api_key: Optional[str] = Field(default=None, description="StepFun TTS API key")
@@ -379,14 +337,9 @@ class StepFunTTSOptions(BaseModel):
     additional_params: Optional[Dict[str, Any]] = Field(default=None, description="StepFun TTS params from REST doc")
     skip_patterns: Optional[List[int]] = Field(default=None)
 
-
-class StepFunTTS(_BaseTTSCompat):
-    def __init__(self, **kwargs: Any):
-        self.options = StepFunTTSOptions(**kwargs)
-
     @property
     def sample_rate(self) -> Optional[int]:
-        audio_setting = (self.options.additional_params or {}).get("audio_setting")
+        audio_setting = (self.additional_params or {}).get("audio_setting")
         if isinstance(audio_setting, dict):
             sample_rate = audio_setting.get("sample_rate")
             if isinstance(sample_rate, int):
@@ -394,23 +347,23 @@ class StepFunTTS(_BaseTTSCompat):
         return None
 
     def to_config(self) -> Dict[str, Any]:
-        params: Dict[str, Any] = dict(self.options.additional_params or {})
-        if self.options.api_key is not None:
-            params["api_key"] = self.options.api_key
-        if self.options.model is not None:
-            params["model"] = self.options.model
-        if self.options.voice_id is not None:
-            params["voice_id"] = self.options.voice_id
+        params: Dict[str, Any] = dict(self.additional_params or {})
+        if self.api_key is not None:
+            params["api_key"] = self.api_key
+        if self.model is not None:
+            params["model"] = self.model
+        if self.voice_id is not None:
+            params["voice_id"] = self.voice_id
         result: Dict[str, Any] = {
             "vendor": "stepfun",
             "params": params,
         }
-        if self.options.skip_patterns is not None:
-            result["skip_patterns"] = self.options.skip_patterns
+        if self.skip_patterns is not None:
+            result["skip_patterns"] = self.skip_patterns
         return result
 
 
-class MicrosoftTTSOptions(BaseModel):
+class MicrosoftTTS(_BaseTTSCompat):
     model_config = ConfigDict(extra="forbid")
 
     key: str = Field(..., description="Azure subscription key")
@@ -422,36 +375,27 @@ class MicrosoftTTSOptions(BaseModel):
     additional_params: Optional[Dict[str, Any]] = Field(default=None, description="Additional Microsoft TTS params")
     skip_patterns: Optional[List[int]] = Field(default=None)
 
-
-class MicrosoftTTS(_BaseTTSCompat):
-    def __init__(self, **kwargs: Any):
-        self.options = MicrosoftTTSOptions(**kwargs)
-
-    @property
-    def sample_rate(self) -> Optional[int]:
-        return self.options.sample_rate
-
     def to_config(self) -> Dict[str, Any]:
-        params: Dict[str, Any] = dict(self.options.additional_params or {})
+        params: Dict[str, Any] = dict(self.additional_params or {})
         params.update({
-            "key": self.options.key,
-            "region": self.options.region,
-            "voice_name": self.options.voice_name,
+            "key": self.key,
+            "region": self.region,
+            "voice_name": self.voice_name,
         })
-        if self.options.sample_rate is not None:
-            params["sample_rate"] = self.options.sample_rate
-        if self.options.speed is not None:
-            params["speed"] = self.options.speed
-        if self.options.volume is not None:
-            params["volume"] = self.options.volume
+        if self.sample_rate is not None:
+            params["sample_rate"] = self.sample_rate
+        if self.speed is not None:
+            params["speed"] = self.speed
+        if self.volume is not None:
+            params["volume"] = self.volume
 
         result: Dict[str, Any] = {"vendor": "microsoft", "params": params}
-        if self.options.skip_patterns is not None:
-            result["skip_patterns"] = self.options.skip_patterns
+        if self.skip_patterns is not None:
+            result["skip_patterns"] = self.skip_patterns
         return result
 
 
-class MiniMaxTTSOptions(BaseModel):
+class MiniMaxTTS(_BaseTTSCompat):
     model_config = ConfigDict(extra="forbid")
 
     key: Optional[str] = Field(default=None, description="MiniMax API key")
@@ -471,86 +415,381 @@ class MiniMaxTTSOptions(BaseModel):
     skip_patterns: Optional[List[int]] = Field(default=None)
 
     @model_validator(mode="after")
-    def _validate_params(self) -> "MiniMaxTTSOptions":
+    def _validate_params(self) -> "MiniMaxTTS":
         if self.voice_id is not None and self.timber_weights is not None:
             raise ValueError("MiniMaxTTS requires exactly one of voice_id or timber_weights")
         if self.voice_id is None and self.timber_weights is None:
             raise ValueError("MiniMaxTTS requires exactly one of voice_id or timber_weights")
         return self
 
-
-class MiniMaxTTS(_BaseTTSCompat):
-    def __init__(self, **kwargs: Any):
-        self.options = MiniMaxTTSOptions(**kwargs)
-
-    @property
-    def sample_rate(self) -> Optional[int]:
-        return self.options.sample_rate
-
     def to_config(self) -> Dict[str, Any]:
-        params: Dict[str, Any] = dict(self.options.additional_params or {})
-        if self.options.key is not None:
-            params["key"] = self.options.key
-        params["model"] = self.options.model
+        params: Dict[str, Any] = dict(self.additional_params or {})
+        if self.key is not None:
+            params["key"] = self.key
+        params["model"] = self.model
 
         voice_setting: Dict[str, Any] = {}
-        if self.options.voice_id is not None:
-            voice_setting["voice_id"] = self.options.voice_id
-        if self.options.speed is not None:
-            voice_setting["speed"] = self.options.speed
-        if self.options.vol is not None:
-            voice_setting["vol"] = self.options.vol
-        if self.options.pitch is not None:
-            voice_setting["pitch"] = self.options.pitch
-        if self.options.emotion is not None:
-            voice_setting["emotion"] = self.options.emotion
-        if self.options.latex_read is not None:
-            voice_setting["latex_read"] = self.options.latex_read
-        if self.options.english_normalization is not None:
-            voice_setting["english_normalization"] = self.options.english_normalization
+        if self.voice_id is not None:
+            voice_setting["voice_id"] = self.voice_id
+        if self.speed is not None:
+            voice_setting["speed"] = self.speed
+        if self.vol is not None:
+            voice_setting["vol"] = self.vol
+        if self.pitch is not None:
+            voice_setting["pitch"] = self.pitch
+        if self.emotion is not None:
+            voice_setting["emotion"] = self.emotion
+        if self.latex_read is not None:
+            voice_setting["latex_read"] = self.latex_read
+        if self.english_normalization is not None:
+            voice_setting["english_normalization"] = self.english_normalization
         if voice_setting:
             params["voice_setting"] = voice_setting
-        if self.options.timber_weights is not None:
-            params["timber_weights"] = self.options.timber_weights
-        if self.options.sample_rate is not None:
-            params["audio_setting"] = {"sample_rate": self.options.sample_rate}
-        if self.options.pronunciation_dict is not None:
-            params["pronunciation_dict"] = self.options.pronunciation_dict
-        if self.options.language_boost is not None:
-            params["language_boost"] = self.options.language_boost
+        if self.timber_weights is not None:
+            params["timber_weights"] = self.timber_weights
+        if self.sample_rate is not None:
+            params["audio_setting"] = {"sample_rate": self.sample_rate}
+        if self.pronunciation_dict is not None:
+            params["pronunciation_dict"] = self.pronunciation_dict
+        if self.language_boost is not None:
+            params["language_boost"] = self.language_boost
 
         result: Dict[str, Any] = {"vendor": "minimax", "params": params}
-        if self.options.skip_patterns is not None:
-            result["skip_patterns"] = self.options.skip_patterns
+        if self.skip_patterns is not None:
+            result["skip_patterns"] = self.skip_patterns
         return result
 
 
-class AliyunLLM(OpenAI):
-    def __init__(self, **kwargs: Any):
-        kwargs["vendor"] = "aliyun"
-        super().__init__(**kwargs)
-
-
-class BytedanceLLM(OpenAI):
-    def __init__(self, **kwargs: Any):
-        kwargs["vendor"] = "bytedance"
-        super().__init__(**kwargs)
-
-
-class DeepSeekLLM(OpenAI):
-    def __init__(self, **kwargs: Any):
-        kwargs["vendor"] = "deepseek"
-        super().__init__(**kwargs)
-
-
-class TencentLLM(OpenAI):
-    def __init__(self, **kwargs: Any):
-        kwargs["vendor"] = "tencent"
-        super().__init__(**kwargs)
-
-
-class SenseTimeAvatarOptions(BaseModel):
+class AliyunLLM(BaseLLM):
     model_config = ConfigDict(extra="forbid")
+
+    api_key: Optional[str] = Field(default=None, description="OpenAI API key")
+    model: str = Field(..., description="Model name")
+    base_url: Optional[str] = Field(default=None, description="Custom base URL")
+    temperature: Optional[float] = Field(default=None, ge=0.0, le=2.0)
+    top_p: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+    max_tokens: Optional[int] = Field(default=None, gt=0)
+    system_messages: Optional[List[Dict[str, Any]]] = Field(default=None)
+    greeting_message: Optional[str] = Field(default=None)
+    greeting_audio_url: Optional[str] = Field(default=None)
+    failure_message: Optional[str] = Field(default=None)
+    input_modalities: Optional[List[str]] = Field(default=None)
+    params: Optional[Dict[str, Any]] = Field(default=None)
+    headers: Optional[Dict[str, str]] = Field(default=None)
+    output_modalities: Optional[List[str]] = Field(default=None)
+    greeting_configs: Optional[LlmGreetingConfigs] = Field(default=None)
+    template_variables: Optional[Dict[str, str]] = Field(default=None)
+    vendor: Optional[str] = Field(default="aliyun")
+    mcp_servers: Optional[List[Dict[str, Any]]] = Field(default=None)
+    max_history: Optional[int] = Field(default=None, gt=0, description="Maximum number of conversation history messages to cache")
+
+    @model_validator(mode="after")
+    def _validate_byok_params(self) -> "AliyunLLM":
+        if not self.model:
+            raise ValueError("AliyunLLM requires model")
+        if self.api_key is not None and self.base_url is None:
+            raise ValueError("AliyunLLM requires base_url when api_key is set")
+        if self.api_key is None and self.base_url is not None:
+            raise ValueError("AliyunLLM base_url is only valid when api_key is set")
+        if self.api_key is None and self.model.strip().lower() not in _OPENAI_MANAGED_MODELS:
+            raise ValueError("AliyunLLM requires api_key unless using a supported Agora-managed model")
+        if self.api_key is None and self.vendor is not None:
+            raise ValueError("AliyunLLM Agora-managed mode does not allow vendor")
+        return self
+
+    def to_config(self) -> Dict[str, Any]:
+        params: Dict[str, Any] = {"model": self.model, **(self.params or {})}
+
+        if self.max_tokens is not None:
+            params["max_tokens"] = self.max_tokens
+        if self.temperature is not None:
+            params["temperature"] = self.temperature
+        if self.top_p is not None:
+            params["top_p"] = self.top_p
+
+        config: Dict[str, Any] = {
+            "url": self.base_url or "https://api.openai.com/v1/chat/completions",
+            "params": params,
+            "style": "openai",
+            "input_modalities": self.input_modalities or ["text"],
+        }
+        if self.api_key is not None:
+            config["api_key"] = self.api_key
+        if self.headers is not None:
+            config["headers"] = self.headers
+
+        if self.system_messages is not None:
+            config["system_messages"] = self.system_messages
+        if self.greeting_message is not None:
+            config["greeting_message"] = self.greeting_message
+        if self.greeting_audio_url is not None:
+            config["greeting_audio_url"] = self.greeting_audio_url
+        if self.failure_message is not None:
+            config["failure_message"] = self.failure_message
+        if self.output_modalities is not None:
+            config["output_modalities"] = self.output_modalities
+        if self.greeting_configs is not None:
+            config["greeting_configs"] = _dump_optional_model(self.greeting_configs)
+        if self.template_variables is not None:
+            config["template_variables"] = self.template_variables
+        if self.vendor is not None:
+            config["vendor"] = self.vendor
+        if self.mcp_servers is not None:
+            config["mcp_servers"] = _ensure_mcp_transport(self.mcp_servers)
+        if self.max_history is not None:
+            config["max_history"] = self.max_history
+
+        return config
+
+
+class BytedanceLLM(BaseLLM):
+    model_config = ConfigDict(extra="forbid")
+
+    api_key: Optional[str] = Field(default=None, description="OpenAI API key")
+    model: str = Field(..., description="Model name")
+    base_url: Optional[str] = Field(default=None, description="Custom base URL")
+    temperature: Optional[float] = Field(default=None, ge=0.0, le=2.0)
+    top_p: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+    max_tokens: Optional[int] = Field(default=None, gt=0)
+    system_messages: Optional[List[Dict[str, Any]]] = Field(default=None)
+    greeting_message: Optional[str] = Field(default=None)
+    greeting_audio_url: Optional[str] = Field(default=None)
+    failure_message: Optional[str] = Field(default=None)
+    input_modalities: Optional[List[str]] = Field(default=None)
+    params: Optional[Dict[str, Any]] = Field(default=None)
+    headers: Optional[Dict[str, str]] = Field(default=None)
+    output_modalities: Optional[List[str]] = Field(default=None)
+    greeting_configs: Optional[LlmGreetingConfigs] = Field(default=None)
+    template_variables: Optional[Dict[str, str]] = Field(default=None)
+    vendor: Optional[str] = Field(default="bytedance")
+    mcp_servers: Optional[List[Dict[str, Any]]] = Field(default=None)
+    max_history: Optional[int] = Field(default=None, gt=0, description="Maximum number of conversation history messages to cache")
+
+    @model_validator(mode="after")
+    def _validate_byok_params(self) -> "BytedanceLLM":
+        if not self.model:
+            raise ValueError("BytedanceLLM requires model")
+        if self.api_key is not None and self.base_url is None:
+            raise ValueError("BytedanceLLM requires base_url when api_key is set")
+        if self.api_key is None and self.base_url is not None:
+            raise ValueError("BytedanceLLM base_url is only valid when api_key is set")
+        if self.api_key is None and self.model.strip().lower() not in _OPENAI_MANAGED_MODELS:
+            raise ValueError("BytedanceLLM requires api_key unless using a supported Agora-managed model")
+        if self.api_key is None and self.vendor is not None:
+            raise ValueError("BytedanceLLM Agora-managed mode does not allow vendor")
+        return self
+
+    def to_config(self) -> Dict[str, Any]:
+        params: Dict[str, Any] = {"model": self.model, **(self.params or {})}
+
+        if self.max_tokens is not None:
+            params["max_tokens"] = self.max_tokens
+        if self.temperature is not None:
+            params["temperature"] = self.temperature
+        if self.top_p is not None:
+            params["top_p"] = self.top_p
+
+        config: Dict[str, Any] = {
+            "url": self.base_url or "https://api.openai.com/v1/chat/completions",
+            "params": params,
+            "style": "openai",
+            "input_modalities": self.input_modalities or ["text"],
+        }
+        if self.api_key is not None:
+            config["api_key"] = self.api_key
+        if self.headers is not None:
+            config["headers"] = self.headers
+
+        if self.system_messages is not None:
+            config["system_messages"] = self.system_messages
+        if self.greeting_message is not None:
+            config["greeting_message"] = self.greeting_message
+        if self.greeting_audio_url is not None:
+            config["greeting_audio_url"] = self.greeting_audio_url
+        if self.failure_message is not None:
+            config["failure_message"] = self.failure_message
+        if self.output_modalities is not None:
+            config["output_modalities"] = self.output_modalities
+        if self.greeting_configs is not None:
+            config["greeting_configs"] = _dump_optional_model(self.greeting_configs)
+        if self.template_variables is not None:
+            config["template_variables"] = self.template_variables
+        if self.vendor is not None:
+            config["vendor"] = self.vendor
+        if self.mcp_servers is not None:
+            config["mcp_servers"] = _ensure_mcp_transport(self.mcp_servers)
+        if self.max_history is not None:
+            config["max_history"] = self.max_history
+
+        return config
+
+
+class DeepSeekLLM(BaseLLM):
+    model_config = ConfigDict(extra="forbid")
+
+    api_key: Optional[str] = Field(default=None, description="OpenAI API key")
+    model: str = Field(..., description="Model name")
+    base_url: Optional[str] = Field(default=None, description="Custom base URL")
+    temperature: Optional[float] = Field(default=None, ge=0.0, le=2.0)
+    top_p: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+    max_tokens: Optional[int] = Field(default=None, gt=0)
+    system_messages: Optional[List[Dict[str, Any]]] = Field(default=None)
+    greeting_message: Optional[str] = Field(default=None)
+    greeting_audio_url: Optional[str] = Field(default=None)
+    failure_message: Optional[str] = Field(default=None)
+    input_modalities: Optional[List[str]] = Field(default=None)
+    params: Optional[Dict[str, Any]] = Field(default=None)
+    headers: Optional[Dict[str, str]] = Field(default=None)
+    output_modalities: Optional[List[str]] = Field(default=None)
+    greeting_configs: Optional[LlmGreetingConfigs] = Field(default=None)
+    template_variables: Optional[Dict[str, str]] = Field(default=None)
+    vendor: Optional[str] = Field(default="deepseek")
+    mcp_servers: Optional[List[Dict[str, Any]]] = Field(default=None)
+    max_history: Optional[int] = Field(default=None, gt=0, description="Maximum number of conversation history messages to cache")
+
+    @model_validator(mode="after")
+    def _validate_byok_params(self) -> "DeepSeekLLM":
+        if not self.model:
+            raise ValueError("DeepSeekLLM requires model")
+        if self.api_key is not None and self.base_url is None:
+            raise ValueError("DeepSeekLLM requires base_url when api_key is set")
+        if self.api_key is None and self.base_url is not None:
+            raise ValueError("DeepSeekLLM base_url is only valid when api_key is set")
+        if self.api_key is None and self.model.strip().lower() not in _OPENAI_MANAGED_MODELS:
+            raise ValueError("DeepSeekLLM requires api_key unless using a supported Agora-managed model")
+        if self.api_key is None and self.vendor is not None:
+            raise ValueError("DeepSeekLLM Agora-managed mode does not allow vendor")
+        return self
+
+    def to_config(self) -> Dict[str, Any]:
+        params: Dict[str, Any] = {"model": self.model, **(self.params or {})}
+
+        if self.max_tokens is not None:
+            params["max_tokens"] = self.max_tokens
+        if self.temperature is not None:
+            params["temperature"] = self.temperature
+        if self.top_p is not None:
+            params["top_p"] = self.top_p
+
+        config: Dict[str, Any] = {
+            "url": self.base_url or "https://api.openai.com/v1/chat/completions",
+            "params": params,
+            "style": "openai",
+            "input_modalities": self.input_modalities or ["text"],
+        }
+        if self.api_key is not None:
+            config["api_key"] = self.api_key
+        if self.headers is not None:
+            config["headers"] = self.headers
+
+        if self.system_messages is not None:
+            config["system_messages"] = self.system_messages
+        if self.greeting_message is not None:
+            config["greeting_message"] = self.greeting_message
+        if self.greeting_audio_url is not None:
+            config["greeting_audio_url"] = self.greeting_audio_url
+        if self.failure_message is not None:
+            config["failure_message"] = self.failure_message
+        if self.output_modalities is not None:
+            config["output_modalities"] = self.output_modalities
+        if self.greeting_configs is not None:
+            config["greeting_configs"] = _dump_optional_model(self.greeting_configs)
+        if self.template_variables is not None:
+            config["template_variables"] = self.template_variables
+        if self.vendor is not None:
+            config["vendor"] = self.vendor
+        if self.mcp_servers is not None:
+            config["mcp_servers"] = _ensure_mcp_transport(self.mcp_servers)
+        if self.max_history is not None:
+            config["max_history"] = self.max_history
+
+        return config
+
+
+class TencentLLM(BaseLLM):
+    model_config = ConfigDict(extra="forbid")
+
+    api_key: Optional[str] = Field(default=None, description="OpenAI API key")
+    model: str = Field(..., description="Model name")
+    base_url: Optional[str] = Field(default=None, description="Custom base URL")
+    temperature: Optional[float] = Field(default=None, ge=0.0, le=2.0)
+    top_p: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+    max_tokens: Optional[int] = Field(default=None, gt=0)
+    system_messages: Optional[List[Dict[str, Any]]] = Field(default=None)
+    greeting_message: Optional[str] = Field(default=None)
+    greeting_audio_url: Optional[str] = Field(default=None)
+    failure_message: Optional[str] = Field(default=None)
+    input_modalities: Optional[List[str]] = Field(default=None)
+    params: Optional[Dict[str, Any]] = Field(default=None)
+    headers: Optional[Dict[str, str]] = Field(default=None)
+    output_modalities: Optional[List[str]] = Field(default=None)
+    greeting_configs: Optional[LlmGreetingConfigs] = Field(default=None)
+    template_variables: Optional[Dict[str, str]] = Field(default=None)
+    vendor: Optional[str] = Field(default="tencent")
+    mcp_servers: Optional[List[Dict[str, Any]]] = Field(default=None)
+    max_history: Optional[int] = Field(default=None, gt=0, description="Maximum number of conversation history messages to cache")
+
+    @model_validator(mode="after")
+    def _validate_byok_params(self) -> "TencentLLM":
+        if not self.model:
+            raise ValueError("TencentLLM requires model")
+        if self.api_key is not None and self.base_url is None:
+            raise ValueError("TencentLLM requires base_url when api_key is set")
+        if self.api_key is None and self.base_url is not None:
+            raise ValueError("TencentLLM base_url is only valid when api_key is set")
+        if self.api_key is None and self.model.strip().lower() not in _OPENAI_MANAGED_MODELS:
+            raise ValueError("TencentLLM requires api_key unless using a supported Agora-managed model")
+        if self.api_key is None and self.vendor is not None:
+            raise ValueError("TencentLLM Agora-managed mode does not allow vendor")
+        return self
+
+    def to_config(self) -> Dict[str, Any]:
+        params: Dict[str, Any] = {"model": self.model, **(self.params or {})}
+
+        if self.max_tokens is not None:
+            params["max_tokens"] = self.max_tokens
+        if self.temperature is not None:
+            params["temperature"] = self.temperature
+        if self.top_p is not None:
+            params["top_p"] = self.top_p
+
+        config: Dict[str, Any] = {
+            "url": self.base_url or "https://api.openai.com/v1/chat/completions",
+            "params": params,
+            "style": "openai",
+            "input_modalities": self.input_modalities or ["text"],
+        }
+        if self.api_key is not None:
+            config["api_key"] = self.api_key
+        if self.headers is not None:
+            config["headers"] = self.headers
+
+        if self.system_messages is not None:
+            config["system_messages"] = self.system_messages
+        if self.greeting_message is not None:
+            config["greeting_message"] = self.greeting_message
+        if self.greeting_audio_url is not None:
+            config["greeting_audio_url"] = self.greeting_audio_url
+        if self.failure_message is not None:
+            config["failure_message"] = self.failure_message
+        if self.output_modalities is not None:
+            config["output_modalities"] = self.output_modalities
+        if self.greeting_configs is not None:
+            config["greeting_configs"] = _dump_optional_model(self.greeting_configs)
+        if self.template_variables is not None:
+            config["template_variables"] = self.template_variables
+        if self.vendor is not None:
+            config["vendor"] = self.vendor
+        if self.mcp_servers is not None:
+            config["mcp_servers"] = _ensure_mcp_transport(self.mcp_servers)
+        if self.max_history is not None:
+            config["max_history"] = self.max_history
+
+        return config
+
+
+class SenseTimeAvatar(BaseAvatar):
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
 
     agora_token: Optional[str] = Field(default=None, description="RTC token for avatar publisher; generated by AgentSession when omitted")
     agora_uid: str = Field(..., description="Avatar RTC publisher uid")
@@ -560,34 +799,29 @@ class SenseTimeAvatarOptions(BaseModel):
     enable: Optional[bool] = Field(default=None)
     additional_params: Optional[Dict[str, Any]] = Field(default=None)
 
-
-class SenseTimeAvatar(BaseAvatar):
-    def __init__(self, **kwargs: Any):
-        self.options = SenseTimeAvatarOptions(**kwargs)
-
     @property
     def required_sample_rate(self) -> int:
         return 0
 
     def to_config(self) -> Dict[str, Any]:
         params: Dict[str, Any] = {
-            "agora_uid": self.options.agora_uid,
-            "app_key": self.options.app_key,
+            "agora_uid": self.agora_uid,
+            "app_key": self.app_key,
         }
-        if self.options.agora_token is not None:
-            params["agora_token"] = self.options.agora_token
-        if self.options.app_id is not None:
-            params["appId"] = self.options.app_id
-        if self.options.scene_list is not None:
-            params["sceneList"] = self.options.scene_list
-        if self.options.additional_params is not None:
-            params = {**self.options.additional_params, **params}
+        if self.agora_token is not None:
+            params["agora_token"] = self.agora_token
+        if self.app_id is not None:
+            params["appId"] = self.app_id
+        if self.scene_list is not None:
+            params["sceneList"] = self.scene_list
+        if self.additional_params is not None:
+            params = {**self.additional_params, **params}
 
-        enable = self.options.enable if self.options.enable is not None else True
+        enable = self.enable if self.enable is not None else True
         return {"enable": enable, "vendor": "sensetime", "params": params}
 
 
-class SpatiusAvatarOptions(BaseModel):
+class SpatiusAvatar(BaseAvatar):
     model_config = ConfigDict(extra="forbid")
 
     spatius_api_key: str = Field(..., description="Spatius API key")
@@ -601,32 +835,27 @@ class SpatiusAvatarOptions(BaseModel):
     enable: Optional[bool] = Field(default=None)
     additional_params: Optional[Dict[str, Any]] = Field(default=None)
 
-
-class SpatiusAvatar(BaseAvatar):
-    def __init__(self, **kwargs: Any):
-        self.options = SpatiusAvatarOptions(**kwargs)
-
     @property
     def required_sample_rate(self) -> int:
-        return self.options.sample_rate or 0
+        return self.sample_rate or 0
 
     def to_config(self) -> Dict[str, Any]:
         params: Dict[str, Any] = {
-            "spatius_api_key": self.options.spatius_api_key,
-            "spatius_app_id": self.options.spatius_app_id,
-            "spatius_avatar_id": self.options.spatius_avatar_id,
-            "agora_uid": self.options.agora_uid,
+            "spatius_api_key": self.spatius_api_key,
+            "spatius_app_id": self.spatius_app_id,
+            "spatius_avatar_id": self.spatius_avatar_id,
+            "agora_uid": self.agora_uid,
         }
-        if self.options.agora_token is not None:
-            params["agora_token"] = self.options.agora_token
-        if self.options.region is not None:
-            params["region"] = self.options.region
-        if self.options.sample_rate is not None:
-            params["sample_rate"] = self.options.sample_rate
-        if self.options.session_expire_minutes is not None:
-            params["session_expire_minutes"] = self.options.session_expire_minutes
-        if self.options.additional_params is not None:
-            params = {**self.options.additional_params, **params}
+        if self.agora_token is not None:
+            params["agora_token"] = self.agora_token
+        if self.region is not None:
+            params["region"] = self.region
+        if self.sample_rate is not None:
+            params["sample_rate"] = self.sample_rate
+        if self.session_expire_minutes is not None:
+            params["session_expire_minutes"] = self.session_expire_minutes
+        if self.additional_params is not None:
+            params = {**self.additional_params, **params}
 
-        enable = self.options.enable if self.options.enable is not None else True
+        enable = self.enable if self.enable is not None else True
         return {"enable": enable, "vendor": "spatius", "params": params}

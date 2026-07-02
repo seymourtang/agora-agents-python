@@ -1,6 +1,6 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import ConfigDict, Field, model_validator
 
 from .base import BaseLLM
 
@@ -26,7 +26,8 @@ def _dump_optional_model(value: Any) -> Any:
         return value.dict(exclude_none=True)
     return value
 
-class OpenAIOptions(BaseModel):
+
+class OpenAI(BaseLLM):
     model_config = ConfigDict(extra="forbid")
 
     api_key: Optional[str] = Field(default=None, description="OpenAI API key")
@@ -50,7 +51,7 @@ class OpenAIOptions(BaseModel):
     max_history: Optional[int] = Field(default=None, gt=0, description="Maximum number of conversation history messages to cache")
 
     @model_validator(mode="after")
-    def _validate_byok_params(self) -> "OpenAIOptions":
+    def _validate_byok_params(self) -> "OpenAI":
         if not self.model:
             raise ValueError("OpenAI requires model")
         if self.api_key is not None and self.base_url is None:
@@ -63,59 +64,55 @@ class OpenAIOptions(BaseModel):
             raise ValueError("OpenAI Agora-managed mode does not allow vendor")
         return self
 
-class OpenAI(BaseLLM):
-    def __init__(self, **kwargs: Any):
-        self.options = OpenAIOptions(**kwargs)
-
     def to_config(self) -> Dict[str, Any]:
         # model is the default; explicit params entries extend/override it.
         # This matches the TS SDK behaviour: { model, ...params }.
-        params: Dict[str, Any] = {"model": self.options.model, **(self.options.params or {})}
+        params: Dict[str, Any] = {"model": self.model, **(self.params or {})}
 
         # Named fields take precedence over anything in the generic params dict.
-        if self.options.max_tokens is not None:
-            params["max_tokens"] = self.options.max_tokens
-        if self.options.temperature is not None:
-            params["temperature"] = self.options.temperature
-        if self.options.top_p is not None:
-            params["top_p"] = self.options.top_p
+        if self.max_tokens is not None:
+            params["max_tokens"] = self.max_tokens
+        if self.temperature is not None:
+            params["temperature"] = self.temperature
+        if self.top_p is not None:
+            params["top_p"] = self.top_p
 
         config: Dict[str, Any] = {
-            "url": self.options.base_url or "https://api.openai.com/v1/chat/completions",
+            "url": self.base_url or "https://api.openai.com/v1/chat/completions",
             "params": params,
             "style": "openai",
-            "input_modalities": self.options.input_modalities or ["text"],
+            "input_modalities": self.input_modalities or ["text"],
         }
-        if self.options.api_key is not None:
-            config["api_key"] = self.options.api_key
-        if self.options.headers is not None:
-            config["headers"] = self.options.headers
+        if self.api_key is not None:
+            config["api_key"] = self.api_key
+        if self.headers is not None:
+            config["headers"] = self.headers
 
-        if self.options.system_messages is not None:
-            config["system_messages"] = self.options.system_messages
-        if self.options.greeting_message is not None:
-            config["greeting_message"] = self.options.greeting_message
-        if self.options.greeting_audio_url is not None:
-            config["greeting_audio_url"] = self.options.greeting_audio_url
-        if self.options.failure_message is not None:
-            config["failure_message"] = self.options.failure_message
-        if self.options.output_modalities is not None:
-            config["output_modalities"] = self.options.output_modalities
-        if self.options.greeting_configs is not None:
-            config["greeting_configs"] = _dump_optional_model(self.options.greeting_configs)
-        if self.options.template_variables is not None:
-            config["template_variables"] = self.options.template_variables
-        if self.options.vendor is not None:
-            config["vendor"] = self.options.vendor
-        if self.options.mcp_servers is not None:
-            config["mcp_servers"] = _ensure_mcp_transport(self.options.mcp_servers)
-        if self.options.max_history is not None:
-            config["max_history"] = self.options.max_history
+        if self.system_messages is not None:
+            config["system_messages"] = self.system_messages
+        if self.greeting_message is not None:
+            config["greeting_message"] = self.greeting_message
+        if self.greeting_audio_url is not None:
+            config["greeting_audio_url"] = self.greeting_audio_url
+        if self.failure_message is not None:
+            config["failure_message"] = self.failure_message
+        if self.output_modalities is not None:
+            config["output_modalities"] = self.output_modalities
+        if self.greeting_configs is not None:
+            config["greeting_configs"] = _dump_optional_model(self.greeting_configs)
+        if self.template_variables is not None:
+            config["template_variables"] = self.template_variables
+        if self.vendor is not None:
+            config["vendor"] = self.vendor
+        if self.mcp_servers is not None:
+            config["mcp_servers"] = _ensure_mcp_transport(self.mcp_servers)
+        if self.max_history is not None:
+            config["max_history"] = self.max_history
 
         return config
 
 
-class AzureOpenAIOptions(BaseModel):
+class AzureOpenAI(BaseLLM):
     model_config = ConfigDict(extra="forbid")
 
     api_key: str = Field(..., description="Azure OpenAI API key")
@@ -140,60 +137,56 @@ class AzureOpenAIOptions(BaseModel):
     mcp_servers: Optional[List[Dict[str, Any]]] = Field(default=None)
     max_history: Optional[int] = Field(default=None, gt=0, description="Maximum number of conversation history messages to cache")
 
-class AzureOpenAI(BaseLLM):
-    def __init__(self, **kwargs: Any):
-        self.options = AzureOpenAIOptions(**kwargs)
-
     def to_config(self) -> Dict[str, Any]:
         url = (
-            f"{self.options.endpoint}/openai/deployments/"
-            f"{self.options.deployment_name}/chat/completions"
-            f"?api-version={self.options.api_version}"
+            f"{self.endpoint}/openai/deployments/"
+            f"{self.deployment_name}/chat/completions"
+            f"?api-version={self.api_version}"
         )
         config: Dict[str, Any] = {
             "url": url,
-            "api_key": self.options.api_key,
-            "vendor": self.options.vendor or "azure",
+            "api_key": self.api_key,
+            "vendor": self.vendor or "azure",
             "style": "openai",
-            "input_modalities": self.options.input_modalities or ["text"],
+            "input_modalities": self.input_modalities or ["text"],
         }
 
         # Named fields take precedence over anything in the generic params dict.
-        params: Dict[str, Any] = {"model": self.options.model, **(self.options.params or {})}
-        if self.options.temperature is not None:
-            params["temperature"] = self.options.temperature
-        if self.options.top_p is not None:
-            params["top_p"] = self.options.top_p
-        if self.options.max_tokens is not None:
-            params["max_tokens"] = self.options.max_tokens
+        params: Dict[str, Any] = {"model": self.model, **(self.params or {})}
+        if self.temperature is not None:
+            params["temperature"] = self.temperature
+        if self.top_p is not None:
+            params["top_p"] = self.top_p
+        if self.max_tokens is not None:
+            params["max_tokens"] = self.max_tokens
         if params:
             config["params"] = params
-        if self.options.headers is not None:
-            config["headers"] = self.options.headers
+        if self.headers is not None:
+            config["headers"] = self.headers
 
-        if self.options.system_messages is not None:
-            config["system_messages"] = self.options.system_messages
-        if self.options.greeting_message is not None:
-            config["greeting_message"] = self.options.greeting_message
-        if self.options.greeting_audio_url is not None:
-            config["greeting_audio_url"] = self.options.greeting_audio_url
-        if self.options.failure_message is not None:
-            config["failure_message"] = self.options.failure_message
-        if self.options.output_modalities is not None:
-            config["output_modalities"] = self.options.output_modalities
-        if self.options.greeting_configs is not None:
-            config["greeting_configs"] = _dump_optional_model(self.options.greeting_configs)
-        if self.options.template_variables is not None:
-            config["template_variables"] = self.options.template_variables
-        if self.options.mcp_servers is not None:
-            config["mcp_servers"] = _ensure_mcp_transport(self.options.mcp_servers)
-        if self.options.max_history is not None:
-            config["max_history"] = self.options.max_history
+        if self.system_messages is not None:
+            config["system_messages"] = self.system_messages
+        if self.greeting_message is not None:
+            config["greeting_message"] = self.greeting_message
+        if self.greeting_audio_url is not None:
+            config["greeting_audio_url"] = self.greeting_audio_url
+        if self.failure_message is not None:
+            config["failure_message"] = self.failure_message
+        if self.output_modalities is not None:
+            config["output_modalities"] = self.output_modalities
+        if self.greeting_configs is not None:
+            config["greeting_configs"] = _dump_optional_model(self.greeting_configs)
+        if self.template_variables is not None:
+            config["template_variables"] = self.template_variables
+        if self.mcp_servers is not None:
+            config["mcp_servers"] = _ensure_mcp_transport(self.mcp_servers)
+        if self.max_history is not None:
+            config["max_history"] = self.max_history
 
         return config
 
 
-class AnthropicOptions(BaseModel):
+class Anthropic(BaseLLM):
     model_config = ConfigDict(extra="forbid")
 
     api_key: str = Field(..., description="Anthropic API key")
@@ -216,54 +209,50 @@ class AnthropicOptions(BaseModel):
     mcp_servers: Optional[List[Dict[str, Any]]] = Field(default=None)
     max_history: Optional[int] = Field(default=None, gt=0, description="Maximum number of conversation history messages to cache")
 
-class Anthropic(BaseLLM):
-    def __init__(self, **kwargs: Any):
-        self.options = AnthropicOptions(**kwargs)
-
     def to_config(self) -> Dict[str, Any]:
         # Named fields take precedence over anything in the generic params dict.
-        params: Dict[str, Any] = {"model": self.options.model, **(self.options.params or {})}
-        if self.options.max_tokens is not None:
-            params["max_tokens"] = self.options.max_tokens
-        if self.options.temperature is not None:
-            params["temperature"] = self.options.temperature
-        if self.options.top_p is not None:
-            params["top_p"] = self.options.top_p
+        params: Dict[str, Any] = {"model": self.model, **(self.params or {})}
+        if self.max_tokens is not None:
+            params["max_tokens"] = self.max_tokens
+        if self.temperature is not None:
+            params["temperature"] = self.temperature
+        if self.top_p is not None:
+            params["top_p"] = self.top_p
 
         config: Dict[str, Any] = {
-            "url": self.options.url,
-            "api_key": self.options.api_key,
+            "url": self.url,
+            "api_key": self.api_key,
             "params": params,
-            "headers": self.options.headers,
+            "headers": self.headers,
             "style": "anthropic",
-            "input_modalities": self.options.input_modalities or ["text"],
+            "input_modalities": self.input_modalities or ["text"],
         }
 
-        if self.options.system_messages is not None:
-            config["system_messages"] = self.options.system_messages
-        if self.options.greeting_message is not None:
-            config["greeting_message"] = self.options.greeting_message
-        if self.options.greeting_audio_url is not None:
-            config["greeting_audio_url"] = self.options.greeting_audio_url
-        if self.options.failure_message is not None:
-            config["failure_message"] = self.options.failure_message
-        if self.options.output_modalities is not None:
-            config["output_modalities"] = self.options.output_modalities
-        if self.options.greeting_configs is not None:
-            config["greeting_configs"] = _dump_optional_model(self.options.greeting_configs)
-        if self.options.template_variables is not None:
-            config["template_variables"] = self.options.template_variables
-        if self.options.vendor is not None:
-            config["vendor"] = self.options.vendor
-        if self.options.mcp_servers is not None:
-            config["mcp_servers"] = _ensure_mcp_transport(self.options.mcp_servers)
-        if self.options.max_history is not None:
-            config["max_history"] = self.options.max_history
+        if self.system_messages is not None:
+            config["system_messages"] = self.system_messages
+        if self.greeting_message is not None:
+            config["greeting_message"] = self.greeting_message
+        if self.greeting_audio_url is not None:
+            config["greeting_audio_url"] = self.greeting_audio_url
+        if self.failure_message is not None:
+            config["failure_message"] = self.failure_message
+        if self.output_modalities is not None:
+            config["output_modalities"] = self.output_modalities
+        if self.greeting_configs is not None:
+            config["greeting_configs"] = _dump_optional_model(self.greeting_configs)
+        if self.template_variables is not None:
+            config["template_variables"] = self.template_variables
+        if self.vendor is not None:
+            config["vendor"] = self.vendor
+        if self.mcp_servers is not None:
+            config["mcp_servers"] = _ensure_mcp_transport(self.mcp_servers)
+        if self.max_history is not None:
+            config["max_history"] = self.max_history
 
         return config
 
 
-class GeminiOptions(BaseModel):
+class Gemini(BaseLLM):
     model_config = ConfigDict(extra="forbid")
 
     api_key: str = Field(..., description="Google AI API key")
@@ -287,121 +276,282 @@ class GeminiOptions(BaseModel):
     mcp_servers: Optional[List[Dict[str, Any]]] = Field(default=None)
     max_history: Optional[int] = Field(default=None, gt=0, description="Maximum number of conversation history messages to cache")
 
-class Gemini(BaseLLM):
-    def __init__(self, **kwargs: Any):
-        self.options = GeminiOptions(**kwargs)
-
     def to_config(self) -> Dict[str, Any]:
         # Named fields take precedence over anything in the generic params dict.
-        params: Dict[str, Any] = {"model": self.options.model, **(self.options.params or {})}
-        if self.options.temperature is not None:
-            params["temperature"] = self.options.temperature
-        if self.options.top_p is not None:
-            params["top_p"] = self.options.top_p
-        if self.options.top_k is not None:
-            params["top_k"] = self.options.top_k
-        if self.options.max_output_tokens is not None:
-            params["max_output_tokens"] = self.options.max_output_tokens
+        params: Dict[str, Any] = {"model": self.model, **(self.params or {})}
+        if self.temperature is not None:
+            params["temperature"] = self.temperature
+        if self.top_p is not None:
+            params["top_p"] = self.top_p
+        if self.top_k is not None:
+            params["top_k"] = self.top_k
+        if self.max_output_tokens is not None:
+            params["max_output_tokens"] = self.max_output_tokens
 
         config: Dict[str, Any] = {
-            "url": self.options.url or (
+            "url": self.url or (
                 f"https://generativelanguage.googleapis.com/v1beta/models/"
-                f"{self.options.model}:streamGenerateContent?alt=sse&key={self.options.api_key}"
+                f"{self.model}:streamGenerateContent?alt=sse&key={self.api_key}"
             ),
             "params": params,
             "style": "gemini",
-            "input_modalities": self.options.input_modalities or ["text"],
+            "input_modalities": self.input_modalities or ["text"],
         }
 
-        if self.options.system_messages is not None:
-            config["system_messages"] = self.options.system_messages
-        if self.options.headers is not None:
-            config["headers"] = self.options.headers
-        if self.options.greeting_message is not None:
-            config["greeting_message"] = self.options.greeting_message
-        if self.options.greeting_audio_url is not None:
-            config["greeting_audio_url"] = self.options.greeting_audio_url
-        if self.options.failure_message is not None:
-            config["failure_message"] = self.options.failure_message
-        if self.options.output_modalities is not None:
-            config["output_modalities"] = self.options.output_modalities
-        if self.options.greeting_configs is not None:
-            config["greeting_configs"] = _dump_optional_model(self.options.greeting_configs)
-        if self.options.template_variables is not None:
-            config["template_variables"] = self.options.template_variables
-        if self.options.vendor is not None:
-            config["vendor"] = self.options.vendor
-        if self.options.mcp_servers is not None:
-            config["mcp_servers"] = _ensure_mcp_transport(self.options.mcp_servers)
-        if self.options.max_history is not None:
-            config["max_history"] = self.options.max_history
+        if self.system_messages is not None:
+            config["system_messages"] = self.system_messages
+        if self.headers is not None:
+            config["headers"] = self.headers
+        if self.greeting_message is not None:
+            config["greeting_message"] = self.greeting_message
+        if self.greeting_audio_url is not None:
+            config["greeting_audio_url"] = self.greeting_audio_url
+        if self.failure_message is not None:
+            config["failure_message"] = self.failure_message
+        if self.output_modalities is not None:
+            config["output_modalities"] = self.output_modalities
+        if self.greeting_configs is not None:
+            config["greeting_configs"] = _dump_optional_model(self.greeting_configs)
+        if self.template_variables is not None:
+            config["template_variables"] = self.template_variables
+        if self.vendor is not None:
+            config["vendor"] = self.vendor
+        if self.mcp_servers is not None:
+            config["mcp_servers"] = _ensure_mcp_transport(self.mcp_servers)
+        if self.max_history is not None:
+            config["max_history"] = self.max_history
 
         return config
 
 
-class GroqOptions(OpenAIOptions):
+class Groq(BaseLLM):
     model_config = ConfigDict(extra="forbid")
 
     api_key: str = Field(..., description="Groq API key")
     model: str = Field(..., description="Model name")
     base_url: str = Field(..., description="Groq-compatible endpoint")
+    temperature: Optional[float] = Field(default=None, ge=0.0, le=2.0)
+    top_p: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+    max_tokens: Optional[int] = Field(default=None, gt=0)
+    system_messages: Optional[List[Dict[str, Any]]] = Field(default=None)
+    greeting_message: Optional[str] = Field(default=None)
+    greeting_audio_url: Optional[str] = Field(default=None)
+    failure_message: Optional[str] = Field(default=None)
+    input_modalities: Optional[List[str]] = Field(default=None)
+    params: Optional[Dict[str, Any]] = Field(default=None)
+    headers: Optional[Dict[str, str]] = Field(default=None)
+    output_modalities: Optional[List[str]] = Field(default=None)
+    greeting_configs: Optional[LlmGreetingConfigs] = Field(default=None)
+    template_variables: Optional[Dict[str, str]] = Field(default=None)
+    vendor: Optional[str] = Field(default=None)
+    mcp_servers: Optional[List[Dict[str, Any]]] = Field(default=None)
+    max_history: Optional[int] = Field(default=None, gt=0, description="Maximum number of conversation history messages to cache")
 
-
-class Groq(BaseLLM):
-    def __init__(self, **kwargs: Any):
-        self.options = GroqOptions(**kwargs)
+    @model_validator(mode="after")
+    def _validate_byok_params(self) -> "Groq":
+        if not self.model:
+            raise ValueError("Groq requires model")
+        return self
 
     def to_config(self) -> Dict[str, Any]:
-        config = OpenAI(**_dump_optional_model(self.options)).to_config()
-        config["url"] = self.options.base_url
+        params: Dict[str, Any] = {"model": self.model, **(self.params or {})}
+
+        if self.max_tokens is not None:
+            params["max_tokens"] = self.max_tokens
+        if self.temperature is not None:
+            params["temperature"] = self.temperature
+        if self.top_p is not None:
+            params["top_p"] = self.top_p
+
+        config: Dict[str, Any] = {
+            "url": self.base_url,
+            "params": params,
+            "style": "openai",
+            "input_modalities": self.input_modalities or ["text"],
+        }
+        if self.api_key is not None:
+            config["api_key"] = self.api_key
+        if self.headers is not None:
+            config["headers"] = self.headers
+
+        if self.system_messages is not None:
+            config["system_messages"] = self.system_messages
+        if self.greeting_message is not None:
+            config["greeting_message"] = self.greeting_message
+        if self.greeting_audio_url is not None:
+            config["greeting_audio_url"] = self.greeting_audio_url
+        if self.failure_message is not None:
+            config["failure_message"] = self.failure_message
+        if self.output_modalities is not None:
+            config["output_modalities"] = self.output_modalities
+        if self.greeting_configs is not None:
+            config["greeting_configs"] = _dump_optional_model(self.greeting_configs)
+        if self.template_variables is not None:
+            config["template_variables"] = self.template_variables
+        if self.vendor is not None:
+            config["vendor"] = self.vendor
+        if self.mcp_servers is not None:
+            config["mcp_servers"] = _ensure_mcp_transport(self.mcp_servers)
+        if self.max_history is not None:
+            config["max_history"] = self.max_history
+
         return config
-
-
-class CustomLLMOptions(OpenAIOptions):
-    model_config = ConfigDict(extra="forbid")
-
-    api_key: str = Field(..., description="Custom LLM API key")
-    base_url: str = Field(..., description="OpenAI-compatible chat completions endpoint")
 
 
 class CustomLLM(BaseLLM):
-    def __init__(self, **kwargs: Any):
-        self.options = CustomLLMOptions(**kwargs)
+    model_config = ConfigDict(extra="forbid")
+
+    api_key: str = Field(..., description="Custom LLM API key")
+    model: str = Field(..., description="Model name")
+    base_url: str = Field(..., description="OpenAI-compatible chat completions endpoint")
+    temperature: Optional[float] = Field(default=None, ge=0.0, le=2.0)
+    top_p: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+    max_tokens: Optional[int] = Field(default=None, gt=0)
+    system_messages: Optional[List[Dict[str, Any]]] = Field(default=None)
+    greeting_message: Optional[str] = Field(default=None)
+    greeting_audio_url: Optional[str] = Field(default=None)
+    failure_message: Optional[str] = Field(default=None)
+    input_modalities: Optional[List[str]] = Field(default=None)
+    params: Optional[Dict[str, Any]] = Field(default=None)
+    headers: Optional[Dict[str, str]] = Field(default=None)
+    output_modalities: Optional[List[str]] = Field(default=None)
+    greeting_configs: Optional[LlmGreetingConfigs] = Field(default=None)
+    template_variables: Optional[Dict[str, str]] = Field(default=None)
+    vendor: Optional[str] = Field(default=None)
+    mcp_servers: Optional[List[Dict[str, Any]]] = Field(default=None)
+    max_history: Optional[int] = Field(default=None, gt=0, description="Maximum number of conversation history messages to cache")
+
+    @model_validator(mode="after")
+    def _validate_byok_params(self) -> "CustomLLM":
+        if not self.model:
+            raise ValueError("CustomLLM requires model")
+        return self
 
     def to_config(self) -> Dict[str, Any]:
-        config = OpenAI(**_dump_optional_model(self.options)).to_config()
-        config["vendor"] = self.options.vendor or "custom"
+        params: Dict[str, Any] = {"model": self.model, **(self.params or {})}
+
+        if self.max_tokens is not None:
+            params["max_tokens"] = self.max_tokens
+        if self.temperature is not None:
+            params["temperature"] = self.temperature
+        if self.top_p is not None:
+            params["top_p"] = self.top_p
+
+        config: Dict[str, Any] = {
+            "url": self.base_url or "https://api.openai.com/v1/chat/completions",
+            "params": params,
+            "style": "openai",
+            "input_modalities": self.input_modalities or ["text"],
+        }
+        if self.api_key is not None:
+            config["api_key"] = self.api_key
+        if self.headers is not None:
+            config["headers"] = self.headers
+
+        if self.system_messages is not None:
+            config["system_messages"] = self.system_messages
+        if self.greeting_message is not None:
+            config["greeting_message"] = self.greeting_message
+        if self.greeting_audio_url is not None:
+            config["greeting_audio_url"] = self.greeting_audio_url
+        if self.failure_message is not None:
+            config["failure_message"] = self.failure_message
+        if self.output_modalities is not None:
+            config["output_modalities"] = self.output_modalities
+        if self.greeting_configs is not None:
+            config["greeting_configs"] = _dump_optional_model(self.greeting_configs)
+        if self.template_variables is not None:
+            config["template_variables"] = self.template_variables
+        if self.vendor is not None:
+            config["vendor"] = self.vendor
+        if self.mcp_servers is not None:
+            config["mcp_servers"] = _ensure_mcp_transport(self.mcp_servers)
+        if self.max_history is not None:
+            config["max_history"] = self.max_history
+
+        config["vendor"] = self.vendor or "custom"
         return config
 
 
-class VertexAILLMOptions(GeminiOptions):
+class VertexAILLM(BaseLLM):
     model_config = ConfigDict(extra="forbid")
 
     api_key: str = Field(..., description="Vertex AI access token or API key")
     project_id: str = Field(..., description="Google Cloud project ID")
     location: str = Field(..., description="Google Cloud location")
-
-
-class VertexAILLM(BaseLLM):
-    def __init__(self, **kwargs: Any):
-        self.options = VertexAILLMOptions(**kwargs)
+    model: str = Field(..., description="Model name")
+    url: Optional[str] = Field(default=None, description="Custom API endpoint URL")
+    temperature: Optional[float] = Field(default=None, ge=0.0, le=2.0)
+    top_p: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+    top_k: Optional[int] = Field(default=None, gt=0)
+    max_output_tokens: Optional[int] = Field(default=None, gt=0)
+    system_messages: Optional[List[Dict[str, Any]]] = Field(default=None)
+    greeting_message: Optional[str] = Field(default=None)
+    greeting_audio_url: Optional[str] = Field(default=None)
+    failure_message: Optional[str] = Field(default=None)
+    input_modalities: Optional[List[str]] = Field(default=None)
+    params: Optional[Dict[str, Any]] = Field(default=None)
+    headers: Optional[Dict[str, str]] = Field(default=None)
+    output_modalities: Optional[List[str]] = Field(default=None)
+    greeting_configs: Optional[LlmGreetingConfigs] = Field(default=None)
+    template_variables: Optional[Dict[str, str]] = Field(default=None)
+    vendor: Optional[str] = Field(default=None)
+    mcp_servers: Optional[List[Dict[str, Any]]] = Field(default=None)
+    max_history: Optional[int] = Field(default=None, gt=0, description="Maximum number of conversation history messages to cache")
 
     def to_config(self) -> Dict[str, Any]:
-        options = _dump_optional_model(self.options)
-        options.pop("project_id", None)
-        options.pop("location", None)
-        if not options.get("url"):
-            options["url"] = (
-                f"https://{self.options.location}-aiplatform.googleapis.com/v1/projects/"
-                f"{self.options.project_id}/locations/{self.options.location}/"
-                f"publishers/google/models/{self.options.model}:streamGenerateContent?alt=sse"
-            )
-        config = Gemini(**options).to_config()
-        config["api_key"] = self.options.api_key
+        # Named fields take precedence over anything in the generic params dict.
+        params: Dict[str, Any] = {"model": self.model, **(self.params or {})}
+        if self.temperature is not None:
+            params["temperature"] = self.temperature
+        if self.top_p is not None:
+            params["top_p"] = self.top_p
+        if self.top_k is not None:
+            params["top_k"] = self.top_k
+        if self.max_output_tokens is not None:
+            params["max_output_tokens"] = self.max_output_tokens
+
+        url = self.url or (
+            f"https://{self.location}-aiplatform.googleapis.com/v1/projects/"
+            f"{self.project_id}/locations/{self.location}/"
+            f"publishers/google/models/{self.model}:streamGenerateContent?alt=sse"
+        )
+
+        config: Dict[str, Any] = {
+            "url": url,
+            "params": params,
+            "style": "gemini",
+            "input_modalities": self.input_modalities or ["text"],
+        }
+
+        if self.system_messages is not None:
+            config["system_messages"] = self.system_messages
+        if self.headers is not None:
+            config["headers"] = self.headers
+        if self.greeting_message is not None:
+            config["greeting_message"] = self.greeting_message
+        if self.greeting_audio_url is not None:
+            config["greeting_audio_url"] = self.greeting_audio_url
+        if self.failure_message is not None:
+            config["failure_message"] = self.failure_message
+        if self.output_modalities is not None:
+            config["output_modalities"] = self.output_modalities
+        if self.greeting_configs is not None:
+            config["greeting_configs"] = _dump_optional_model(self.greeting_configs)
+        if self.template_variables is not None:
+            config["template_variables"] = self.template_variables
+        if self.vendor is not None:
+            config["vendor"] = self.vendor
+        if self.mcp_servers is not None:
+            config["mcp_servers"] = _ensure_mcp_transport(self.mcp_servers)
+        if self.max_history is not None:
+            config["max_history"] = self.max_history
+
+        config["api_key"] = self.api_key
         return config
 
 
-class AmazonBedrockOptions(BaseModel):
+class AmazonBedrock(BaseLLM):
     model_config = ConfigDict(extra="forbid")
 
     access_key: str = Field(..., description="AWS access key ID")
@@ -426,56 +576,51 @@ class AmazonBedrockOptions(BaseModel):
     mcp_servers: Optional[List[Dict[str, Any]]] = Field(default=None)
     max_history: Optional[int] = Field(default=None, gt=0, description="Maximum number of conversation history messages to cache")
 
-
-class AmazonBedrock(BaseLLM):
-    def __init__(self, **kwargs: Any):
-        self.options = AmazonBedrockOptions(**kwargs)
-
     def to_config(self) -> Dict[str, Any]:
-        params: Dict[str, Any] = dict(self.options.params or {})
-        if self.options.max_tokens is not None:
-            params["max_tokens"] = self.options.max_tokens
-        if self.options.temperature is not None:
-            params["temperature"] = self.options.temperature
-        if self.options.top_p is not None:
-            params["top_p"] = self.options.top_p
+        params: Dict[str, Any] = dict(self.params or {})
+        if self.max_tokens is not None:
+            params["max_tokens"] = self.max_tokens
+        if self.temperature is not None:
+            params["temperature"] = self.temperature
+        if self.top_p is not None:
+            params["top_p"] = self.top_p
 
         config: Dict[str, Any] = {
-            "url": self.options.url or f"https://bedrock-runtime.{self.options.region}.amazonaws.com/model/{self.options.model}/converse-stream",
-            "access_key": self.options.access_key,
-            "secret_key": self.options.secret_key,
-            "region": self.options.region,
-            "model": self.options.model,
+            "url": self.url or f"https://bedrock-runtime.{self.region}.amazonaws.com/model/{self.model}/converse-stream",
+            "access_key": self.access_key,
+            "secret_key": self.secret_key,
+            "region": self.region,
+            "model": self.model,
             "params": params,
             "style": "bedrock",
-            "input_modalities": self.options.input_modalities or ["text"],
+            "input_modalities": self.input_modalities or ["text"],
         }
-        if self.options.system_messages is not None:
-            config["system_messages"] = self.options.system_messages
-        if self.options.headers is not None:
-            config["headers"] = self.options.headers
-        if self.options.greeting_message is not None:
-            config["greeting_message"] = self.options.greeting_message
-        if self.options.greeting_audio_url is not None:
-            config["greeting_audio_url"] = self.options.greeting_audio_url
-        if self.options.failure_message is not None:
-            config["failure_message"] = self.options.failure_message
-        if self.options.output_modalities is not None:
-            config["output_modalities"] = self.options.output_modalities
-        if self.options.greeting_configs is not None:
-            config["greeting_configs"] = _dump_optional_model(self.options.greeting_configs)
-        if self.options.template_variables is not None:
-            config["template_variables"] = self.options.template_variables
-        if self.options.vendor is not None:
-            config["vendor"] = self.options.vendor
-        if self.options.mcp_servers is not None:
-            config["mcp_servers"] = _ensure_mcp_transport(self.options.mcp_servers)
-        if self.options.max_history is not None:
-            config["max_history"] = self.options.max_history
+        if self.system_messages is not None:
+            config["system_messages"] = self.system_messages
+        if self.headers is not None:
+            config["headers"] = self.headers
+        if self.greeting_message is not None:
+            config["greeting_message"] = self.greeting_message
+        if self.greeting_audio_url is not None:
+            config["greeting_audio_url"] = self.greeting_audio_url
+        if self.failure_message is not None:
+            config["failure_message"] = self.failure_message
+        if self.output_modalities is not None:
+            config["output_modalities"] = self.output_modalities
+        if self.greeting_configs is not None:
+            config["greeting_configs"] = _dump_optional_model(self.greeting_configs)
+        if self.template_variables is not None:
+            config["template_variables"] = self.template_variables
+        if self.vendor is not None:
+            config["vendor"] = self.vendor
+        if self.mcp_servers is not None:
+            config["mcp_servers"] = _ensure_mcp_transport(self.mcp_servers)
+        if self.max_history is not None:
+            config["max_history"] = self.max_history
         return config
 
 
-class DifyOptions(BaseModel):
+class Dify(BaseLLM):
     model_config = ConfigDict(extra="forbid")
 
     api_key: str = Field(..., description="Dify API key")
@@ -497,45 +642,40 @@ class DifyOptions(BaseModel):
     mcp_servers: Optional[List[Dict[str, Any]]] = Field(default=None)
     max_history: Optional[int] = Field(default=None, gt=0)
 
-
-class Dify(BaseLLM):
-    def __init__(self, **kwargs: Any):
-        self.options = DifyOptions(**kwargs)
-
     def to_config(self) -> Dict[str, Any]:
-        params: Dict[str, Any] = {"model": self.options.model, **(self.options.params or {})}
-        if self.options.user is not None:
-            params["user"] = self.options.user
-        if self.options.conversation_id is not None:
-            params["conversation_id"] = self.options.conversation_id
+        params: Dict[str, Any] = {"model": self.model, **(self.params or {})}
+        if self.user is not None:
+            params["user"] = self.user
+        if self.conversation_id is not None:
+            params["conversation_id"] = self.conversation_id
 
         config: Dict[str, Any] = {
-            "url": self.options.url,
-            "api_key": self.options.api_key,
+            "url": self.url,
+            "api_key": self.api_key,
             "params": params,
             "style": "dify",
-            "input_modalities": self.options.input_modalities or ["text"],
+            "input_modalities": self.input_modalities or ["text"],
         }
-        if self.options.headers is not None:
-            config["headers"] = self.options.headers
-        if self.options.system_messages is not None:
-            config["system_messages"] = self.options.system_messages
-        if self.options.greeting_message is not None:
-            config["greeting_message"] = self.options.greeting_message
-        if self.options.greeting_audio_url is not None:
-            config["greeting_audio_url"] = self.options.greeting_audio_url
-        if self.options.failure_message is not None:
-            config["failure_message"] = self.options.failure_message
-        if self.options.output_modalities is not None:
-            config["output_modalities"] = self.options.output_modalities
-        if self.options.greeting_configs is not None:
-            config["greeting_configs"] = _dump_optional_model(self.options.greeting_configs)
-        if self.options.template_variables is not None:
-            config["template_variables"] = self.options.template_variables
-        if self.options.vendor is not None:
-            config["vendor"] = self.options.vendor
-        if self.options.mcp_servers is not None:
-            config["mcp_servers"] = _ensure_mcp_transport(self.options.mcp_servers)
-        if self.options.max_history is not None:
-            config["max_history"] = self.options.max_history
+        if self.headers is not None:
+            config["headers"] = self.headers
+        if self.system_messages is not None:
+            config["system_messages"] = self.system_messages
+        if self.greeting_message is not None:
+            config["greeting_message"] = self.greeting_message
+        if self.greeting_audio_url is not None:
+            config["greeting_audio_url"] = self.greeting_audio_url
+        if self.failure_message is not None:
+            config["failure_message"] = self.failure_message
+        if self.output_modalities is not None:
+            config["output_modalities"] = self.output_modalities
+        if self.greeting_configs is not None:
+            config["greeting_configs"] = _dump_optional_model(self.greeting_configs)
+        if self.template_variables is not None:
+            config["template_variables"] = self.template_variables
+        if self.vendor is not None:
+            config["vendor"] = self.vendor
+        if self.mcp_servers is not None:
+            config["mcp_servers"] = _ensure_mcp_transport(self.mcp_servers)
+        if self.max_history is not None:
+            config["max_history"] = self.max_history
         return config

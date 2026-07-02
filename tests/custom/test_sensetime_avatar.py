@@ -40,13 +40,21 @@ def _scene_list() -> List[Dict[str, Any]]:
     return [{"digital_role": {"face_feature_id": "role-1"}}]
 
 
+def test_sensetime_avatar_accepts_snake_case() -> None:
+    from agora_agent.agentkit.vendors.cn import SenseTimeAvatar
+    snake = SenseTimeAvatar(agora_uid="2", app_id="app", app_key="key").to_config()
+    camel = SenseTimeAvatar(**{"agora_uid": "2", "appId": "app", "app_key": "key"}).to_config()
+    assert camel == snake
+    assert snake["params"]["appId"] == "app"
+
+
 def test_sensetime_avatar_to_config_shape() -> None:
     config = SenseTimeAvatar(
         agora_token="avatar-token",
         agora_uid="2",
-        appId="sensetime-app-id",
+        app_id="sensetime-app-id",
         app_key="sensetime-app-key",
-        sceneList=_scene_list(),
+        scene_list=_scene_list(),
     ).to_config()
 
     assert config == {
@@ -67,7 +75,7 @@ def test_sensetime_avatar_to_config_omits_token_when_not_provided() -> None:
     config = SenseTimeAvatar(
         agora_uid="2",
         app_key="sensetime-app-key",
-        sceneList=_scene_list(),
+        scene_list=_scene_list(),
     ).to_config()
 
     assert "agora_token" not in config["params"]
@@ -134,7 +142,7 @@ def test_sensetime_avatar_session_validation_and_token_passthrough() -> None:
             agora_token="avatar-token",
             agora_uid="2",
             app_key="sensetime-app-key",
-            sceneList=_scene_list(),
+            scene_list=_scene_list(),
         )
     )
     session = _session(agent)
@@ -156,7 +164,7 @@ def test_sensetime_avatar_enrichment_generates_token() -> None:
         SenseTimeAvatar(
             agora_uid="2",
             app_key="sensetime-app-key",
-            sceneList=_scene_list(),
+            scene_list=_scene_list(),
         )
     )
     session = _session(agent)
@@ -179,7 +187,7 @@ def test_sensetime_avatar_user_token_is_not_overwritten() -> None:
             agora_uid="2",
             agora_token="user-token",
             app_key="sensetime-app-key",
-            sceneList=_scene_list(),
+            scene_list=_scene_list(),
         )
     )
     session = _session(agent)

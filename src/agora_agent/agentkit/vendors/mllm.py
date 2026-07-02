@@ -1,7 +1,6 @@
-import warnings
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import ConfigDict, Field
 
 from ...types.mllm_turn_detection import MllmTurnDetection
 from .base import BaseMLLM
@@ -9,7 +8,7 @@ from .base import BaseMLLM
 MllmTurnDetectionConfig = MllmTurnDetection
 
 
-class OpenAIRealtimeOptions(BaseModel):
+class OpenAIRealtime(BaseMLLM):
     model_config = ConfigDict(extra="forbid")
 
     api_key: str = Field(..., description="OpenAI API key")
@@ -26,49 +25,45 @@ class OpenAIRealtimeOptions(BaseModel):
     turn_detection: Optional[MllmTurnDetectionConfig] = Field(default=None, description="MLLM turn detection configuration")
     failure_message: Optional[str] = Field(default=None, description="Message played on failure")
 
-class OpenAIRealtime(BaseMLLM):
-    def __init__(self, **kwargs: Any):
-        self.options = OpenAIRealtimeOptions(**kwargs)
-
     def to_config(self) -> Dict[str, Any]:
         config: Dict[str, Any] = {
             "vendor": "openai",
-            "api_key": self.options.api_key,
+            "api_key": self.api_key,
         }
 
-        if self.options.url is not None:
-            config["url"] = self.options.url
+        if self.url is not None:
+            config["url"] = self.url
         if (
-            self.options.model is not None
-            or self.options.params is not None
-            or self.options.voice is not None
-            or self.options.instructions is not None
-            or self.options.input_audio_transcription is not None
+            self.model is not None
+            or self.params is not None
+            or self.voice is not None
+            or self.instructions is not None
+            or self.input_audio_transcription is not None
         ):
-            params: Dict[str, Any] = {}
-            if self.options.model is not None:
-                params["model"] = self.options.model
-            if self.options.params is not None:
-                params.update(self.options.params)
-            if self.options.voice is not None:
-                params["voice"] = self.options.voice
-            if self.options.instructions is not None:
-                params["instructions"] = self.options.instructions
-            if self.options.input_audio_transcription is not None:
-                params["input_audio_transcription"] = self.options.input_audio_transcription
-            config["params"] = params
-        if self.options.greeting_message is not None:
-            config["greeting_message"] = self.options.greeting_message
-        if self.options.input_modalities is not None:
-            config["input_modalities"] = self.options.input_modalities
-        if self.options.output_modalities is not None:
-            config["output_modalities"] = self.options.output_modalities
-        if self.options.messages is not None:
-            config["messages"] = self.options.messages
-        if self.options.failure_message is not None:
-            config["failure_message"] = self.options.failure_message
-        if self.options.turn_detection is not None:
-            config["turn_detection"] = self.options.turn_detection
+            inner_params: Dict[str, Any] = {}
+            if self.model is not None:
+                inner_params["model"] = self.model
+            if self.params is not None:
+                inner_params.update(self.params)
+            if self.voice is not None:
+                inner_params["voice"] = self.voice
+            if self.instructions is not None:
+                inner_params["instructions"] = self.instructions
+            if self.input_audio_transcription is not None:
+                inner_params["input_audio_transcription"] = self.input_audio_transcription
+            config["params"] = inner_params
+        if self.greeting_message is not None:
+            config["greeting_message"] = self.greeting_message
+        if self.input_modalities is not None:
+            config["input_modalities"] = self.input_modalities
+        if self.output_modalities is not None:
+            config["output_modalities"] = self.output_modalities
+        if self.messages is not None:
+            config["messages"] = self.messages
+        if self.failure_message is not None:
+            config["failure_message"] = self.failure_message
+        if self.turn_detection is not None:
+            config["turn_detection"] = self.turn_detection
 
         return config
 
@@ -77,7 +72,9 @@ class OpenAIRealtime(BaseMLLM):
 # is deprecated and reserved naming for future XaiSTT / XaiTTS cascading vendors.
 
 
-class XaiGrokOptions(BaseModel):
+class XaiGrok(BaseMLLM):
+    """xAI Grok MLLM vendor (`mllm.vendor`: ``xai``)."""
+
     model_config = ConfigDict(extra="forbid")
 
     api_key: str = Field(..., description="xAI API key")
@@ -93,46 +90,39 @@ class XaiGrokOptions(BaseModel):
     turn_detection: Optional[MllmTurnDetectionConfig] = Field(default=None, description="MLLM turn detection configuration")
     failure_message: Optional[str] = Field(default=None, description="Message played on failure")
 
-
-class XaiGrok(BaseMLLM):
-    """xAI Grok MLLM vendor (`mllm.vendor`: ``xai``)."""
-
-    def __init__(self, **kwargs: Any):
-        self.options = XaiGrokOptions(**kwargs)
-
     def to_config(self) -> Dict[str, Any]:
-        params: Dict[str, Any] = dict(self.options.params or {})
-        if self.options.voice is not None:
-            params["voice"] = self.options.voice
-        if self.options.language is not None:
-            params["language"] = self.options.language
-        if self.options.sample_rate is not None:
-            params["sample_rate"] = self.options.sample_rate
+        inner_params: Dict[str, Any] = dict(self.params or {})
+        if self.voice is not None:
+            inner_params["voice"] = self.voice
+        if self.language is not None:
+            inner_params["language"] = self.language
+        if self.sample_rate is not None:
+            inner_params["sample_rate"] = self.sample_rate
 
         config: Dict[str, Any] = {
             "vendor": "xai",
-            "api_key": self.options.api_key,
-            "url": self.options.url,
-            "params": params,
+            "api_key": self.api_key,
+            "url": self.url,
+            "params": inner_params,
         }
 
-        if self.options.greeting_message is not None:
-            config["greeting_message"] = self.options.greeting_message
-        if self.options.input_modalities is not None:
-            config["input_modalities"] = self.options.input_modalities
-        if self.options.output_modalities is not None:
-            config["output_modalities"] = self.options.output_modalities
-        if self.options.messages is not None:
-            config["messages"] = self.options.messages
-        if self.options.failure_message is not None:
-            config["failure_message"] = self.options.failure_message
-        if self.options.turn_detection is not None:
-            config["turn_detection"] = self.options.turn_detection
+        if self.greeting_message is not None:
+            config["greeting_message"] = self.greeting_message
+        if self.input_modalities is not None:
+            config["input_modalities"] = self.input_modalities
+        if self.output_modalities is not None:
+            config["output_modalities"] = self.output_modalities
+        if self.messages is not None:
+            config["messages"] = self.messages
+        if self.failure_message is not None:
+            config["failure_message"] = self.failure_message
+        if self.turn_detection is not None:
+            config["turn_detection"] = self.turn_detection
 
         return config
 
 
-class VertexAIOptions(BaseModel):
+class VertexAI(BaseMLLM):
     model_config = ConfigDict(extra="forbid")
 
     model: str = Field(..., description="Model name")
@@ -155,55 +145,51 @@ class VertexAIOptions(BaseModel):
     turn_detection: Optional[MllmTurnDetectionConfig] = Field(default=None, description="MLLM turn detection configuration")
     failure_message: Optional[str] = Field(default=None, description="Message played on failure")
 
-class VertexAI(BaseMLLM):
-    def __init__(self, **kwargs: Any):
-        self.options = VertexAIOptions(**kwargs)
-
     def to_config(self) -> Dict[str, Any]:
         # additional_params spread first so that explicit fields always win,
         # matching the TypeScript SDK.
-        params: Dict[str, Any] = dict(self.options.additional_params or {})
-        params["model"] = self.options.model
-        params["project_id"] = self.options.project_id
-        params["location"] = self.options.location
-        params["adc_credentials_string"] = self.options.adc_credentials_string
-        if self.options.instructions is not None:
-            params["instructions"] = self.options.instructions
-        if self.options.voice is not None:
-            params["voice"] = self.options.voice
-        if self.options.affective_dialog is not None:
-            params["affective_dialog"] = self.options.affective_dialog
-        if self.options.proactive_audio is not None:
-            params["proactive_audio"] = self.options.proactive_audio
-        if self.options.transcribe_agent is not None:
-            params["transcribe_agent"] = self.options.transcribe_agent
-        if self.options.transcribe_user is not None:
-            params["transcribe_user"] = self.options.transcribe_user
-        if self.options.http_options is not None:
-            params["http_options"] = self.options.http_options
+        inner_params: Dict[str, Any] = dict(self.additional_params or {})
+        inner_params["model"] = self.model
+        inner_params["project_id"] = self.project_id
+        inner_params["location"] = self.location
+        inner_params["adc_credentials_string"] = self.adc_credentials_string
+        if self.instructions is not None:
+            inner_params["instructions"] = self.instructions
+        if self.voice is not None:
+            inner_params["voice"] = self.voice
+        if self.affective_dialog is not None:
+            inner_params["affective_dialog"] = self.affective_dialog
+        if self.proactive_audio is not None:
+            inner_params["proactive_audio"] = self.proactive_audio
+        if self.transcribe_agent is not None:
+            inner_params["transcribe_agent"] = self.transcribe_agent
+        if self.transcribe_user is not None:
+            inner_params["transcribe_user"] = self.transcribe_user
+        if self.http_options is not None:
+            inner_params["http_options"] = self.http_options
 
         config: Dict[str, Any] = {
             "vendor": "vertexai",
-            "url": self.options.url if self.options.url is not None else "",
-            "params": params,
+            "url": self.url if self.url is not None else "",
+            "params": inner_params,
         }
-        if self.options.greeting_message is not None:
-            config["greeting_message"] = self.options.greeting_message
-        if self.options.input_modalities is not None:
-            config["input_modalities"] = self.options.input_modalities
-        if self.options.output_modalities is not None:
-            config["output_modalities"] = self.options.output_modalities
-        if self.options.messages is not None:
-            config["messages"] = self.options.messages
-        if self.options.failure_message is not None:
-            config["failure_message"] = self.options.failure_message
-        if self.options.turn_detection is not None:
-            config["turn_detection"] = self.options.turn_detection
+        if self.greeting_message is not None:
+            config["greeting_message"] = self.greeting_message
+        if self.input_modalities is not None:
+            config["input_modalities"] = self.input_modalities
+        if self.output_modalities is not None:
+            config["output_modalities"] = self.output_modalities
+        if self.messages is not None:
+            config["messages"] = self.messages
+        if self.failure_message is not None:
+            config["failure_message"] = self.failure_message
+        if self.turn_detection is not None:
+            config["turn_detection"] = self.turn_detection
 
         return config
 
 
-class GeminiLiveOptions(BaseModel):
+class GeminiLive(BaseMLLM):
     model_config = ConfigDict(extra="forbid")
 
     api_key: str = Field(..., description="Google API key")
@@ -224,47 +210,43 @@ class GeminiLiveOptions(BaseModel):
     turn_detection: Optional[MllmTurnDetectionConfig] = Field(default=None, description="MLLM turn detection configuration")
     failure_message: Optional[str] = Field(default=None, description="Message played on failure")
 
-class GeminiLive(BaseMLLM):
-    def __init__(self, **kwargs: Any):
-        self.options = GeminiLiveOptions(**kwargs)
-
     def to_config(self) -> Dict[str, Any]:
-        params: Dict[str, Any] = {}
-        if self.options.additional_params is not None:
-            params.update(self.options.additional_params)
-        params["model"] = self.options.model
-        if self.options.instructions is not None:
-            params["instructions"] = self.options.instructions
-        if self.options.voice is not None:
-            params["voice"] = self.options.voice
-        if self.options.affective_dialog is not None:
-            params["affective_dialog"] = self.options.affective_dialog
-        if self.options.proactive_audio is not None:
-            params["proactive_audio"] = self.options.proactive_audio
-        if self.options.transcribe_agent is not None:
-            params["transcribe_agent"] = self.options.transcribe_agent
-        if self.options.transcribe_user is not None:
-            params["transcribe_user"] = self.options.transcribe_user
-        if self.options.http_options is not None:
-            params["http_options"] = self.options.http_options
+        inner_params: Dict[str, Any] = {}
+        if self.additional_params is not None:
+            inner_params.update(self.additional_params)
+        inner_params["model"] = self.model
+        if self.instructions is not None:
+            inner_params["instructions"] = self.instructions
+        if self.voice is not None:
+            inner_params["voice"] = self.voice
+        if self.affective_dialog is not None:
+            inner_params["affective_dialog"] = self.affective_dialog
+        if self.proactive_audio is not None:
+            inner_params["proactive_audio"] = self.proactive_audio
+        if self.transcribe_agent is not None:
+            inner_params["transcribe_agent"] = self.transcribe_agent
+        if self.transcribe_user is not None:
+            inner_params["transcribe_user"] = self.transcribe_user
+        if self.http_options is not None:
+            inner_params["http_options"] = self.http_options
 
         config: Dict[str, Any] = {
             "vendor": "gemini",
-            "api_key": self.options.api_key,
-            "url": self.options.url if self.options.url is not None else "",
-            "params": params,
+            "api_key": self.api_key,
+            "url": self.url if self.url is not None else "",
+            "params": inner_params,
         }
-        if self.options.greeting_message is not None:
-            config["greeting_message"] = self.options.greeting_message
-        if self.options.input_modalities is not None:
-            config["input_modalities"] = self.options.input_modalities
-        if self.options.output_modalities is not None:
-            config["output_modalities"] = self.options.output_modalities
-        if self.options.messages is not None:
-            config["messages"] = self.options.messages
-        if self.options.failure_message is not None:
-            config["failure_message"] = self.options.failure_message
-        if self.options.turn_detection is not None:
-            config["turn_detection"] = self.options.turn_detection
+        if self.greeting_message is not None:
+            config["greeting_message"] = self.greeting_message
+        if self.input_modalities is not None:
+            config["input_modalities"] = self.input_modalities
+        if self.output_modalities is not None:
+            config["output_modalities"] = self.output_modalities
+        if self.messages is not None:
+            config["messages"] = self.messages
+        if self.failure_message is not None:
+            config["failure_message"] = self.failure_message
+        if self.turn_detection is not None:
+            config["turn_detection"] = self.turn_detection
 
         return config
