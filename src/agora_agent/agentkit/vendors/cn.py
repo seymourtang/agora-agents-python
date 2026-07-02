@@ -5,7 +5,13 @@ from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from .avatar import BaseAvatar
-from .llm import OpenAI
+from .base import BaseLLM
+from .llm import (
+    _OPENAI_MANAGED_MODELS,
+    LlmGreetingConfigs,
+    _dump_optional_model,
+    _ensure_mcp_transport,
+)
 from .stt import BaseSTT as _BaseSTTCompat
 from .tts import BaseTTS as _BaseTTSCompat
 
@@ -497,28 +503,332 @@ class MiniMaxTTS(_BaseTTSCompat):
         return result
 
 
-class AliyunLLM(OpenAI):
-    def __init__(self, **kwargs: Any):
-        kwargs["vendor"] = "aliyun"
-        super().__init__(**kwargs)
+class AliyunLLM(BaseLLM):
+    model_config = ConfigDict(extra="forbid")
+
+    api_key: Optional[str] = Field(default=None, description="OpenAI API key")
+    model: str = Field(..., description="Model name")
+    base_url: Optional[str] = Field(default=None, description="Custom base URL")
+    temperature: Optional[float] = Field(default=None, ge=0.0, le=2.0)
+    top_p: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+    max_tokens: Optional[int] = Field(default=None, gt=0)
+    system_messages: Optional[List[Dict[str, Any]]] = Field(default=None)
+    greeting_message: Optional[str] = Field(default=None)
+    greeting_audio_url: Optional[str] = Field(default=None)
+    failure_message: Optional[str] = Field(default=None)
+    input_modalities: Optional[List[str]] = Field(default=None)
+    params: Optional[Dict[str, Any]] = Field(default=None)
+    headers: Optional[Dict[str, str]] = Field(default=None)
+    output_modalities: Optional[List[str]] = Field(default=None)
+    greeting_configs: Optional[LlmGreetingConfigs] = Field(default=None)
+    template_variables: Optional[Dict[str, str]] = Field(default=None)
+    vendor: Optional[str] = Field(default="aliyun")
+    mcp_servers: Optional[List[Dict[str, Any]]] = Field(default=None)
+    max_history: Optional[int] = Field(default=None, gt=0, description="Maximum number of conversation history messages to cache")
+
+    @model_validator(mode="after")
+    def _validate_byok_params(self) -> "AliyunLLM":
+        if not self.model:
+            raise ValueError("OpenAI requires model")
+        if self.api_key is not None and self.base_url is None:
+            raise ValueError("OpenAI requires base_url when api_key is set")
+        if self.api_key is None and self.base_url is not None:
+            raise ValueError("OpenAI base_url is only valid when api_key is set")
+        if self.api_key is None and self.model.strip().lower() not in _OPENAI_MANAGED_MODELS:
+            raise ValueError("OpenAI requires api_key unless using a supported Agora-managed model")
+        if self.api_key is None and self.vendor is not None:
+            raise ValueError("OpenAI Agora-managed mode does not allow vendor")
+        return self
+
+    def to_config(self) -> Dict[str, Any]:
+        params: Dict[str, Any] = {"model": self.model, **(self.params or {})}
+
+        if self.max_tokens is not None:
+            params["max_tokens"] = self.max_tokens
+        if self.temperature is not None:
+            params["temperature"] = self.temperature
+        if self.top_p is not None:
+            params["top_p"] = self.top_p
+
+        config: Dict[str, Any] = {
+            "url": self.base_url or "https://api.openai.com/v1/chat/completions",
+            "params": params,
+            "style": "openai",
+            "input_modalities": self.input_modalities or ["text"],
+        }
+        if self.api_key is not None:
+            config["api_key"] = self.api_key
+        if self.headers is not None:
+            config["headers"] = self.headers
+
+        if self.system_messages is not None:
+            config["system_messages"] = self.system_messages
+        if self.greeting_message is not None:
+            config["greeting_message"] = self.greeting_message
+        if self.greeting_audio_url is not None:
+            config["greeting_audio_url"] = self.greeting_audio_url
+        if self.failure_message is not None:
+            config["failure_message"] = self.failure_message
+        if self.output_modalities is not None:
+            config["output_modalities"] = self.output_modalities
+        if self.greeting_configs is not None:
+            config["greeting_configs"] = _dump_optional_model(self.greeting_configs)
+        if self.template_variables is not None:
+            config["template_variables"] = self.template_variables
+        if self.vendor is not None:
+            config["vendor"] = self.vendor
+        if self.mcp_servers is not None:
+            config["mcp_servers"] = _ensure_mcp_transport(self.mcp_servers)
+        if self.max_history is not None:
+            config["max_history"] = self.max_history
+
+        return config
 
 
-class BytedanceLLM(OpenAI):
-    def __init__(self, **kwargs: Any):
-        kwargs["vendor"] = "bytedance"
-        super().__init__(**kwargs)
+class BytedanceLLM(BaseLLM):
+    model_config = ConfigDict(extra="forbid")
+
+    api_key: Optional[str] = Field(default=None, description="OpenAI API key")
+    model: str = Field(..., description="Model name")
+    base_url: Optional[str] = Field(default=None, description="Custom base URL")
+    temperature: Optional[float] = Field(default=None, ge=0.0, le=2.0)
+    top_p: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+    max_tokens: Optional[int] = Field(default=None, gt=0)
+    system_messages: Optional[List[Dict[str, Any]]] = Field(default=None)
+    greeting_message: Optional[str] = Field(default=None)
+    greeting_audio_url: Optional[str] = Field(default=None)
+    failure_message: Optional[str] = Field(default=None)
+    input_modalities: Optional[List[str]] = Field(default=None)
+    params: Optional[Dict[str, Any]] = Field(default=None)
+    headers: Optional[Dict[str, str]] = Field(default=None)
+    output_modalities: Optional[List[str]] = Field(default=None)
+    greeting_configs: Optional[LlmGreetingConfigs] = Field(default=None)
+    template_variables: Optional[Dict[str, str]] = Field(default=None)
+    vendor: Optional[str] = Field(default="bytedance")
+    mcp_servers: Optional[List[Dict[str, Any]]] = Field(default=None)
+    max_history: Optional[int] = Field(default=None, gt=0, description="Maximum number of conversation history messages to cache")
+
+    @model_validator(mode="after")
+    def _validate_byok_params(self) -> "BytedanceLLM":
+        if not self.model:
+            raise ValueError("OpenAI requires model")
+        if self.api_key is not None and self.base_url is None:
+            raise ValueError("OpenAI requires base_url when api_key is set")
+        if self.api_key is None and self.base_url is not None:
+            raise ValueError("OpenAI base_url is only valid when api_key is set")
+        if self.api_key is None and self.model.strip().lower() not in _OPENAI_MANAGED_MODELS:
+            raise ValueError("OpenAI requires api_key unless using a supported Agora-managed model")
+        if self.api_key is None and self.vendor is not None:
+            raise ValueError("OpenAI Agora-managed mode does not allow vendor")
+        return self
+
+    def to_config(self) -> Dict[str, Any]:
+        params: Dict[str, Any] = {"model": self.model, **(self.params or {})}
+
+        if self.max_tokens is not None:
+            params["max_tokens"] = self.max_tokens
+        if self.temperature is not None:
+            params["temperature"] = self.temperature
+        if self.top_p is not None:
+            params["top_p"] = self.top_p
+
+        config: Dict[str, Any] = {
+            "url": self.base_url or "https://api.openai.com/v1/chat/completions",
+            "params": params,
+            "style": "openai",
+            "input_modalities": self.input_modalities or ["text"],
+        }
+        if self.api_key is not None:
+            config["api_key"] = self.api_key
+        if self.headers is not None:
+            config["headers"] = self.headers
+
+        if self.system_messages is not None:
+            config["system_messages"] = self.system_messages
+        if self.greeting_message is not None:
+            config["greeting_message"] = self.greeting_message
+        if self.greeting_audio_url is not None:
+            config["greeting_audio_url"] = self.greeting_audio_url
+        if self.failure_message is not None:
+            config["failure_message"] = self.failure_message
+        if self.output_modalities is not None:
+            config["output_modalities"] = self.output_modalities
+        if self.greeting_configs is not None:
+            config["greeting_configs"] = _dump_optional_model(self.greeting_configs)
+        if self.template_variables is not None:
+            config["template_variables"] = self.template_variables
+        if self.vendor is not None:
+            config["vendor"] = self.vendor
+        if self.mcp_servers is not None:
+            config["mcp_servers"] = _ensure_mcp_transport(self.mcp_servers)
+        if self.max_history is not None:
+            config["max_history"] = self.max_history
+
+        return config
 
 
-class DeepSeekLLM(OpenAI):
-    def __init__(self, **kwargs: Any):
-        kwargs["vendor"] = "deepseek"
-        super().__init__(**kwargs)
+class DeepSeekLLM(BaseLLM):
+    model_config = ConfigDict(extra="forbid")
+
+    api_key: Optional[str] = Field(default=None, description="OpenAI API key")
+    model: str = Field(..., description="Model name")
+    base_url: Optional[str] = Field(default=None, description="Custom base URL")
+    temperature: Optional[float] = Field(default=None, ge=0.0, le=2.0)
+    top_p: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+    max_tokens: Optional[int] = Field(default=None, gt=0)
+    system_messages: Optional[List[Dict[str, Any]]] = Field(default=None)
+    greeting_message: Optional[str] = Field(default=None)
+    greeting_audio_url: Optional[str] = Field(default=None)
+    failure_message: Optional[str] = Field(default=None)
+    input_modalities: Optional[List[str]] = Field(default=None)
+    params: Optional[Dict[str, Any]] = Field(default=None)
+    headers: Optional[Dict[str, str]] = Field(default=None)
+    output_modalities: Optional[List[str]] = Field(default=None)
+    greeting_configs: Optional[LlmGreetingConfigs] = Field(default=None)
+    template_variables: Optional[Dict[str, str]] = Field(default=None)
+    vendor: Optional[str] = Field(default="deepseek")
+    mcp_servers: Optional[List[Dict[str, Any]]] = Field(default=None)
+    max_history: Optional[int] = Field(default=None, gt=0, description="Maximum number of conversation history messages to cache")
+
+    @model_validator(mode="after")
+    def _validate_byok_params(self) -> "DeepSeekLLM":
+        if not self.model:
+            raise ValueError("OpenAI requires model")
+        if self.api_key is not None and self.base_url is None:
+            raise ValueError("OpenAI requires base_url when api_key is set")
+        if self.api_key is None and self.base_url is not None:
+            raise ValueError("OpenAI base_url is only valid when api_key is set")
+        if self.api_key is None and self.model.strip().lower() not in _OPENAI_MANAGED_MODELS:
+            raise ValueError("OpenAI requires api_key unless using a supported Agora-managed model")
+        if self.api_key is None and self.vendor is not None:
+            raise ValueError("OpenAI Agora-managed mode does not allow vendor")
+        return self
+
+    def to_config(self) -> Dict[str, Any]:
+        params: Dict[str, Any] = {"model": self.model, **(self.params or {})}
+
+        if self.max_tokens is not None:
+            params["max_tokens"] = self.max_tokens
+        if self.temperature is not None:
+            params["temperature"] = self.temperature
+        if self.top_p is not None:
+            params["top_p"] = self.top_p
+
+        config: Dict[str, Any] = {
+            "url": self.base_url or "https://api.openai.com/v1/chat/completions",
+            "params": params,
+            "style": "openai",
+            "input_modalities": self.input_modalities or ["text"],
+        }
+        if self.api_key is not None:
+            config["api_key"] = self.api_key
+        if self.headers is not None:
+            config["headers"] = self.headers
+
+        if self.system_messages is not None:
+            config["system_messages"] = self.system_messages
+        if self.greeting_message is not None:
+            config["greeting_message"] = self.greeting_message
+        if self.greeting_audio_url is not None:
+            config["greeting_audio_url"] = self.greeting_audio_url
+        if self.failure_message is not None:
+            config["failure_message"] = self.failure_message
+        if self.output_modalities is not None:
+            config["output_modalities"] = self.output_modalities
+        if self.greeting_configs is not None:
+            config["greeting_configs"] = _dump_optional_model(self.greeting_configs)
+        if self.template_variables is not None:
+            config["template_variables"] = self.template_variables
+        if self.vendor is not None:
+            config["vendor"] = self.vendor
+        if self.mcp_servers is not None:
+            config["mcp_servers"] = _ensure_mcp_transport(self.mcp_servers)
+        if self.max_history is not None:
+            config["max_history"] = self.max_history
+
+        return config
 
 
-class TencentLLM(OpenAI):
-    def __init__(self, **kwargs: Any):
-        kwargs["vendor"] = "tencent"
-        super().__init__(**kwargs)
+class TencentLLM(BaseLLM):
+    model_config = ConfigDict(extra="forbid")
+
+    api_key: Optional[str] = Field(default=None, description="OpenAI API key")
+    model: str = Field(..., description="Model name")
+    base_url: Optional[str] = Field(default=None, description="Custom base URL")
+    temperature: Optional[float] = Field(default=None, ge=0.0, le=2.0)
+    top_p: Optional[float] = Field(default=None, ge=0.0, le=1.0)
+    max_tokens: Optional[int] = Field(default=None, gt=0)
+    system_messages: Optional[List[Dict[str, Any]]] = Field(default=None)
+    greeting_message: Optional[str] = Field(default=None)
+    greeting_audio_url: Optional[str] = Field(default=None)
+    failure_message: Optional[str] = Field(default=None)
+    input_modalities: Optional[List[str]] = Field(default=None)
+    params: Optional[Dict[str, Any]] = Field(default=None)
+    headers: Optional[Dict[str, str]] = Field(default=None)
+    output_modalities: Optional[List[str]] = Field(default=None)
+    greeting_configs: Optional[LlmGreetingConfigs] = Field(default=None)
+    template_variables: Optional[Dict[str, str]] = Field(default=None)
+    vendor: Optional[str] = Field(default="tencent")
+    mcp_servers: Optional[List[Dict[str, Any]]] = Field(default=None)
+    max_history: Optional[int] = Field(default=None, gt=0, description="Maximum number of conversation history messages to cache")
+
+    @model_validator(mode="after")
+    def _validate_byok_params(self) -> "TencentLLM":
+        if not self.model:
+            raise ValueError("OpenAI requires model")
+        if self.api_key is not None and self.base_url is None:
+            raise ValueError("OpenAI requires base_url when api_key is set")
+        if self.api_key is None and self.base_url is not None:
+            raise ValueError("OpenAI base_url is only valid when api_key is set")
+        if self.api_key is None and self.model.strip().lower() not in _OPENAI_MANAGED_MODELS:
+            raise ValueError("OpenAI requires api_key unless using a supported Agora-managed model")
+        if self.api_key is None and self.vendor is not None:
+            raise ValueError("OpenAI Agora-managed mode does not allow vendor")
+        return self
+
+    def to_config(self) -> Dict[str, Any]:
+        params: Dict[str, Any] = {"model": self.model, **(self.params or {})}
+
+        if self.max_tokens is not None:
+            params["max_tokens"] = self.max_tokens
+        if self.temperature is not None:
+            params["temperature"] = self.temperature
+        if self.top_p is not None:
+            params["top_p"] = self.top_p
+
+        config: Dict[str, Any] = {
+            "url": self.base_url or "https://api.openai.com/v1/chat/completions",
+            "params": params,
+            "style": "openai",
+            "input_modalities": self.input_modalities or ["text"],
+        }
+        if self.api_key is not None:
+            config["api_key"] = self.api_key
+        if self.headers is not None:
+            config["headers"] = self.headers
+
+        if self.system_messages is not None:
+            config["system_messages"] = self.system_messages
+        if self.greeting_message is not None:
+            config["greeting_message"] = self.greeting_message
+        if self.greeting_audio_url is not None:
+            config["greeting_audio_url"] = self.greeting_audio_url
+        if self.failure_message is not None:
+            config["failure_message"] = self.failure_message
+        if self.output_modalities is not None:
+            config["output_modalities"] = self.output_modalities
+        if self.greeting_configs is not None:
+            config["greeting_configs"] = _dump_optional_model(self.greeting_configs)
+        if self.template_variables is not None:
+            config["template_variables"] = self.template_variables
+        if self.vendor is not None:
+            config["vendor"] = self.vendor
+        if self.mcp_servers is not None:
+            config["mcp_servers"] = _ensure_mcp_transport(self.mcp_servers)
+        if self.max_history is not None:
+            config["max_history"] = self.max_history
+
+        return config
 
 
 class SenseTimeAvatarOptions(BaseModel):

@@ -16,7 +16,7 @@ CartesiaSampleRate = Literal[8000, 16000, 22050, 24000, 44100, 48000]
 GoogleTTSSampleRate = Literal[8000, 16000, 22050, 24000, 44100, 48000]
 
 
-class BaseLLM(ABC):
+class BaseLLM(BaseModel, ABC):
     """Abstract base class for all LLM vendor implementations.
 
     Subclasses must implement :meth:`to_config` to return a dict that maps to
