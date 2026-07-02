@@ -40,6 +40,14 @@ def _scene_list() -> List[Dict[str, Any]]:
     return [{"digital_role": {"face_feature_id": "role-1"}}]
 
 
+def test_sensetime_avatar_accepts_snake_case() -> None:
+    from agora_agent.agentkit.vendors.cn import SenseTimeAvatar
+    camel = SenseTimeAvatar(agora_uid="2", appId="app", app_key="key").to_config()
+    snake = SenseTimeAvatar(agora_uid="2", app_id="app", app_key="key").to_config()
+    assert camel == snake
+    assert snake["params"]["appId"] == "app"
+
+
 def test_sensetime_avatar_to_config_shape() -> None:
     config = SenseTimeAvatar(
         agora_token="avatar-token",

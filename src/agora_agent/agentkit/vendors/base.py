@@ -76,7 +76,7 @@ class BaseMLLM(BaseModel, ABC):
         """Serialize the MLLM configuration to a dict for the REST API."""
 
 
-class BaseAvatar(ABC):
+class BaseAvatar(BaseModel, ABC):
     """Abstract base class for all avatar vendor implementations.
 
     Avatars render a visual representation of the agent and impose a specific TTS
