@@ -85,9 +85,10 @@ def test_aliyun_llm_pins_vendor_golden() -> None:
 
 
 def test_sensetime_avatar_camelcase_golden() -> None:
-    # SenseTimeAvatarOptions uses alias "appId" for the app_id field;
-    # pydantic v2 requires the alias keyword in the constructor.
-    cfg = SenseTimeAvatar(agora_uid="2", appId="app", app_key="key").to_config()
+    # Verifies that the camelCase alias "appId" still works as constructor input
+    # (populate_by_name=True means both the field name and alias are accepted at runtime).
+    # Dict-unpack is used so mypy does not call-arg-check the alias keyword.
+    cfg = SenseTimeAvatar(**{"agora_uid": "2", "appId": "app", "app_key": "key"}).to_config()
     assert cfg["vendor"] == "sensetime"
     assert cfg["params"]["appId"] == "app"
 
@@ -104,5 +105,5 @@ def test_fengming_rejects_kwargs() -> None:
     import pytest
     from pydantic import ValidationError
     with pytest.raises(ValidationError):
-        FengmingSTT(unexpected="x")
+        FengmingSTT(unexpected="x")  # type: ignore[call-arg]
     assert FengmingSTT().to_config() == {"vendor": "fengming"}

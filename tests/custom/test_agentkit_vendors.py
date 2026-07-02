@@ -89,7 +89,7 @@ def test_anam_avatar_serializes_avatar_id() -> None:
 
 def test_anam_avatar_requires_avatar_id() -> None:
     with pytest.raises(ValidationError):
-        AnamAvatar(api_key="anam-key")
+        AnamAvatar(api_key="anam-key")  # type: ignore[call-arg]
 
 
 def test_vertex_ai_explicit_fields_override_additional_params():
