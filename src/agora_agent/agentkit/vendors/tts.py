@@ -447,6 +447,10 @@ class SarvamTTS(BaseTTS):
     sample_rate: Optional[int] = Field(default=None, description="Audio sample rate in Hz")
     skip_patterns: Optional[List[int]] = Field(default=None)
 
+    @property
+    def resolved_sample_rate(self) -> Optional[int]:
+        return None
+
     def to_config(self) -> Dict[str, Any]:
         params: Dict[str, Any] = {
             "api_subscription_key": self.key,
@@ -480,6 +484,10 @@ class MurfTTS(BaseTTS):
     model: Optional[str] = Field(default=None, description="TTS model")
     sample_rate: Optional[int] = Field(default=None, description="Audio sample rate")
     skip_patterns: Optional[List[int]] = Field(default=None)
+
+    @property
+    def resolved_sample_rate(self) -> Optional[int]:
+        return None
 
     def to_config(self) -> Dict[str, Any]:
         params: Dict[str, Any] = {"api_key": self.key}

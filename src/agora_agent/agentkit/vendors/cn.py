@@ -298,6 +298,17 @@ class CosyVoiceTTS(_BaseTTSCompat):
     additional_params: Optional[Dict[str, Any]] = Field(default=None, description="CosyVoice TTS params from REST doc")
     skip_patterns: Optional[List[int]] = Field(default=None)
 
+    @property
+    def resolved_sample_rate(self) -> Optional[int]:
+        if self.sample_rate is not None:
+            return self.sample_rate
+        audio_setting = (self.additional_params or {}).get("audio_setting")
+        if isinstance(audio_setting, dict):
+            sample_rate = audio_setting.get("sample_rate")
+            if isinstance(sample_rate, int):
+                return sample_rate
+        return None
+
     def to_config(self) -> Dict[str, Any]:
         params: Dict[str, Any] = dict(self.additional_params or {})
         if self.api_key is not None:
