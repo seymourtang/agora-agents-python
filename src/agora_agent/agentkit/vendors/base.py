@@ -62,7 +62,7 @@ class BaseSTT(BaseModel, ABC):
         """Serialize the STT configuration to a dict for the REST API."""
 
 
-class BaseMLLM(ABC):
+class BaseMLLM(BaseModel, ABC):
     """Abstract base class for all MLLM (multimodal LLM) vendor implementations.
 
     When an MLLM is configured via :meth:`~agora_agent.agentkit.Agent.with_mllm`,
