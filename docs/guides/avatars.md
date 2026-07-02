@@ -132,7 +132,8 @@ agent = (
 `SpatiusAvatar` is available for `Area.CN` sessions. Provide `spatius_api_key`, `spatius_app_id`, `spatius_avatar_id`, and `agora_uid` when constructing the avatar. `agora_token` is optional and is generated at session start when omitted, like SenseTime and Generic avatars.
 
 ```python
-from agora_agent import Agora, Area, CNAgent, GenericTTS, SpatiusAvatar, TencentSTT
+from agora_agent import Agora, Area, CNAgent, GenericTTS
+from agora_agent.cn import SpatiusAvatar, TencentSTT
 
 client = Agora(
     area=Area.CN,
