@@ -28,16 +28,16 @@ class BaseLLM(BaseModel, ABC):
         """Serialize the LLM configuration to a dict for the REST API."""
 
 
-class BaseTTS(ABC):
+class BaseTTS(BaseModel, ABC):
     """Abstract base class for all TTS vendor implementations.
 
-    Subclasses must implement :meth:`to_config` and :attr:`sample_rate`.
+    Subclasses must implement :meth:`to_config`.
 
-    ``sample_rate`` is used by :class:`~agora_agent.agentkit.AgentSession` to
-    validate TTS/avatar compatibility at runtime (avatars require a specific
-    sample rate).  Subclasses should return ``None`` when the user has not
-    explicitly configured a sample rate, which will cause a warning at session
-    start time rather than a hard error.
+    :attr:`resolved_sample_rate` is used by
+    :class:`~agora_agent.agentkit.AgentSession` to validate TTS/avatar
+    compatibility at runtime (avatars require a specific sample rate).  It
+    returns ``None`` when the user has not explicitly configured a sample rate,
+    which will cause a warning at session start time rather than a hard error.
     """
 
     @abstractmethod
@@ -45,9 +45,9 @@ class BaseTTS(ABC):
         """Serialize the TTS configuration to a dict for the REST API."""
 
     @property
-    @abstractmethod
-    def sample_rate(self) -> Optional[int]:
-        """The configured sample rate in Hz, or ``None`` if not explicitly set."""
+    def resolved_sample_rate(self) -> Optional[int]:
+        """The effective configured sample rate in Hz, or None if not set."""
+        return getattr(self, "sample_rate", None)
 
 
 class BaseSTT(BaseModel, ABC):

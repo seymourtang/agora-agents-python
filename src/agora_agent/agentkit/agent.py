@@ -473,7 +473,7 @@ class Agent:
         return new_agent
 
     def with_tts(self, vendor: BaseTTS) -> "Agent":
-        sample_rate = vendor.sample_rate
+        sample_rate = vendor.resolved_sample_rate
         if (
             self._avatar_required_sample_rate not in (None, 0)
             and sample_rate is not None

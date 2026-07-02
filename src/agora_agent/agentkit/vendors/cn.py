@@ -149,7 +149,7 @@ class MicrosoftSTT(_BaseSTTCompat):
         }
 
 
-class TencentTTSOptions(BaseModel):
+class TencentTTS(_BaseTTSCompat):
     model_config = ConfigDict(extra="forbid")
 
     app_id: str = Field(..., description="Tencent TTS app id")
@@ -163,14 +163,9 @@ class TencentTTSOptions(BaseModel):
     additional_params: Optional[Dict[str, Any]] = Field(default=None, description="Additional Tencent TTS params")
     skip_patterns: Optional[List[int]] = Field(default=None)
 
-
-class TencentTTS(_BaseTTSCompat):
-    def __init__(self, **kwargs: Any):
-        self.options = TencentTTSOptions(**kwargs)
-
     @property
     def sample_rate(self) -> Optional[int]:
-        audio_setting = (self.options.additional_params or {}).get("audio_setting")
+        audio_setting = (self.additional_params or {}).get("audio_setting")
         if isinstance(audio_setting, dict):
             sample_rate = audio_setting.get("sample_rate")
             if isinstance(sample_rate, int):
@@ -178,34 +173,34 @@ class TencentTTS(_BaseTTSCompat):
         return None
 
     def to_config(self) -> Dict[str, Any]:
-        params: Dict[str, Any] = dict(self.options.additional_params or {})
+        params: Dict[str, Any] = dict(self.additional_params or {})
         params.update(
             {
-                "app_id": self.options.app_id,
-                "secret_id": self.options.secret_id,
-                "secret_key": self.options.secret_key,
-                "voice_type": self.options.voice_type,
+                "app_id": self.app_id,
+                "secret_id": self.secret_id,
+                "secret_key": self.secret_key,
+                "voice_type": self.voice_type,
             }
         )
-        if self.options.volume is not None:
-            params["volume"] = self.options.volume
-        if self.options.speed is not None:
-            params["speed"] = self.options.speed
-        if self.options.emotion_category is not None:
-            params["emotion_category"] = self.options.emotion_category
-        if self.options.emotion_intensity is not None:
-            params["emotion_intensity"] = self.options.emotion_intensity
+        if self.volume is not None:
+            params["volume"] = self.volume
+        if self.speed is not None:
+            params["speed"] = self.speed
+        if self.emotion_category is not None:
+            params["emotion_category"] = self.emotion_category
+        if self.emotion_intensity is not None:
+            params["emotion_intensity"] = self.emotion_intensity
 
         result: Dict[str, Any] = {
             "vendor": "tencent",
             "params": params,
         }
-        if self.options.skip_patterns is not None:
-            result["skip_patterns"] = self.options.skip_patterns
+        if self.skip_patterns is not None:
+            result["skip_patterns"] = self.skip_patterns
         return result
 
 
-class BytedanceTTSOptions(BaseModel):
+class BytedanceTTS(_BaseTTSCompat):
     model_config = ConfigDict(extra="forbid")
 
     token: str = Field(..., description="Bytedance TTS auth token")
@@ -219,14 +214,9 @@ class BytedanceTTSOptions(BaseModel):
     additional_params: Optional[Dict[str, Any]] = Field(default=None, description="Additional Bytedance TTS params")
     skip_patterns: Optional[List[int]] = Field(default=None)
 
-
-class BytedanceTTS(_BaseTTSCompat):
-    def __init__(self, **kwargs: Any):
-        self.options = BytedanceTTSOptions(**kwargs)
-
     @property
     def sample_rate(self) -> Optional[int]:
-        audio_setting = (self.options.additional_params or {}).get("audio_setting")
+        audio_setting = (self.additional_params or {}).get("audio_setting")
         if isinstance(audio_setting, dict):
             sample_rate = audio_setting.get("sample_rate")
             if isinstance(sample_rate, int):
@@ -234,34 +224,34 @@ class BytedanceTTS(_BaseTTSCompat):
         return None
 
     def to_config(self) -> Dict[str, Any]:
-        params: Dict[str, Any] = dict(self.options.additional_params or {})
+        params: Dict[str, Any] = dict(self.additional_params or {})
         params.update(
             {
-                "token": self.options.token,
-                "app_id": self.options.app_id,
-                "cluster": self.options.cluster,
-                "voice_type": self.options.voice_type,
+                "token": self.token,
+                "app_id": self.app_id,
+                "cluster": self.cluster,
+                "voice_type": self.voice_type,
             }
         )
-        if self.options.speed_ratio is not None:
-            params["speed_ratio"] = self.options.speed_ratio
-        if self.options.volume_ratio is not None:
-            params["volume_ratio"] = self.options.volume_ratio
-        if self.options.pitch_ratio is not None:
-            params["pitch_ratio"] = self.options.pitch_ratio
-        if self.options.emotion is not None:
-            params["emotion"] = self.options.emotion
+        if self.speed_ratio is not None:
+            params["speed_ratio"] = self.speed_ratio
+        if self.volume_ratio is not None:
+            params["volume_ratio"] = self.volume_ratio
+        if self.pitch_ratio is not None:
+            params["pitch_ratio"] = self.pitch_ratio
+        if self.emotion is not None:
+            params["emotion"] = self.emotion
 
         result: Dict[str, Any] = {
             "vendor": "bytedance",
             "params": params,
         }
-        if self.options.skip_patterns is not None:
-            result["skip_patterns"] = self.options.skip_patterns
+        if self.skip_patterns is not None:
+            result["skip_patterns"] = self.skip_patterns
         return result
 
 
-class BytedanceDuplexTTSOptions(BaseModel):
+class BytedanceDuplexTTS(_BaseTTSCompat):
     model_config = ConfigDict(extra="forbid")
 
     token: str = Field(..., description="Bytedance Duplex TTS auth token")
@@ -270,14 +260,9 @@ class BytedanceDuplexTTSOptions(BaseModel):
     additional_params: Optional[Dict[str, Any]] = Field(default=None, description="Additional Bytedance Duplex TTS params")
     skip_patterns: Optional[List[int]] = Field(default=None)
 
-
-class BytedanceDuplexTTS(_BaseTTSCompat):
-    def __init__(self, **kwargs: Any):
-        self.options = BytedanceDuplexTTSOptions(**kwargs)
-
     @property
     def sample_rate(self) -> Optional[int]:
-        audio_setting = (self.options.additional_params or {}).get("audio_setting")
+        audio_setting = (self.additional_params or {}).get("audio_setting")
         if isinstance(audio_setting, dict):
             sample_rate = audio_setting.get("sample_rate")
             if isinstance(sample_rate, int):
@@ -285,12 +270,12 @@ class BytedanceDuplexTTS(_BaseTTSCompat):
         return None
 
     def to_config(self) -> Dict[str, Any]:
-        params: Dict[str, Any] = dict(self.options.additional_params or {})
+        params: Dict[str, Any] = dict(self.additional_params or {})
         params.update(
             {
-                "token": self.options.token,
-                "app_id": self.options.app_id,
-                "speaker": self.options.speaker,
+                "token": self.token,
+                "app_id": self.app_id,
+                "speaker": self.speaker,
             }
         )
 
@@ -298,12 +283,12 @@ class BytedanceDuplexTTS(_BaseTTSCompat):
             "vendor": "bytedance_duplex",
             "params": params,
         }
-        if self.options.skip_patterns is not None:
-            result["skip_patterns"] = self.options.skip_patterns
+        if self.skip_patterns is not None:
+            result["skip_patterns"] = self.skip_patterns
         return result
 
 
-class CosyVoiceTTSOptions(BaseModel):
+class CosyVoiceTTS(_BaseTTSCompat):
     model_config = ConfigDict(extra="forbid")
 
     api_key: Optional[str] = Field(default=None, description="CosyVoice API key")
@@ -313,42 +298,26 @@ class CosyVoiceTTSOptions(BaseModel):
     additional_params: Optional[Dict[str, Any]] = Field(default=None, description="CosyVoice TTS params from REST doc")
     skip_patterns: Optional[List[int]] = Field(default=None)
 
-
-class CosyVoiceTTS(_BaseTTSCompat):
-    def __init__(self, **kwargs: Any):
-        self.options = CosyVoiceTTSOptions(**kwargs)
-
-    @property
-    def sample_rate(self) -> Optional[int]:
-        if self.options.sample_rate is not None:
-            return self.options.sample_rate
-        audio_setting = (self.options.additional_params or {}).get("audio_setting")
-        if isinstance(audio_setting, dict):
-            sample_rate = audio_setting.get("sample_rate")
-            if isinstance(sample_rate, int):
-                return sample_rate
-        return None
-
     def to_config(self) -> Dict[str, Any]:
-        params: Dict[str, Any] = dict(self.options.additional_params or {})
-        if self.options.api_key is not None:
-            params["api_key"] = self.options.api_key
-        if self.options.model is not None:
-            params["model"] = self.options.model
-        if self.options.sample_rate is not None:
-            params["sample_rate"] = self.options.sample_rate
-        if self.options.voice is not None:
-            params["voice"] = self.options.voice
+        params: Dict[str, Any] = dict(self.additional_params or {})
+        if self.api_key is not None:
+            params["api_key"] = self.api_key
+        if self.model is not None:
+            params["model"] = self.model
+        if self.sample_rate is not None:
+            params["sample_rate"] = self.sample_rate
+        if self.voice is not None:
+            params["voice"] = self.voice
         result: Dict[str, Any] = {
             "vendor": "cosyvoice",
             "params": params,
         }
-        if self.options.skip_patterns is not None:
-            result["skip_patterns"] = self.options.skip_patterns
+        if self.skip_patterns is not None:
+            result["skip_patterns"] = self.skip_patterns
         return result
 
 
-class StepFunTTSOptions(BaseModel):
+class StepFunTTS(_BaseTTSCompat):
     model_config = ConfigDict(extra="forbid")
 
     api_key: Optional[str] = Field(default=None, description="StepFun TTS API key")
@@ -357,14 +326,9 @@ class StepFunTTSOptions(BaseModel):
     additional_params: Optional[Dict[str, Any]] = Field(default=None, description="StepFun TTS params from REST doc")
     skip_patterns: Optional[List[int]] = Field(default=None)
 
-
-class StepFunTTS(_BaseTTSCompat):
-    def __init__(self, **kwargs: Any):
-        self.options = StepFunTTSOptions(**kwargs)
-
     @property
     def sample_rate(self) -> Optional[int]:
-        audio_setting = (self.options.additional_params or {}).get("audio_setting")
+        audio_setting = (self.additional_params or {}).get("audio_setting")
         if isinstance(audio_setting, dict):
             sample_rate = audio_setting.get("sample_rate")
             if isinstance(sample_rate, int):
@@ -372,23 +336,23 @@ class StepFunTTS(_BaseTTSCompat):
         return None
 
     def to_config(self) -> Dict[str, Any]:
-        params: Dict[str, Any] = dict(self.options.additional_params or {})
-        if self.options.api_key is not None:
-            params["api_key"] = self.options.api_key
-        if self.options.model is not None:
-            params["model"] = self.options.model
-        if self.options.voice_id is not None:
-            params["voice_id"] = self.options.voice_id
+        params: Dict[str, Any] = dict(self.additional_params or {})
+        if self.api_key is not None:
+            params["api_key"] = self.api_key
+        if self.model is not None:
+            params["model"] = self.model
+        if self.voice_id is not None:
+            params["voice_id"] = self.voice_id
         result: Dict[str, Any] = {
             "vendor": "stepfun",
             "params": params,
         }
-        if self.options.skip_patterns is not None:
-            result["skip_patterns"] = self.options.skip_patterns
+        if self.skip_patterns is not None:
+            result["skip_patterns"] = self.skip_patterns
         return result
 
 
-class MicrosoftTTSOptions(BaseModel):
+class MicrosoftTTS(_BaseTTSCompat):
     model_config = ConfigDict(extra="forbid")
 
     key: str = Field(..., description="Azure subscription key")
@@ -400,36 +364,27 @@ class MicrosoftTTSOptions(BaseModel):
     additional_params: Optional[Dict[str, Any]] = Field(default=None, description="Additional Microsoft TTS params")
     skip_patterns: Optional[List[int]] = Field(default=None)
 
-
-class MicrosoftTTS(_BaseTTSCompat):
-    def __init__(self, **kwargs: Any):
-        self.options = MicrosoftTTSOptions(**kwargs)
-
-    @property
-    def sample_rate(self) -> Optional[int]:
-        return self.options.sample_rate
-
     def to_config(self) -> Dict[str, Any]:
-        params: Dict[str, Any] = dict(self.options.additional_params or {})
+        params: Dict[str, Any] = dict(self.additional_params or {})
         params.update({
-            "key": self.options.key,
-            "region": self.options.region,
-            "voice_name": self.options.voice_name,
+            "key": self.key,
+            "region": self.region,
+            "voice_name": self.voice_name,
         })
-        if self.options.sample_rate is not None:
-            params["sample_rate"] = self.options.sample_rate
-        if self.options.speed is not None:
-            params["speed"] = self.options.speed
-        if self.options.volume is not None:
-            params["volume"] = self.options.volume
+        if self.sample_rate is not None:
+            params["sample_rate"] = self.sample_rate
+        if self.speed is not None:
+            params["speed"] = self.speed
+        if self.volume is not None:
+            params["volume"] = self.volume
 
         result: Dict[str, Any] = {"vendor": "microsoft", "params": params}
-        if self.options.skip_patterns is not None:
-            result["skip_patterns"] = self.options.skip_patterns
+        if self.skip_patterns is not None:
+            result["skip_patterns"] = self.skip_patterns
         return result
 
 
-class MiniMaxTTSOptions(BaseModel):
+class MiniMaxTTS(_BaseTTSCompat):
     model_config = ConfigDict(extra="forbid")
 
     key: Optional[str] = Field(default=None, description="MiniMax API key")
@@ -449,57 +404,48 @@ class MiniMaxTTSOptions(BaseModel):
     skip_patterns: Optional[List[int]] = Field(default=None)
 
     @model_validator(mode="after")
-    def _validate_params(self) -> "MiniMaxTTSOptions":
+    def _validate_params(self) -> "MiniMaxTTS":
         if self.voice_id is not None and self.timber_weights is not None:
             raise ValueError("MiniMaxTTS requires exactly one of voice_id or timber_weights")
         if self.voice_id is None and self.timber_weights is None:
             raise ValueError("MiniMaxTTS requires exactly one of voice_id or timber_weights")
         return self
 
-
-class MiniMaxTTS(_BaseTTSCompat):
-    def __init__(self, **kwargs: Any):
-        self.options = MiniMaxTTSOptions(**kwargs)
-
-    @property
-    def sample_rate(self) -> Optional[int]:
-        return self.options.sample_rate
-
     def to_config(self) -> Dict[str, Any]:
-        params: Dict[str, Any] = dict(self.options.additional_params or {})
-        if self.options.key is not None:
-            params["key"] = self.options.key
-        params["model"] = self.options.model
+        params: Dict[str, Any] = dict(self.additional_params or {})
+        if self.key is not None:
+            params["key"] = self.key
+        params["model"] = self.model
 
         voice_setting: Dict[str, Any] = {}
-        if self.options.voice_id is not None:
-            voice_setting["voice_id"] = self.options.voice_id
-        if self.options.speed is not None:
-            voice_setting["speed"] = self.options.speed
-        if self.options.vol is not None:
-            voice_setting["vol"] = self.options.vol
-        if self.options.pitch is not None:
-            voice_setting["pitch"] = self.options.pitch
-        if self.options.emotion is not None:
-            voice_setting["emotion"] = self.options.emotion
-        if self.options.latex_read is not None:
-            voice_setting["latex_read"] = self.options.latex_read
-        if self.options.english_normalization is not None:
-            voice_setting["english_normalization"] = self.options.english_normalization
+        if self.voice_id is not None:
+            voice_setting["voice_id"] = self.voice_id
+        if self.speed is not None:
+            voice_setting["speed"] = self.speed
+        if self.vol is not None:
+            voice_setting["vol"] = self.vol
+        if self.pitch is not None:
+            voice_setting["pitch"] = self.pitch
+        if self.emotion is not None:
+            voice_setting["emotion"] = self.emotion
+        if self.latex_read is not None:
+            voice_setting["latex_read"] = self.latex_read
+        if self.english_normalization is not None:
+            voice_setting["english_normalization"] = self.english_normalization
         if voice_setting:
             params["voice_setting"] = voice_setting
-        if self.options.timber_weights is not None:
-            params["timber_weights"] = self.options.timber_weights
-        if self.options.sample_rate is not None:
-            params["audio_setting"] = {"sample_rate": self.options.sample_rate}
-        if self.options.pronunciation_dict is not None:
-            params["pronunciation_dict"] = self.options.pronunciation_dict
-        if self.options.language_boost is not None:
-            params["language_boost"] = self.options.language_boost
+        if self.timber_weights is not None:
+            params["timber_weights"] = self.timber_weights
+        if self.sample_rate is not None:
+            params["audio_setting"] = {"sample_rate": self.sample_rate}
+        if self.pronunciation_dict is not None:
+            params["pronunciation_dict"] = self.pronunciation_dict
+        if self.language_boost is not None:
+            params["language_boost"] = self.language_boost
 
         result: Dict[str, Any] = {"vendor": "minimax", "params": params}
-        if self.options.skip_patterns is not None:
-            result["skip_patterns"] = self.options.skip_patterns
+        if self.skip_patterns is not None:
+            result["skip_patterns"] = self.skip_patterns
         return result
 
 
