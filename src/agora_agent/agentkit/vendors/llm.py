@@ -350,15 +350,7 @@ class Groq(BaseLLM):
     @model_validator(mode="after")
     def _validate_byok_params(self) -> "Groq":
         if not self.model:
-            raise ValueError("OpenAI requires model")
-        if self.api_key is not None and self.base_url is None:
-            raise ValueError("OpenAI requires base_url when api_key is set")
-        if self.api_key is None and self.base_url is not None:
-            raise ValueError("OpenAI base_url is only valid when api_key is set")
-        if self.api_key is None and self.model.strip().lower() not in _OPENAI_MANAGED_MODELS:
-            raise ValueError("OpenAI requires api_key unless using a supported Agora-managed model")
-        if self.api_key is None and self.vendor is not None:
-            raise ValueError("OpenAI Agora-managed mode does not allow vendor")
+            raise ValueError("Groq requires model")
         return self
 
     def to_config(self) -> Dict[str, Any]:
@@ -372,7 +364,7 @@ class Groq(BaseLLM):
             params["top_p"] = self.top_p
 
         config: Dict[str, Any] = {
-            "url": self.base_url or "https://api.openai.com/v1/chat/completions",
+            "url": self.base_url,
             "params": params,
             "style": "openai",
             "input_modalities": self.input_modalities or ["text"],
@@ -403,7 +395,6 @@ class Groq(BaseLLM):
         if self.max_history is not None:
             config["max_history"] = self.max_history
 
-        config["url"] = self.base_url
         return config
 
 
@@ -433,15 +424,7 @@ class CustomLLM(BaseLLM):
     @model_validator(mode="after")
     def _validate_byok_params(self) -> "CustomLLM":
         if not self.model:
-            raise ValueError("OpenAI requires model")
-        if self.api_key is not None and self.base_url is None:
-            raise ValueError("OpenAI requires base_url when api_key is set")
-        if self.api_key is None and self.base_url is not None:
-            raise ValueError("OpenAI base_url is only valid when api_key is set")
-        if self.api_key is None and self.model.strip().lower() not in _OPENAI_MANAGED_MODELS:
-            raise ValueError("OpenAI requires api_key unless using a supported Agora-managed model")
-        if self.api_key is None and self.vendor is not None:
-            raise ValueError("OpenAI Agora-managed mode does not allow vendor")
+            raise ValueError("CustomLLM requires model")
         return self
 
     def to_config(self) -> Dict[str, Any]:

@@ -529,15 +529,15 @@ class AliyunLLM(BaseLLM):
     @model_validator(mode="after")
     def _validate_byok_params(self) -> "AliyunLLM":
         if not self.model:
-            raise ValueError("OpenAI requires model")
+            raise ValueError("AliyunLLM requires model")
         if self.api_key is not None and self.base_url is None:
-            raise ValueError("OpenAI requires base_url when api_key is set")
+            raise ValueError("AliyunLLM requires base_url when api_key is set")
         if self.api_key is None and self.base_url is not None:
-            raise ValueError("OpenAI base_url is only valid when api_key is set")
+            raise ValueError("AliyunLLM base_url is only valid when api_key is set")
         if self.api_key is None and self.model.strip().lower() not in _OPENAI_MANAGED_MODELS:
-            raise ValueError("OpenAI requires api_key unless using a supported Agora-managed model")
+            raise ValueError("AliyunLLM requires api_key unless using a supported Agora-managed model")
         if self.api_key is None and self.vendor is not None:
-            raise ValueError("OpenAI Agora-managed mode does not allow vendor")
+            raise ValueError("AliyunLLM Agora-managed mode does not allow vendor")
         return self
 
     def to_config(self) -> Dict[str, Any]:
@@ -611,15 +611,15 @@ class BytedanceLLM(BaseLLM):
     @model_validator(mode="after")
     def _validate_byok_params(self) -> "BytedanceLLM":
         if not self.model:
-            raise ValueError("OpenAI requires model")
+            raise ValueError("BytedanceLLM requires model")
         if self.api_key is not None and self.base_url is None:
-            raise ValueError("OpenAI requires base_url when api_key is set")
+            raise ValueError("BytedanceLLM requires base_url when api_key is set")
         if self.api_key is None and self.base_url is not None:
-            raise ValueError("OpenAI base_url is only valid when api_key is set")
+            raise ValueError("BytedanceLLM base_url is only valid when api_key is set")
         if self.api_key is None and self.model.strip().lower() not in _OPENAI_MANAGED_MODELS:
-            raise ValueError("OpenAI requires api_key unless using a supported Agora-managed model")
+            raise ValueError("BytedanceLLM requires api_key unless using a supported Agora-managed model")
         if self.api_key is None and self.vendor is not None:
-            raise ValueError("OpenAI Agora-managed mode does not allow vendor")
+            raise ValueError("BytedanceLLM Agora-managed mode does not allow vendor")
         return self
 
     def to_config(self) -> Dict[str, Any]:
@@ -693,15 +693,15 @@ class DeepSeekLLM(BaseLLM):
     @model_validator(mode="after")
     def _validate_byok_params(self) -> "DeepSeekLLM":
         if not self.model:
-            raise ValueError("OpenAI requires model")
+            raise ValueError("DeepSeekLLM requires model")
         if self.api_key is not None and self.base_url is None:
-            raise ValueError("OpenAI requires base_url when api_key is set")
+            raise ValueError("DeepSeekLLM requires base_url when api_key is set")
         if self.api_key is None and self.base_url is not None:
-            raise ValueError("OpenAI base_url is only valid when api_key is set")
+            raise ValueError("DeepSeekLLM base_url is only valid when api_key is set")
         if self.api_key is None and self.model.strip().lower() not in _OPENAI_MANAGED_MODELS:
-            raise ValueError("OpenAI requires api_key unless using a supported Agora-managed model")
+            raise ValueError("DeepSeekLLM requires api_key unless using a supported Agora-managed model")
         if self.api_key is None and self.vendor is not None:
-            raise ValueError("OpenAI Agora-managed mode does not allow vendor")
+            raise ValueError("DeepSeekLLM Agora-managed mode does not allow vendor")
         return self
 
     def to_config(self) -> Dict[str, Any]:
@@ -775,15 +775,15 @@ class TencentLLM(BaseLLM):
     @model_validator(mode="after")
     def _validate_byok_params(self) -> "TencentLLM":
         if not self.model:
-            raise ValueError("OpenAI requires model")
+            raise ValueError("TencentLLM requires model")
         if self.api_key is not None and self.base_url is None:
-            raise ValueError("OpenAI requires base_url when api_key is set")
+            raise ValueError("TencentLLM requires base_url when api_key is set")
         if self.api_key is None and self.base_url is not None:
-            raise ValueError("OpenAI base_url is only valid when api_key is set")
+            raise ValueError("TencentLLM base_url is only valid when api_key is set")
         if self.api_key is None and self.model.strip().lower() not in _OPENAI_MANAGED_MODELS:
-            raise ValueError("OpenAI requires api_key unless using a supported Agora-managed model")
+            raise ValueError("TencentLLM requires api_key unless using a supported Agora-managed model")
         if self.api_key is None and self.vendor is not None:
-            raise ValueError("OpenAI Agora-managed mode does not allow vendor")
+            raise ValueError("TencentLLM Agora-managed mode does not allow vendor")
         return self
 
     def to_config(self) -> Dict[str, Any]:
