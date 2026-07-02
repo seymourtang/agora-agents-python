@@ -81,10 +81,12 @@ class HeyGenAvatar(BaseAvatar):
         return v
 
     def model_post_init(self, __context: Any) -> None:
+        # stacklevel=3: warn() <- model_post_init <- pydantic __init__ <- user code,
+        # so the warning points at the user's construction site, not pydantic internals.
         warnings.warn(
             "HeyGenAvatar is deprecated; use LiveAvatarAvatar instead.",
             DeprecationWarning,
-            stacklevel=2,
+            stacklevel=3,
         )
 
     @property
