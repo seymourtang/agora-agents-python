@@ -16,7 +16,7 @@ from .cosyvoice_tts_params import CosyvoiceTtsParams
 from .deepgram_tts_params import DeepgramTtsParams
 from .eleven_labs_tts_params import ElevenLabsTtsParams
 from .fish_audio_tts_params import FishAudioTtsParams
-from .generic_tts_params import GenericTtsParams
+from .generic_http_tts_params import GenericHttpTtsParams
 from .google_tts_params import GoogleTtsParams
 from .hume_ai_tts_params import HumeAiTtsParams
 from .microsoft_tts_params import MicrosoftTtsParams
@@ -240,11 +240,11 @@ class Tts_Sarvam(UncheckedBaseModel):
             extra = pydantic.Extra.allow
 
 
-class Tts_Generic(UncheckedBaseModel):
-    vendor: typing.Literal["generic"] = "generic"
+class Tts_GenericHttp(UncheckedBaseModel):
+    vendor: typing.Literal["generic_http"] = "generic_http"
     url: str
-    headers: typing.Dict[str, str]
-    params: GenericTtsParams
+    headers: typing.Optional[typing.Dict[str, str]] = None
+    params: GenericHttpTtsParams
     skip_patterns: typing.Optional[typing.List[int]] = None
 
     if IS_PYDANTIC_V2:
@@ -348,7 +348,7 @@ Tts = typing_extensions.Annotated[
         Tts_Google,
         Tts_Amazon,
         Tts_Sarvam,
-        Tts_Generic,
+        Tts_GenericHttp,
         Tts_Xai,
         Tts_Deepgram,
         Tts_Cosyvoice,
