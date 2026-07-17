@@ -5,10 +5,10 @@ import typing
 import pydantic
 from ..core.pydantic_utilities import IS_PYDANTIC_V2
 from ..core.unchecked_base_model import UncheckedBaseModel
-from .generic_tts_params import GenericTtsParams
+from .generic_http_tts_params import GenericHttpTtsParams
 
 
-class GenericTts(UncheckedBaseModel):
+class GenericHttpTts(UncheckedBaseModel):
     """
     Generic OpenAI-compatible Text-to-Speech configuration.
     """
@@ -18,12 +18,12 @@ class GenericTts(UncheckedBaseModel):
     Callback address of the generic TTS service.
     """
 
-    headers: typing.Dict[str, str] = pydantic.Field()
+    headers: typing.Optional[typing.Dict[str, str]] = pydantic.Field(default=None)
     """
     Custom headers to include in requests to the generic TTS service.
     """
 
-    params: GenericTtsParams
+    params: GenericHttpTtsParams
     skip_patterns: typing.Optional[typing.List[int]] = pydantic.Field(default=None)
     """
     Controls whether the TTS module skips bracketed content when reading LLM response text.

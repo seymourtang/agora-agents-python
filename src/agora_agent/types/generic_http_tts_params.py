@@ -7,7 +7,7 @@ from ..core.pydantic_utilities import IS_PYDANTIC_V2
 from ..core.unchecked_base_model import UncheckedBaseModel
 
 
-class GenericTtsParams(UncheckedBaseModel):
+class GenericHttpTtsParams(UncheckedBaseModel):
     """
     Generic TTS configuration parameters.
     """
@@ -17,12 +17,12 @@ class GenericTtsParams(UncheckedBaseModel):
     API key for the generic TTS service.
     """
 
-    model: str = pydantic.Field()
+    model: typing.Optional[str] = pydantic.Field(default=None)
     """
     TTS model name.
     """
 
-    voice: str = pydantic.Field()
+    voice: typing.Optional[str] = pydantic.Field(default=None)
     """
     Voice name.
     """
