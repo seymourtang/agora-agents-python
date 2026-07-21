@@ -23,6 +23,7 @@ from .microsoft_tts_params import MicrosoftTtsParams
 from .minimax_tts_params import MinimaxTtsParams
 from .murf_tts_params import MurfTtsParams
 from .open_ai_tts_params import OpenAiTtsParams
+from .rime_tts_credential_mode import RimeTtsCredentialMode
 from .rime_tts_params import RimeTtsParams
 from .sarvam_tts_params import SarvamTtsParams
 from .stepfun_tts_params import StepfunTtsParams
@@ -167,6 +168,7 @@ class Tts_Humeai(UncheckedBaseModel):
 
 class Tts_Rime(UncheckedBaseModel):
     vendor: typing.Literal["rime"] = "rime"
+    credential_mode: typing.Optional[RimeTtsCredentialMode] = None
     params: RimeTtsParams
     skip_patterns: typing.Optional[typing.List[int]] = None
 
