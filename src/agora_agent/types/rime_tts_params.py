@@ -14,12 +14,12 @@ class RimeTtsParams(UncheckedBaseModel):
     Rime TTS configuration parameters.
     """
 
-    api_key: str = pydantic.Field()
+    api_key: typing.Optional[str] = pydantic.Field(default=None)
     """
     Rime API key
     """
 
-    speaker: str = pydantic.Field()
+    speaker: typing.Optional[str] = pydantic.Field(default=None)
     """
     Rime speaker ID
     """
