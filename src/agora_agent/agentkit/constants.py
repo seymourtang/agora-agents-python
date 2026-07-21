@@ -3,6 +3,10 @@ Type-safe constants for agent configuration values.
 Use these instead of raw strings to avoid typos and get IDE autocomplete.
 """
 
+class CredentialMode:
+    MANAGED = "managed"
+    BYOK = "byok"
+
 # Data channel: "rtm" | "datastream"
 class DataChannel:
     RTM = "rtm"

@@ -97,6 +97,7 @@ from .avatar_types import (
     validate_tts_sample_rate,
 )
 from .constants import (
+    CredentialMode,
     DataChannel,
     AudioScenario,
     SilenceActionValues,
@@ -284,6 +285,7 @@ __all__ = [
     "MllmTurnDetectionMode",
     "Labels",
     # Type-safe constants
+    "CredentialMode",
     "DataChannel",
     "AudioScenario",
     "SilenceActionValues",

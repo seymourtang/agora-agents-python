@@ -62,7 +62,7 @@ Used with `agent.with_tts()`. Each TTS vendor produces audio at a specific sampl
 | `GoogleTTS` | Google Cloud | `key`, `voice_name` | — |
 | `AmazonTTS` | Amazon Polly | `access_key`, `secret_key`, `region`, `voice_id`, `engine` | — |
 | `HumeAITTS` | Hume AI | `key`, `voice_id`, `provider` | — |
-| `RimeTTS` | Rime | `key`, `speaker`, `model_id` | — |
+| `RimeTTS` | Rime | `model_id`; BYOK also requires `key` and `speaker`, managed requires `base_url` | — |
 | `FishAudioTTS` | Fish Audio | `key`, `reference_id`, `backend` | — |
 | `MurfTTS` | Murf | `key`, `voice_id`, `model` | — |
 | `MiniMaxTTS` | MiniMax | `model` for supported Agora-managed global models; `key`, `group_id`, `model`, `voice_id`, `url` for BYOK | — |
@@ -70,6 +70,8 @@ Used with `agent.with_tts()`. Each TTS vendor produces audio at a specific sampl
 | `DeepgramTTS` | Deepgram | `api_key`, `model` | Configurable |
 | `SarvamTTS` | Sarvam | `api_key` | — |
 | `XaiTTS` | xAI | `api_key`, `language` | Configurable |
+
+For `RimeTTS`, omitting `credential_mode` selects BYOK validation. Set `credential_mode=CredentialMode.MANAGED` to use managed credentials. See the [RimeTTS vendor reference](../reference/vendors.md#rimetts) for both configurations.
 
 ### CN TTS Vendors
 

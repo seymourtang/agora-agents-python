@@ -1,9 +1,10 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Literal, Optional
 from urllib.parse import urlsplit
 
 from pydantic import ConfigDict, Field, field_validator, model_validator
 
 from .base import BaseTTS, CartesiaSampleRate, ElevenLabsSampleRate, GoogleTTSSampleRate, MicrosoftSampleRate
+from ..constants import CredentialMode
 from ..presets import MiniMaxPresetModels, OpenAITtsPresetModels
 
 
@@ -297,26 +298,44 @@ class HumeAITTS(BaseTTS):
 class RimeTTS(BaseTTS):
     model_config = ConfigDict(extra="forbid")
 
-    key: str = Field(..., description="Rime API key")
-    speaker: str = Field(..., description="Speaker ID")
-    model_id: str = Field(..., description="Model ID")
+    key: Optional[str] = Field(default=None, description="Rime API key")
+    speaker: Optional[str] = Field(default=None, description="Speaker ID")
+    model_id: Optional[str] = Field(default=None, description="Model ID")
     base_url: Optional[str] = Field(default=None, description="WebSocket URL")
+    credential_mode: Optional[Literal["managed", "byok"]] = Field(default=None, description="Credential mode")
     skip_patterns: Optional[List[int]] = Field(default=None)
+
+    @model_validator(mode="after")
+    def _validate_credential_mode(self) -> "RimeTTS":
+        required: Dict[str, Optional[str]]
+        if self.credential_mode == CredentialMode.MANAGED:
+            required = {"base_url": self.base_url, "model_id": self.model_id}
+            mode = "credential_mode='managed'"
+        else:
+            required = {"key": self.key, "speaker": self.speaker, "model_id": self.model_id}
+            mode = "credential_mode='byok' or when credential_mode is omitted"
+
+        missing = [name for name, value in required.items() if not value]
+        if missing:
+            raise ValueError(f"RimeTTS requires {', '.join(missing)} for {mode}")
+        return self
 
     @property
     def sample_rate(self) -> Optional[int]:
         return None
 
     def to_config(self) -> Dict[str, Any]:
-        params: Dict[str, Any] = {
-            "api_key": self.key,
-            "speaker": self.speaker,
-            "modelId": self.model_id,
-        }
+        params: Dict[str, Any] = {"modelId": self.model_id}
+        if self.key is not None:
+            params["api_key"] = self.key
+        if self.speaker is not None:
+            params["speaker"] = self.speaker
         if self.base_url is not None:
             params["base_url"] = self.base_url
 
         result: Dict[str, Any] = {"vendor": "rime", "params": params}
+        if self.credential_mode is not None:
+            result["credential_mode"] = self.credential_mode
         if self.skip_patterns is not None:
             result["skip_patterns"] = self.skip_patterns
         return result

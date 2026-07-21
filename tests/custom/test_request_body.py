@@ -30,6 +30,7 @@ from agora_agent import (
     AssemblyAISTT,
     AzureOpenAI,
     CartesiaTTS,
+    CredentialMode,
     CustomLLM,
     DeepgramSTT,
     DeepgramTTS,
@@ -1177,6 +1178,25 @@ def test_start_session_rime_tts_preserves_wire_aliases() -> None:
 
     assert params["modelId"] == "mist"
     assert "model_id" not in params
+
+
+def test_start_session_rime_tts_managed_credentials() -> None:
+    agent = full_agent_with_tts(
+        RimeTTS(
+            credential_mode=CredentialMode.MANAGED,
+            base_url="wss://users.rime.ai/ws",
+            model_id="mist",
+        )
+    )
+
+    call = start_session(agent)
+    properties = dump_wire(call["properties"])
+
+    assert properties["tts"]["credential_mode"] == "managed"
+    assert properties["tts"]["params"] == {
+        "modelId": "mist",
+        "base_url": "wss://users.rime.ai/ws",
+    }
 
 
 def test_start_session_murf_tts_preserves_wire_aliases() -> None:
