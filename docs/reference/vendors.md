@@ -318,13 +318,44 @@ The SDK also includes named helpers for the remaining Agora-supported LLM provid
 
 ### `RimeTTS`
 
+`CredentialMode` is exported from `agora_agent` as the shared credential mode constants for provider integrations.
+
 | Parameter | Type | Required | Default | Description |
 |---|---|---|---|---|
-| `key` | `str` | Yes | — | Rime API key |
-| `speaker` | `str` | Yes | — | Speaker ID |
+| `key` | `str` | BYOK: Yes; Managed: No | `None` | Rime API key |
+| `speaker` | `str` | BYOK: Yes; Managed: No | `None` | Speaker ID |
 | `model_id` | `str` | Yes | — | Model ID |
-| `base_url` | `str` | No | `None` | WebSocket URL |
+| `base_url` | `str` | Managed: Yes; BYOK: No | `None` | WebSocket URL |
+| `credential_mode` | `CredentialMode` | No | `None` | Shared credential mode (`"managed"` or `"byok"`); omission uses BYOK validation |
 | `skip_patterns` | `List[int]` | No | `None` | Skip patterns |
+
+When `credential_mode` is omitted or set to `"byok"`, provide `key`, `speaker`, and `model_id`:
+
+```python
+import os
+
+from agora_agent import RimeTTS
+
+tts = RimeTTS(
+    key=os.environ["RIME_API_KEY"],
+    speaker="your-speaker-id",
+    model_id="mist",
+)
+```
+
+For Agora-managed credentials, set `credential_mode=CredentialMode.MANAGED` and provide `base_url` and `model_id`:
+
+```python
+from agora_agent import CredentialMode, RimeTTS
+
+tts = RimeTTS(
+    credential_mode=CredentialMode.MANAGED,
+    base_url="wss://your-rime-endpoint.example.com",
+    model_id="mist",
+)
+```
+
+AgentKit serializes `credential_mode` at the top level of the Rime TTS configuration, alongside `vendor` and `params`. It omits the field when the option is not provided, preserving the existing BYOK request shape.
 
 ### `FishAudioTTS`
 

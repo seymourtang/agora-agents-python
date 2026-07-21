@@ -1,6 +1,6 @@
 import pytest
 
-from agora_agent import AmazonTTS, CartesiaTTS, DeepgramTTS, ElevenLabsTTS, FishAudioTTS, GoogleTTS, HumeAITTS, MicrosoftTTS, MiniMaxTTS, MurfTTS, OpenAITTS, RimeTTS, SarvamTTS
+from agora_agent import AmazonTTS, CartesiaTTS, CredentialMode, DeepgramTTS, ElevenLabsTTS, FishAudioTTS, GoogleTTS, HumeAITTS, MicrosoftTTS, MiniMaxTTS, MurfTTS, OpenAITTS, RimeTTS, SarvamTTS
 from agora_agent.agents.types.start_agents_request_properties import StartAgentsRequestProperties
 from agora_agent.core.jsonable_encoder import jsonable_encoder
 from agora_agent.core.pydantic_utilities import parse_obj_as
@@ -170,6 +170,78 @@ def test_tts_managed_mode_validation_matches_core_shapes() -> None:
         )
 
 
+def test_rime_tts_managed_credential_mode_params() -> None:
+    config = RimeTTS(
+        credential_mode=CredentialMode.MANAGED,
+        base_url="wss://users.rime.ai/ws",
+        model_id="mist",
+    ).to_config()
+    assert config == {
+        "vendor": "rime",
+        "credential_mode": "managed",
+        "params": {
+            "modelId": "mist",
+            "base_url": "wss://users.rime.ai/ws",
+        },
+    }
+
+
+@pytest.mark.parametrize("credential_mode", [None, CredentialMode.BYOK])
+def test_rime_tts_byok_credential_mode_params(credential_mode) -> None:
+    config = RimeTTS(
+        credential_mode=credential_mode,
+        key="rime-key",
+        speaker="speaker",
+        model_id="mist",
+    ).to_config()
+    expected = {
+        "modelId": "mist",
+        "api_key": "rime-key",
+        "speaker": "speaker",
+    }
+    assert config["params"] == expected
+    if credential_mode is None:
+        assert "credential_mode" not in config
+    else:
+        assert config["credential_mode"] == credential_mode
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "missing"),
+    [
+        ({"model_id": "mist"}, "base_url"),
+        ({"base_url": "wss://users.rime.ai/ws"}, "model_id"),
+        ({}, "base_url, model_id"),
+    ],
+)
+def test_rime_tts_managed_mode_requires_base_url_and_model_id(kwargs: dict, missing: str) -> None:
+    with pytest.raises(Exception, match=rf"RimeTTS requires {missing} for credential_mode='managed'"):
+        RimeTTS(credential_mode=CredentialMode.MANAGED, **kwargs)
+
+
+@pytest.mark.parametrize("credential_mode", [None, CredentialMode.BYOK])
+@pytest.mark.parametrize(
+    ("kwargs", "missing"),
+    [
+        ({"speaker": "speaker", "model_id": "mist"}, "key"),
+        ({"key": "rime-key", "model_id": "mist"}, "speaker"),
+        ({"key": "rime-key", "speaker": "speaker"}, "model_id"),
+    ],
+)
+def test_rime_tts_byok_mode_requires_key_speaker_and_model_id(
+    credential_mode,
+    kwargs: dict,
+    missing: str,
+) -> None:
+    with pytest.raises(Exception, match=rf"RimeTTS requires {missing}"):
+        RimeTTS(credential_mode=credential_mode, **kwargs)
+
+
+def test_rime_tts_rejects_unknown_credential_mode() -> None:
+    with pytest.raises(Exception, match="credential_mode"):
+        RimeTTS(credential_mode="unknown", base_url="wss://users.rime.ai/ws", model_id="mist")  # type: ignore[arg-type]
+
+
 def test_tts_wire_serialization_applies_fern_aliases() -> None:
     """Verify alias-sensitive TTS params keep the exact provider wire keys."""
     _BASE = dict(channel="ch", token="tok", agent_rtc_uid="1", remote_rtc_uids=["100"])
@@ -191,6 +263,23 @@ def test_tts_wire_serialization_applies_fern_aliases() -> None:
     rime_params = rime_wire["tts"]["params"]
     assert "modelId" in rime_params, f"wire missing modelId, got: {list(rime_params)}"
     assert "model_id" not in rime_params
+
+    managed_rime_config = RimeTTS(
+        credential_mode=CredentialMode.MANAGED,
+        base_url="wss://users.rime.ai/ws",
+        model_id="mist",
+    ).to_config()
+    managed_rime_wire = jsonable_encoder(
+        parse_obj_as(StartAgentsRequestProperties, {**_BASE, "tts": managed_rime_config})
+    )
+    assert managed_rime_wire["tts"] == {
+        "vendor": "rime",
+        "credential_mode": "managed",
+        "params": {
+            "modelId": "mist",
+            "base_url": "wss://users.rime.ai/ws",
+        },
+    }
 
     murf_config = MurfTTS(key="murf-key", voice_id="Ariana").to_config()
     assert "voiceId" in murf_config["params"]
