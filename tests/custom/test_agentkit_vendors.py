@@ -42,7 +42,6 @@ def test_xai_grok_emits_params_even_when_empty():
     assert XaiGrok(api_key="xai-key").to_config()["params"] == {}
 
 
-
 def test_mllm_rejects_fields_not_in_core_contract():
     with pytest.raises(ValidationError):
         OpenAIRealtime(api_key="openai-key", predefined_tools=["_publish_message"])
@@ -224,7 +223,7 @@ def test_generic_tts_serializes() -> None:
     ).to_config()
 
     assert config == {
-        "vendor": "generic",
+        "vendor": "generic_http",
         "url": "https://tts.example.com/v1/audio",
         "headers": {"Authorization": "Bearer token"},
         "params": {
@@ -237,6 +236,28 @@ def test_generic_tts_serializes() -> None:
         },
         "skip_patterns": [3, 4],
     }
+
+
+def test_generic_tts_only_requires_url() -> None:
+    assert GenericTTS(url="https://tts.example.com/v1/audio").to_config() == {
+        "vendor": "generic_http",
+        "url": "https://tts.example.com/v1/audio",
+        "params": {},
+    }
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "ws://tts.example.com/v1/audio",
+        "wss://tts.example.com/v1/audio",
+        "not-a-url",
+        "https:///missing-host",
+    ],
+)
+def test_generic_tts_rejects_non_http_urls(url: str) -> None:
+    with pytest.raises(ValidationError, match="valid HTTP"):
+        GenericTTS(url=url)
 
 
 def test_xai_tts_serializes() -> None:

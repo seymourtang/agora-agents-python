@@ -66,7 +66,7 @@ Used with `agent.with_tts()`. Each TTS vendor produces audio at a specific sampl
 | `FishAudioTTS` | Fish Audio | `key`, `reference_id`, `backend` | — |
 | `MurfTTS` | Murf | `key`, `voice_id`, `model` | — |
 | `MiniMaxTTS` | MiniMax | `model` for supported Agora-managed global models; `key`, `group_id`, `model`, `voice_id`, `url` for BYOK | — |
-| `GenericTTS` | Generic OpenAI-compatible TTS | `url`, `headers`, `model`, `voice` | Configurable |
+| `GenericTTS` | Generic OpenAI-compatible TTS over HTTP(S) | `url` | Configurable |
 | `DeepgramTTS` | Deepgram | `api_key`, `model` | Configurable |
 | `SarvamTTS` | Sarvam | `api_key` | — |
 | `XaiTTS` | xAI | `api_key`, `language` | Configurable |
@@ -84,7 +84,7 @@ Used with `agent.with_tts()` when routing to `Area.CN`. Use `MiniMaxCNTTS` and `
 | `CosyVoiceTTS` | CosyVoice | `api_key`, `model`, `voice` | — |
 | `BytedanceDuplexTTS` | ByteDance Duplex | `app_id`, `token`, `resource_id`, `speaker` | — |
 | `StepFunTTS` | StepFun | `api_key`, `model`, `voice_id` | — |
-| `GenericTTS` | Generic OpenAI-compatible TTS | `url`, `headers`, `model`, `voice` | Configurable |
+| `GenericTTS` | Generic OpenAI-compatible TTS over HTTP(S) | `url` | Configurable |
 
 <!-- snippet: executable -->
 ```python

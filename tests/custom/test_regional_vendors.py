@@ -168,8 +168,8 @@ def test_generic_tts_is_classified_as_shared_vendor() -> None:
 
     assert cn_agent.__class__.__name__ == "CNAgent"
     assert global_agent.__class__.__name__ == "GlobalAgent"
-    assert cn_agent.tts is not None and cn_agent.tts["vendor"] == "generic"
-    assert global_agent.tts is not None and global_agent.tts["vendor"] == "generic"
+    assert cn_agent.tts is not None and cn_agent.tts["vendor"] == "generic_http"
+    assert global_agent.tts is not None and global_agent.tts["vendor"] == "generic_http"
 
 
 def test_xai_asr_and_tts_are_classified_as_global_vendors() -> None:
