@@ -387,12 +387,14 @@ The SDK also includes named helpers for the remaining Agora-supported LLM provid
 
 ### `GenericTTS`
 
+`GenericTTS` currently supports HTTP and HTTPS endpoints. WebSocket endpoints are rejected until a WebSocket-backed generic TTS implementation is available. AgentKit serializes the current HTTP implementation with the internal vendor value `generic_http`.
+
 | Parameter | Type | Required | Default | Description |
 |---|---|---|---|---|
-| `url` | `str` | Yes | — | Callback address of the generic TTS service |
-| `headers` | `Dict[str, str]` | Yes | — | Custom headers to include in requests to the generic TTS service |
-| `model` | `str` | Yes | — | TTS model name |
-| `voice` | `str` | Yes | — | Voice name |
+| `url` | `str` | Yes | — | HTTP(S) endpoint of the generic TTS service |
+| `headers` | `Dict[str, str]` | No | `None` | Custom headers to include in requests to the generic TTS service |
+| `model` | `str` | No | `None` | TTS model name |
+| `voice` | `str` | No | `None` | Voice name |
 | `api_key` | `str` | No | `None` | API key for the generic TTS service |
 | `speed` | `float` | No | `None` | Speech rate |
 | `sample_rate` | `int` | No | `None` | Output audio sample rate in Hz |

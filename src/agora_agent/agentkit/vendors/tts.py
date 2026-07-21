@@ -1,6 +1,7 @@
 from typing import Any, Dict, List, Optional
+from urllib.parse import urlsplit
 
-from pydantic import ConfigDict, Field, model_validator
+from pydantic import ConfigDict, Field, field_validator, model_validator
 
 from .base import BaseTTS, CartesiaSampleRate, ElevenLabsSampleRate, GoogleTTSSampleRate, MicrosoftSampleRate
 from ..presets import MiniMaxPresetModels, OpenAITtsPresetModels
@@ -63,9 +64,9 @@ class MicrosoftTTS(BaseTTS):
     def to_config(self) -> Dict[str, Any]:
         params: Dict[str, Any] = dict(self.additional_params or {})
         params.update({
-            "key": self.key,
-            "region": self.region,
-            "voice_name": self.voice_name,
+                "key": self.key,
+                "region": self.region,
+                "voice_name": self.voice_name,
         })
 
         if self.sample_rate is not None:
@@ -241,8 +242,8 @@ class DeepgramTTS(BaseTTS):
     def to_config(self) -> Dict[str, Any]:
         params: Dict[str, Any] = dict(self.additional_params or {})
         params.update({
-            "api_key": self.api_key,
-            "model": self.model,
+                "api_key": self.api_key,
+                "model": self.model,
         })
 
         if self.base_url is not None:
@@ -516,10 +517,10 @@ class MurfTTS(BaseTTS):
 class GenericTTS(BaseTTS):
     model_config = ConfigDict(extra="forbid")
 
-    url: str = Field(..., description="Callback address of the generic TTS service")
-    headers: Dict[str, str] = Field(..., description="Custom headers to include in requests to the generic TTS service")
-    model: str = Field(..., description="TTS model name")
-    voice: str = Field(..., description="Voice name")
+    url: str = Field(..., description="HTTP(S) endpoint of the generic TTS service")
+    headers: Optional[Dict[str, str]] = Field(default=None, description="Custom request headers")
+    model: Optional[str] = Field(default=None, description="TTS model name")
+    voice: Optional[str] = Field(default=None, description="Voice name")
     api_key: Optional[str] = Field(default=None, description="API key for the generic TTS service")
     speed: Optional[float] = Field(default=None, description="Speech rate")
     sample_rate: Optional[int] = Field(default=None, description="Output audio sample rate in Hz")
@@ -528,12 +529,22 @@ class GenericTTS(BaseTTS):
     additional_params: Optional[Dict[str, Any]] = Field(default=None, description="Additional generic TTS params")
     skip_patterns: Optional[List[int]] = Field(default=None)
 
+    @field_validator("url")
+    @classmethod
+    def validate_url(cls, value: str) -> str:
+        parsed = urlsplit(value)
+        if parsed.scheme.lower() not in {"http", "https"} or not parsed.netloc:
+            raise ValueError("GenericTTS url must be a valid HTTP(S) endpoint")
+        return value
+
     def to_config(self) -> Dict[str, Any]:
         params: Dict[str, Any] = dict(self.additional_params or {})
         if self.api_key is not None:
             params["api_key"] = self.api_key
-        params["model"] = self.model
-        params["voice"] = self.voice
+        if self.model is not None:
+            params["model"] = self.model
+        if self.voice is not None:
+            params["voice"] = self.voice
         if self.speed is not None:
             params["speed"] = self.speed
         if self.sample_rate is not None:
@@ -544,11 +555,12 @@ class GenericTTS(BaseTTS):
             params["instruction"] = self.instruction
 
         result: Dict[str, Any] = {
-            "vendor": "generic",
+            "vendor": "generic_http",
             "url": self.url,
-            "headers": self.headers,
             "params": params,
         }
+        if self.headers is not None:
+            result["headers"] = self.headers
         if self.skip_patterns is not None:
             result["skip_patterns"] = self.skip_patterns
         return result
