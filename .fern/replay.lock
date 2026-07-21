@@ -12,14 +12,20 @@ generations:
     cli_version: unknown
     generator_versions:
       fernapi/fern-python-sdk: 4.37.0
-current_generation: 48efb3f0323e159baa685ae14818f33523522779
+  - commit_sha: ded92fee3f96c394d5f4f8a106c4dfd21cce6105
+    tree_hash: bd21681c8dcf2f9cbbf2ef3f79cfa1bd2371b636
+    timestamp: 2026-07-21T06:48:53.381Z
+    cli_version: unknown
+    generator_versions:
+      fernapi/fern-python-sdk: 4.37.0
+current_generation: ded92fee3f96c394d5f4f8a106c4dfd21cce6105
 patches:
   - id: patch-13d8e068
     content_hash: sha256:97d879ab169016b9abaf1866427a8ebc45af608f69e063a07e5126c9613c329b
     original_commit: 13d8e0683ffa08bcfc9a381eb9604adf5abdbe0b
     original_message: "chore: ignore local venv and planning docs"
     original_author: plutoless <qianze.zhang@hotmail.com>
-    base_generation: 48efb3f0323e159baa685ae14818f33523522779
+    base_generation: ded92fee3f96c394d5f4f8a106c4dfd21cce6105
     files:
       - .gitignore
     patch_content: |
@@ -42,3 +48,4 @@ patches:
         poetry.toml
         .venv/
         docs/superpowers/
+    user_owned: true
