@@ -18,9 +18,11 @@ from .eleven_labs_tts_params import ElevenLabsTtsParams
 from .fish_audio_tts_params import FishAudioTtsParams
 from .generic_http_tts_params import GenericHttpTtsParams
 from .google_tts_params import GoogleTtsParams
+from .gradium_tts_params import GradiumTtsParams
 from .hume_ai_tts_params import HumeAiTtsParams
 from .microsoft_tts_params import MicrosoftTtsParams
 from .minimax_tts_params import MinimaxTtsParams
+from .mistral_tts_params import MistralTtsParams
 from .murf_tts_params import MurfTtsParams
 from .open_ai_tts_params import OpenAiTtsParams
 from .rime_tts_credential_mode import RimeTtsCredentialMode
@@ -334,6 +336,36 @@ class Tts_Stepfun(UncheckedBaseModel):
             extra = pydantic.Extra.allow
 
 
+class Tts_Gradium(UncheckedBaseModel):
+    vendor: typing.Literal["gradium"] = "gradium"
+    params: GradiumTtsParams
+    skip_patterns: typing.Optional[typing.List[int]] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow
+
+
+class Tts_Mistral(UncheckedBaseModel):
+    vendor: typing.Literal["mistral"] = "mistral"
+    params: MistralTtsParams
+    skip_patterns: typing.Optional[typing.List[int]] = None
+
+    if IS_PYDANTIC_V2:
+        model_config: typing.ClassVar[pydantic.ConfigDict] = pydantic.ConfigDict(extra="allow", frozen=True)  # type: ignore # Pydantic v2
+    else:
+
+        class Config:
+            frozen = True
+            smart_union = True
+            extra = pydantic.Extra.allow
+
+
 Tts = typing_extensions.Annotated[
     typing.Union[
         Tts_Tencent,
@@ -356,6 +388,8 @@ Tts = typing_extensions.Annotated[
         Tts_Cosyvoice,
         Tts_BytedanceDuplex,
         Tts_Stepfun,
+        Tts_Gradium,
+        Tts_Mistral,
     ],
     UnionMetadata(discriminant="vendor"),
 ]
