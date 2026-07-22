@@ -68,6 +68,8 @@ Used with `agent.with_tts()`. Each TTS vendor produces audio at a specific sampl
 | `MiniMaxTTS` | MiniMax | `model` for supported Agora-managed global models; `key`, `group_id`, `model`, `voice_id`, `url` for BYOK | — |
 | `GenericTTS` | Generic OpenAI-compatible TTS over HTTP(S) | `url` | Configurable |
 | `DeepgramTTS` | Deepgram | `api_key`, `model` | Configurable |
+| `GradiumTTS` | Gradium | `api_key` | Configurable |
+| `MistralTTS` | Mistral | `api_key` | — |
 | `SarvamTTS` | Sarvam | `api_key` | — |
 | `XaiTTS` | xAI | `api_key`, `language` | Configurable |
 

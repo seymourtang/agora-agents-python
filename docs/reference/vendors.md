@@ -19,7 +19,7 @@ Construct vendors directly from `agora_agent`, then bind a client with `Agent(cl
 
 | Area | STT classes | LLM classes | TTS classes | Avatar classes |
 |---|---|---|---|---|
-| `Area.US`, `Area.EU`, `Area.AP` | `DeepgramSTT`, `SpeechmaticsSTT`, `MicrosoftSTT`, `OpenAISTT`, `GoogleSTT`, `AmazonSTT`, `AssemblyAISTT`, `AresSTT`, `SarvamSTT`, `XaiSTT` | `OpenAI`, `AzureOpenAI`, `Anthropic`, `Gemini`, `Groq`, `VertexAILLM`, `AmazonBedrock`, `Dify`, `CustomLLM` | `ElevenLabsTTS`, `MicrosoftTTS`, `OpenAITTS`, `CartesiaTTS`, `GoogleTTS`, `AmazonTTS`, `DeepgramTTS`, `HumeAITTS`, `RimeTTS`, `FishAudioTTS`, `MiniMaxTTS`, `MurfTTS`, `SarvamTTS`, `GenericTTS`, `XaiTTS` | `LiveAvatarAvatar`, `HeyGenAvatar`, `AkoolAvatar`, `AnamAvatar`, `GenericAvatar` |
+| `Area.US`, `Area.EU`, `Area.AP` | `DeepgramSTT`, `SpeechmaticsSTT`, `MicrosoftSTT`, `OpenAISTT`, `GoogleSTT`, `AmazonSTT`, `AssemblyAISTT`, `AresSTT`, `SarvamSTT`, `XaiSTT` | `OpenAI`, `AzureOpenAI`, `Anthropic`, `Gemini`, `Groq`, `VertexAILLM`, `AmazonBedrock`, `Dify`, `CustomLLM` | `ElevenLabsTTS`, `MicrosoftTTS`, `OpenAITTS`, `CartesiaTTS`, `GoogleTTS`, `AmazonTTS`, `DeepgramTTS`, `GradiumTTS`, `MistralTTS`, `HumeAITTS`, `RimeTTS`, `FishAudioTTS`, `MiniMaxTTS`, `MurfTTS`, `SarvamTTS`, `GenericTTS`, `XaiTTS` | `LiveAvatarAvatar`, `HeyGenAvatar`, `AkoolAvatar`, `AnamAvatar`, `GenericAvatar` |
 | `Area.CN` | `FengmingSTT`, `TencentSTT`, `MicrosoftCNSTT`, `XfyunSTT`, `XfyunBigModelSTT`, `XfyunDialectSTT` | `AliyunLLM`, `BytedanceLLM`, `DeepSeekLLM`, `TencentLLM` | `MiniMaxCNTTS`, `TencentTTS`, `BytedanceTTS`, `MicrosoftCNTTS`, `CosyVoiceTTS`, `BytedanceDuplexTTS`, `StepFunTTS`, `GenericTTS` | `SenseTimeAvatar`, `SpatiusAvatar` |
 
 Global example:
@@ -303,6 +303,18 @@ The SDK also includes named helpers for the remaining Agora-supported LLM provid
 | `additional_params` | `Dict[str, Any]` | No | `None` | Additional Deepgram TTS parameters, flattened into `params` |
 | `skip_patterns` | `List[int]` | No | `None` | Skip patterns |
 
+### `GradiumTTS`
+
+| Parameter | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `api_key` | `str` | Yes | — | Gradium API key |
+| `url` | `str` | No | `None` | WebSocket endpoint for streaming TTS output |
+| `model_name` | `str` | No | `None` | Gradium TTS model name (e.g., `default`) |
+| `voice_id` | `str` | No | `None` | Gradium voice identifier |
+| `sample_rate` | `int` | No | `None` | Audio sample rate in Hz |
+| `additional_params` | `Dict[str, Any]` | No | `None` | Additional Gradium TTS parameters, flattened into `params` |
+| `skip_patterns` | `List[int]` | No | `None` | Skip patterns |
+
 ### `HumeAITTS`
 
 | Parameter | Type | Required | Default | Description |
@@ -388,6 +400,16 @@ AgentKit serializes `credential_mode` at the top level of the Rime TTS configura
 | `skip_patterns` | `List[int]` | No | `None` | Skip patterns |
 
 `key` and `group_id` are required together for BYOK. `url` is optional. In both BYOK and managed modes, exactly one of `voice_id` or `timber_weights` must be provided. Without `key`, `model` must be one of the supported Agora-managed MiniMax models.
+
+### `MistralTTS`
+
+| Parameter | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `api_key` | `str` | Yes | — | Mistral API key |
+| `model` | `str` | No | `None` | Mistral TTS model name (e.g., `voxtral-mini-tts-2603`) |
+| `voice` | `str` | No | `None` | Mistral voice identifier |
+| `additional_params` | `Dict[str, Any]` | No | `None` | Additional Mistral TTS parameters, flattened into `params` |
+| `skip_patterns` | `List[int]` | No | `None` | Skip patterns |
 
 ### `MurfTTS`
 

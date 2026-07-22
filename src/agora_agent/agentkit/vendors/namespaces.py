@@ -32,9 +32,11 @@ from .tts import (
     ElevenLabsTTS,
     FishAudioTTS,
     GoogleTTS,
+    GradiumTTS,
     HumeAITTS,
     MicrosoftTTS,
     MiniMaxTTS,
+    MistralTTS,
     MurfTTS,
     OpenAITTS,
     GenericTTS,
@@ -101,6 +103,8 @@ class GlobalTTSVendors:
     generic = GenericTTS
     xai = XaiTTS
     deepgram = DeepgramTTS
+    gradium = GradiumTTS
+    mistral = MistralTTS
 
 
 class CNTTSVendors:

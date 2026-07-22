@@ -6,8 +6,10 @@ from agora_agent import (
     Area,
     DeepgramSTT,
     GenericTTS,
+    GradiumTTS,
     MiniMaxCNTTS,
     MiniMaxTTS,
+    MistralTTS,
     OpenAI,
     SpatiusAvatar,
     TencentSTT,
@@ -15,6 +17,8 @@ from agora_agent import (
     XaiTTS,
     XaiGrok,
 )
+from agora_agent.agentkit.vendors.catalog import GLOBAL_VENDOR_NAMESPACE
+from agora_agent.agentkit.vendors.namespaces import GlobalTTSVendors
 from agora_agent.agentkit.vendors.region import (
     CN_ASR_VENDORS,
     CN_AVATAR_VENDORS,
@@ -192,6 +196,25 @@ def test_xai_asr_and_tts_are_classified_as_global_vendors() -> None:
     assert global_agent.__class__.__name__ == "GlobalAgent"
     assert global_agent.stt is not None and global_agent.stt["vendor"] == "xai"
     assert global_agent.tts is not None and global_agent.tts["vendor"] == "xai"
+
+
+@pytest.mark.parametrize(
+    ("vendor_name", "tts"),
+    [
+        ("gradium", GradiumTTS(api_key="gradium-key")),
+        ("mistral", MistralTTS(api_key="mistral-key")),
+    ],
+)
+def test_new_tts_are_classified_as_global_vendors(vendor_name: str, tts) -> None:
+    assert vendor_name not in CN_TTS_VENDORS
+    assert vendor_name in GLOBAL_TTS_VENDORS
+    assert GLOBAL_VENDOR_NAMESPACE.tts[vendor_name] is type(tts)
+    assert getattr(GlobalTTSVendors, vendor_name) is type(tts)
+
+    global_agent = Agent(client=_client(Area.US)).with_tts(tts)
+
+    assert global_agent.__class__.__name__ == "GlobalAgent"
+    assert global_agent.tts is not None and global_agent.tts["vendor"] == vendor_name
 
 
 def test_xai_grok_remains_mllm_vendor() -> None:

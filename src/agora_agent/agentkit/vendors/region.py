@@ -56,6 +56,8 @@ GLOBAL_TTS_VENDORS: typing.Tuple[str, ...] = (
     "generic",
     "xai",
     "deepgram",
+    "gradium",
+    "mistral",
 )
 
 CN_LLM_VENDORS: typing.Tuple[str, ...] = (

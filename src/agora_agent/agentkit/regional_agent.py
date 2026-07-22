@@ -54,9 +54,11 @@ from .vendors.tts import (
     ElevenLabsTTS,
     FishAudioTTS,
     GoogleTTS,
+    GradiumTTS,
     HumeAITTS,
     MicrosoftTTS,
     MiniMaxTTS,
+    MistralTTS,
     MurfTTS,
     OpenAITTS,
     GenericTTS,
@@ -99,6 +101,8 @@ GlobalTTS = typing.Union[
     GenericTTS,
     XaiTTS,
     DeepgramTTS,
+    GradiumTTS,
+    MistralTTS,
 ]
 GlobalLLM = typing.Union[
     OpenAI,
