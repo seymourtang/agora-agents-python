@@ -1,6 +1,23 @@
 import pytest
 
-from agora_agent import AmazonTTS, CartesiaTTS, CredentialMode, DeepgramTTS, ElevenLabsTTS, FishAudioTTS, GoogleTTS, HumeAITTS, MicrosoftTTS, MiniMaxTTS, MurfTTS, OpenAITTS, RimeTTS, SarvamTTS
+from agora_agent import (
+    AmazonTTS,
+    CartesiaTTS,
+    CredentialMode,
+    DeepgramTTS,
+    ElevenLabsTTS,
+    FishAudioTTS,
+    GoogleTTS,
+    GradiumTTS,
+    HumeAITTS,
+    MicrosoftTTS,
+    MiniMaxTTS,
+    MistralTTS,
+    MurfTTS,
+    OpenAITTS,
+    RimeTTS,
+    SarvamTTS,
+)
 from agora_agent.agents.types.start_agents_request_properties import StartAgentsRequestProperties
 from agora_agent.core.jsonable_encoder import jsonable_encoder
 from agora_agent.core.pydantic_utilities import parse_obj_as
@@ -59,6 +76,34 @@ def test_tts_vendor_params_match_generated_core_shapes() -> None:
         "base_url": "wss://api.deepgram.com/v1/speak",
         "sample_rate": 24000,
         "encoding": "linear16",
+    }
+
+    assert GradiumTTS(
+        api_key="gradium-key",
+        url="wss://api.gradium.ai/api/speech/tts",
+        model_name="default",
+        voice_id="voice",
+        sample_rate=16000,
+        additional_params={"api_key": "ignored-key", "custom_gain": 0.5},
+    ).to_config()["params"] == {
+        "api_key": "gradium-key",
+        "url": "wss://api.gradium.ai/api/speech/tts",
+        "model_name": "default",
+        "voice_id": "voice",
+        "sample_rate": 16000,
+        "custom_gain": 0.5,
+    }
+
+    assert MistralTTS(
+        api_key="mistral-key",
+        model="voxtral-mini-tts-2603",
+        voice="voice",
+        additional_params={"api_key": "ignored-key", "speed": 1.1},
+    ).to_config()["params"] == {
+        "api_key": "mistral-key",
+        "model": "voxtral-mini-tts-2603",
+        "voice": "voice",
+        "speed": 1.1,
     }
 
     assert OpenAITTS(api_key="openai-key", voice="coral", model="gpt-4o-mini-tts", base_url="https://api.openai.com/v1", instructions="speak clearly").to_config()["params"] == {
@@ -170,6 +215,28 @@ def test_tts_managed_mode_validation_matches_core_shapes() -> None:
         )
 
 
+def test_new_global_tts_optional_fields_and_skip_patterns() -> None:
+    assert GradiumTTS(api_key="gradium-key", skip_patterns=[1, 2]).to_config() == {
+        "vendor": "gradium",
+        "params": {"api_key": "gradium-key"},
+        "skip_patterns": [1, 2],
+    }
+    assert MistralTTS(api_key="mistral-key", skip_patterns=[3]).to_config() == {
+        "vendor": "mistral",
+        "params": {"api_key": "mistral-key"},
+        "skip_patterns": [3],
+    }
+
+    assert GradiumTTS(api_key="gradium-key", sample_rate=16000).resolved_sample_rate == 16000
+    assert MistralTTS(api_key="mistral-key").resolved_sample_rate is None
+
+
+@pytest.mark.parametrize("tts_class", [GradiumTTS, MistralTTS])
+def test_new_global_tts_requires_api_key(tts_class) -> None:
+    with pytest.raises(Exception, match="api_key"):
+        tts_class()
+
+
 def test_rime_tts_managed_credential_mode_params() -> None:
     config = RimeTTS(
         credential_mode=CredentialMode.MANAGED,
@@ -278,6 +345,42 @@ def test_tts_wire_serialization_applies_fern_aliases() -> None:
         "params": {
             "modelId": "mist",
             "base_url": "wss://users.rime.ai/ws",
+        },
+    }
+
+    gradium_config = GradiumTTS(
+        api_key="gradium-key",
+        model_name="default",
+        voice_id="voice",
+        sample_rate=16000,
+        additional_params={"custom_gain": 0.5},
+    ).to_config()
+    gradium_wire = jsonable_encoder(parse_obj_as(StartAgentsRequestProperties, {**_BASE, "tts": gradium_config}))
+    assert gradium_wire["tts"] == {
+        "vendor": "gradium",
+        "params": {
+            "api_key": "gradium-key",
+            "model_name": "default",
+            "voiceId": "voice",
+            "sample_rate": 16000,
+            "custom_gain": 0.5,
+        },
+    }
+
+    mistral_config = MistralTTS(
+        api_key="mistral-key",
+        model="voxtral-mini-tts-2603",
+        voice="voice",
+        additional_params={"speed": 1.1},
+    ).to_config()
+    mistral_wire = jsonable_encoder(parse_obj_as(StartAgentsRequestProperties, {**_BASE, "tts": mistral_config}))
+    assert mistral_wire["tts"] == {
+        "vendor": "mistral",
+        "params": {
+            "api_key": "mistral-key",
+            "model": "voxtral-mini-tts-2603",
+            "voice": "voice",
+            "speed": 1.1,
         },
     }
 

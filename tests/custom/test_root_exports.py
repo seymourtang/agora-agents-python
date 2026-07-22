@@ -11,6 +11,8 @@ def test_root_exports_match_agentkit_for_common_symbols() -> None:
         "GlobalAgent",
         "RegionalAgent",
         "DeepgramSTT",
+        "GradiumTTS",
+        "MistralTTS",
         "MiniMaxCNTTS",
         "TencentSTT",
         "OpenAI",
@@ -42,6 +44,8 @@ def test_unknown_root_export_raises_attribute_error() -> None:
 
 def test_dir_includes_agentkit_vendor_exports() -> None:
     assert "DeepgramSTT" in dir(agora_agent)
+    assert "GradiumTTS" in dir(agora_agent)
+    assert "MistralTTS" in dir(agora_agent)
     assert "MiniMaxCNTTS" in dir(agora_agent)
     assert "TencentSTT" in dir(agora_agent)
     assert "CNAgent" in dir(agora_agent)
@@ -51,6 +55,8 @@ def test_dir_includes_agentkit_vendor_exports() -> None:
 def test_all_includes_agentkit_vendor_exports() -> None:
     assert "CredentialMode" in agora_agent.__all__
     assert "DeepgramSTT" in agora_agent.__all__
+    assert "GradiumTTS" in agora_agent.__all__
+    assert "MistralTTS" in agora_agent.__all__
     assert "MiniMaxCNTTS" in agora_agent.__all__
     assert "TencentSTT" in agora_agent.__all__
     assert "OpenAI" in agora_agent.__all__

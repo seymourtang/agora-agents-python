@@ -257,6 +257,35 @@ class DeepgramTTS(BaseTTS):
         return result
 
 
+class GradiumTTS(BaseTTS):
+    model_config = ConfigDict(extra="forbid")
+
+    api_key: str = Field(..., description="Gradium API key")
+    url: Optional[str] = Field(default=None, description="WebSocket endpoint for streaming TTS output")
+    model_name: Optional[str] = Field(default=None, description="Gradium TTS model name")
+    voice_id: Optional[str] = Field(default=None, description="Gradium voice identifier")
+    sample_rate: Optional[int] = Field(default=None, description="Audio sample rate in Hz")
+    additional_params: Optional[Dict[str, Any]] = Field(default=None, description="Additional Gradium TTS parameters")
+    skip_patterns: Optional[List[int]] = Field(default=None)
+
+    def to_config(self) -> Dict[str, Any]:
+        params: Dict[str, Any] = dict(self.additional_params or {})
+        params["api_key"] = self.api_key
+        if self.url is not None:
+            params["url"] = self.url
+        if self.model_name is not None:
+            params["model_name"] = self.model_name
+        if self.voice_id is not None:
+            params["voice_id"] = self.voice_id
+        if self.sample_rate is not None:
+            params["sample_rate"] = self.sample_rate
+
+        result: Dict[str, Any] = {"vendor": "gradium", "params": params}
+        if self.skip_patterns is not None:
+            result["skip_patterns"] = self.skip_patterns
+        return result
+
+
 class HumeAITTS(BaseTTS):
     model_config = ConfigDict(extra="forbid")
 
@@ -450,6 +479,29 @@ class MiniMaxTTS(BaseTTS):
             # Preset path: model not in params; stored as top-level hint for preset
             # inference. Stripped by strip_inferred_preset_fields before the POST body.
             result["_minimax_preset_model"] = self.model
+        if self.skip_patterns is not None:
+            result["skip_patterns"] = self.skip_patterns
+        return result
+
+
+class MistralTTS(BaseTTS):
+    model_config = ConfigDict(extra="forbid")
+
+    api_key: str = Field(..., description="Mistral API key")
+    model: Optional[str] = Field(default=None, description="Mistral TTS model name")
+    voice: Optional[str] = Field(default=None, description="Mistral voice identifier")
+    additional_params: Optional[Dict[str, Any]] = Field(default=None, description="Additional Mistral TTS parameters")
+    skip_patterns: Optional[List[int]] = Field(default=None)
+
+    def to_config(self) -> Dict[str, Any]:
+        params: Dict[str, Any] = dict(self.additional_params or {})
+        params["api_key"] = self.api_key
+        if self.model is not None:
+            params["model"] = self.model
+        if self.voice is not None:
+            params["voice"] = self.voice
+
+        result: Dict[str, Any] = {"vendor": "mistral", "params": params}
         if self.skip_patterns is not None:
             result["skip_patterns"] = self.skip_patterns
         return result
